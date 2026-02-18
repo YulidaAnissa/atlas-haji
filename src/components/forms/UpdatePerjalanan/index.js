@@ -65,13 +65,6 @@ export default function ComponentForm({
               label="Tujuan Kabupaten/Kota"
               options={kabkotaOptions}
             />
-            <Field
-              component={InputField}
-              label="Kegiatan"
-              name="kegiatan"
-              type="text"
-              className="w-full rounded-md py-2 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
-            />
           </div>
           </div>
           <div className="flex gap-5 mt-6 sticky bottom-0 bg-white py-3 border-t">

@@ -1,12 +1,12 @@
 import React from "react";
 import PropTypes from "prop-types";
 import { Field } from "react-final-form";
-import Select from "react-select";
+import CreatableSelect from "react-select/creatable";
 import FormField from "./FormField"; // komponen wrapper label+error
 import { useForm } from 'react-final-form';
 
 // Komponen SelectField
-function SelectField({ input, options, ...rest }) {
+function SelectField({ input, options, onChange, ...rest }) {
   const form = useForm();
   const handleClearFieldState = () => {
     form.resetFieldState(input?.name);
@@ -59,13 +59,20 @@ function SelectField({ input, options, ...rest }) {
 
   return (
     <FormField onClear={handleClearFieldState} {...rest} className="p-2">
-      <Select
+      <CreatableSelect
         {...rest}
         styles={customSelectStyles}
         options={options}
         size="small"
         value={options.find(opt => opt.value === input.value) || null}
-        onChange={opt => input.onChange(opt ? opt.value : null)}
+        onChange={(opt) => {
+          // update ke react-final-form
+          input.onChange(opt ? opt.value : null);
+          // panggil handler custom dari props kalau ada
+          if (onChange) {
+            onChange(opt);
+          }
+        }}
         onBlur={() => input.onBlur(input.value)}
         isClearable
         isSearchable

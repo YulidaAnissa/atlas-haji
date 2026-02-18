@@ -5,7 +5,6 @@ import { useRouter, usePathname } from "next/navigation";
 
 export default function Sidebar({ sidebarOpen }) {
   const router = useRouter();
-  const pathname = usePathname();
   const [activeMenu, setActiveMenu] = useState(null);
 
   const handleMenuClick = (name, path) => {
@@ -27,6 +26,7 @@ export default function Sidebar({ sidebarOpen }) {
     { name: "Dashboard", icon: <RxDashboard />, path: "/dashboard" },
     { name: "Perjalanan Dinas", icon: <RxDashboard />, path: "/perjalanan-dinas" },
     { name: "Laporan Perjalanan Dinas", icon: <RxDashboard />, path: "/laporan-perjalanan" },
+    { name: "Daftar Nominatif", icon: <RxDashboard />, path: "/daftar-nominatif" },
   ];
 
   return (

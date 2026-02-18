@@ -14,6 +14,7 @@ const services = {
   },
   PERJALANAN_PEGAWAI: `${SERVICE_BASE}/perjalanan/pegawai`,
   CONVERT_PDF: `${SERVICE_BASE}/convertPDF`,
+  SURAT_TUGAS: `${SERVICE_BASE}/surat`,
 };
 
 export default services;

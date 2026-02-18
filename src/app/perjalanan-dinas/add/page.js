@@ -35,7 +35,6 @@ export default function AddPerjalananDinas() {
         tglBerangkat: values.dateRange.formattedStart,
         tglKembali: values.dateRange.formattedEnd,
         idKabKota: values.tujuan,   // pastikan tujuan = idKabKota
-        kegiatan: values.kegiatan,
       };
 
       // console.log(values);

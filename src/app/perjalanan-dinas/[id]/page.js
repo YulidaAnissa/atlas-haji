@@ -2,7 +2,7 @@
 import PageBase  from "@/components/pagebase";
 import { DataTables, Breadcrumb, InfoModal, FormModal } from "@/components/elements";
 import { useParams } from "next/navigation";
-import { usePegawai, useUpdatePerjalanan, useKabKota, usePerjalanan, useDeletePerjalananPegawai, useAddPegawaiPerjalanan } from "@/hooks/useData";
+import { usePegawai, useUpdatePerjalanan, useKabKota, usePerjalanan, useDeletePerjalananPegawai, useAddPegawaiPerjalanan, useSuratTugas } from "@/hooks/useData";
 import { calculateTripDuration, formatDate } from "@/utils/date";
 import { IoDocumentTextOutline } from "react-icons/io5";
 import { useState } from "react";
@@ -28,6 +28,7 @@ export default function Component() {
   });
   const { data: pegawai } = usePegawai();
   const { data: kabkota } = useKabKota();
+  const { data: suratTugas } = useSuratTugas();
   const { postPegawai } = useAddPegawaiPerjalanan();
   const { deletePerjalananPegawai } = useDeletePerjalananPegawai();
   const { updatePerjalanan } = useUpdatePerjalanan();
@@ -44,13 +45,13 @@ export default function Component() {
         ...(values.dateRange?.formattedStart && { tglBerangkat: values.dateRange.formattedStart }),
         ...(values.dateRange?.formattedEnd && { tglKembali: values.dateRange.formattedEnd }),
         ...(values.tujuan && { idKabKota: values.tujuan }),
-        ...(values.kegiatan && { kegiatan: values.kegiatan })
       };
 
       // Surat
       const suratPayload = {
         ...(values.noSurat && { noSurat: values.noSurat }),
-        ...(values.tglSurat && { tglSurat: formatDate(values.tglSurat, "YYYY-MM-DD")})
+        ...(values.tglSurat && { tglSurat: formatDate(values.tglSurat, "YYYY-MM-DD")}),
+        ...(values.kegiatan && { kegiatan: values.kegiatan })
       };
 
       // Gabungkan sesuai kondisi
@@ -175,6 +176,11 @@ export default function Component() {
               <h3 className="font-semibold text-gray-900">Tujuan</h3>
               <p className="text-sm text-gray-600">{data?.perjalanan?.kabkota}</p>
             </li>
+            <li className="ml-6">
+              <div className="absolute w-3 h-3 bg-indigo-600 rounded-full -left-1.5 border border-white"></div>
+              <h3 className="font-semibold text-gray-900">No Surat</h3>
+              <p className="text-sm text-gray-600">{data?.perjalanan?.noSurat || "-"}</p>
+            </li>
           </ol>
           <ol className="relative border-l border-indigo-300 space-y-6">
             <li className="ml-6">
@@ -185,7 +191,12 @@ export default function Component() {
             <li className="ml-6">
               <div className="absolute w-3 h-3 bg-indigo-600 rounded-full -left-1.5 border border-white"></div>
               <h3 className="font-semibold text-gray-900">Kegiatan</h3>
-              <p className="text-sm text-gray-600">{data?.perjalanan?.kegiatan}</p>
+              <p className="text-sm text-gray-600">{data?.perjalanan?.kegiatan || "-"}</p>
+            </li>
+            <li className="ml-6">
+              <div className="absolute w-3 h-3 bg-indigo-600 rounded-full -left-1.5 border border-white"></div>
+              <h3 className="font-semibold text-gray-900">Tanggal Surat</h3>
+              <p className="text-sm text-gray-600">{data?.perjalanan?.tglSurat ? formatDate(data?.perjalanan?.tglSurat) : "-"}</p>
             </li>
           </ol>
         </div>
@@ -239,7 +250,7 @@ export default function Component() {
       </FormModal>
       <FormModal icon={<IoDocumentTextOutline className="text-white w-6 h-6" />} show={showAddST}>
         <AddSuratTugas 
-          data={data?.perjalanan}
+          data={suratTugas}
           onSubmit={handleUpdatePerjalanan} onClose={() => setShowAddST(false)}
         />
       </FormModal>

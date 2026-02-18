@@ -55,14 +55,6 @@ export default function LoginPage({
             </Field>
             <div className="w-2/3 border border-gray-300 rounded-md p-6">
               <Field
-                component={InputField}
-                label="Kegiatan"
-                name="kegiatan"
-                placeholder="Masukkan Kegiatan..."
-                type="text"
-                className="w-full rounded-md py-2 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
-              />
-              <Field
                 className="col-span-2 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
                 name="tujuan"
                 component={SelectField}
@@ -73,7 +65,7 @@ export default function LoginPage({
               
               <FieldArray name="pegawai">
                 {({ fields, meta }) => (
-                  <div className="space-y-4">
+                  <div>
                     {fields.map((name, index) => {
                       const selectedNips = Array.isArray(values.pegawai)
                         ? values.pegawai.filter(Boolean)

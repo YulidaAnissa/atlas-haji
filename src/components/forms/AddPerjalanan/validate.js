@@ -3,9 +3,6 @@ import validate from '../../../utils/validator';
 export default function validation(values) {
   
   return {
-    kegiatan: validate(values.kegiatan, [
-      { rule: 'required' },
-    ]),
     tujuan: validate(values.tujuan, [
       // { message: 'pilih tujuan '},
       { rule: 'required' },

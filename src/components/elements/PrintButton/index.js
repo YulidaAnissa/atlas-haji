@@ -2,8 +2,6 @@
 import { useState } from "react";
 import PizZip from "pizzip";
 import Docxtemplater from "docxtemplater";
-import { IoDocumentTextOutline } from "react-icons/io5";
-import html2pdf from "html2pdf.js";
 import { SERVICES } from "@/configs";
 import { useLoading } from "@/hooks";
 import LoadingOverlay from "@/components/elements/LoadingOverlay";

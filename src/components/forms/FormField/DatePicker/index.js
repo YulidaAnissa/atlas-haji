@@ -8,7 +8,7 @@ import InputBase from "../InputBase";
 
 export default function DateField({ input, meta, label, ...rest }) {
   return (
-    <div className="flex flex-col">
+    <div className="flex flex-col p-2">
       {label && (
         <label htmlFor={input.name} className="text-sm md:text-base font-semibold text-left mb-1">
           {label}
