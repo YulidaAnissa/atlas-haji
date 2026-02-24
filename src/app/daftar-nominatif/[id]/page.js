@@ -146,7 +146,8 @@ export default function Component() {
       </div>
       <DataTables headCells={headCells} data={formattedData} loading={isLoading}/>
       <FormModal className="w-xl" icon={<FaEdit className="text-white w-6 h-6" />} show={showBiayaPerjalanan?.show}>
-        <AddBiayaPerjalanan 
+        <AddBiayaPerjalanan
+          data={showBiayaPerjalanan?.data ? data?.pegawai?.find(p => p.idPerjalananPegawai === showBiayaPerjalanan.data) : {}} 
           onSubmit={handleBiayaPerjalanan}
           onClose={() => setShowBiayaPerjalanan({ show: false, data: null })}
         />
