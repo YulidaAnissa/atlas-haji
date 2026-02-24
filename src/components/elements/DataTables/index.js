@@ -32,7 +32,7 @@ function getComparator(order, orderBy) {
 }
 
 function EnhancedTableHead(props) {
-  const { onSelectAllClick, order, orderBy, rowCount, onRequestSort, headCells } =
+  const { order, orderBy, onRequestSort, headCells } =
     props;
   const createSortHandler = (property) => (event) => {
     onRequestSort(event, property);
@@ -54,6 +54,7 @@ function EnhancedTableHead(props) {
             align={headCell.numeric ? 'right' : 'left'}
             padding={headCell.disablePadding ? 'none' : 'normal'}
             sortDirection={orderBy === headCell.id ? order : false}
+            style={{ width: headCell.width }}
           >
             <TableSortLabel
               active={orderBy === headCell.id}
@@ -88,15 +89,8 @@ export default function EnhancedTable({ data = [], headCells, loading }) {
   const rows = Array.isArray(data) ? data : [];
   const [order, setOrder] = React.useState('asc');
   const [orderBy, setOrderBy] = React.useState('calories');
-  const [selected, setSelected] = React.useState([]);
   const [page, setPage] = React.useState(0);
   const [rowsPerPage, setRowsPerPage] = React.useState(5);
-
-  const handleRequestSort = (event, property) => {
-    const isAsc = orderBy === property && order === 'asc';
-    setOrder(isAsc ? 'desc' : 'asc');
-    setOrderBy(property);
-  };
 
   const handleChangePage = (event, newPage) => {
     setPage(newPage);
@@ -146,7 +140,7 @@ export default function EnhancedTable({ data = [], headCells, loading }) {
                   >
                     <TableCell>{index + 1 + page * rowsPerPage}</TableCell>
                     {headCells.map((headCell) => (
-                      <TableCell key={headCell.id} align={headCell.align}>
+                      <TableCell key={headCell.id} align={headCell.align} style={{ width: headCell.width }}>
                         {row[headCell.id] || '-'}
                       </TableCell>
                     ))}
