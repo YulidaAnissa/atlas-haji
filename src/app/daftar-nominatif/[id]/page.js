@@ -1,41 +1,102 @@
 "use client";
 import PageBase  from "@/components/pagebase";
-import { DataTables, Breadcrumb, FormModal, PrintButton } from "@/components/elements";
+import { DataTables, Breadcrumb, DaftarNominatif, PrintButton } from "@/components/elements";
 import { useParams } from "next/navigation";
-import { useUpdateLaporan, useLaporan, usePerjalanan } from "@/hooks/useData";
+import { useSuratTugas, useUpdateLaporan } from "@/hooks/useData";
 import { formatDate, calculateTripDuration } from "@/utils/date";
 import { useState } from "react";
 import { useLoading } from "@/hooks";
-import LaporanPerjalanan from "@/components/forms/LaporanPerjalanan";
-import { FaEdit, FaPlusCircle  } from "react-icons/fa";
+import FormModal from "@/components/elements/FormModal";
+import AddBiayaPerjalanan from "@/components/forms/AddBiayaPerjalanan";
+import { FaEdit } from "react-icons/fa";
 import LoadingOverlay from "@/components/elements/LoadingOverlay";
 
 export default function Component() {
   const params = useParams();
-  const [ showLaporan, setShowLaporan ] = useState(false);
+  const [ showBiayaPerjalanan, setShowBiayaPerjalanan ] = useState({ show: false, data: null });
   const [ laporan, setLaporan ] = useState({});
   const { id } = params;
   const [loading, startLoading, endLoading] = useLoading();
-  const { data, isLoading, fetch } = useLaporan({
+  const { data, isLoading, fetch } = useSuratTugas({
     urlParams: { id }
   });
 
   const { updateLaporan } = useUpdateLaporan();
-  
-  const { data: pegawai } = usePerjalanan({
-    urlParams: { id }
-  });
 
-  const handleLaporanPerjalanan = async (values) => {
-    const idPerjalananPegawai = values?.pegawai;
+  const headCells = [
+    { id: 'nip', label: 'NIP', numeric: false },
+    { id: 'nama', label: 'Nama Pegawai', numeric: false },
+    { id: 'gol', label: 'Gol', numeric: false },
+    { id: 'jabatan', label: 'Jabatan', numeric: false },
+    { id: 'kabkota', label: 'Tujuan', numeric: false },
+    { id: 'aksi', label: '', numeric: false },
+  ];
+
+  const uhCount = (uh, berangkat, kembali) => {
+    console.log(berangkat);
+    const duration = calculateTripDuration(berangkat, kembali, false, false);
+    return duration * uh;
+  };
+
+  const totalCount = (uh, biayaTrans, biayaPeng) => {
+    // pastikan semuanya angka
+    const u = Number(uh) || 0;
+    const t = Number(biayaTrans) || 0;
+    const p = Number(biayaPeng) || 0;
+
+    return u + t + p;
+  };
+
+  const dataFile = data?.pegawai?.map((item, index) => ({
+    idx: index + 1,
+    nama: item.nama,
+    nip: item.nip,
+    kegiatan: item.kegiatan,
+    tujuan: item.kabkota,
+    lama: calculateTripDuration(item.tglBerangkat, item.tglKembali, true, true),
+    uh: item.uh,
+    uhTotal: uhCount(item.uh, item.tglBerangkat, item.tglKembali),
+    biayaTrans: item.biayaTrans,
+    biayaPeng: item.biayaPeng,
+    jumlahTotal: totalCount(uhCount(item.uh, item.tglBerangkat, item.tglKembali), item.biayaTrans, item.biayaPeng)
+  }));
+
+  const formattedData = (data?.pegawai ?? [])?.map(item => ({
+    ...item,
+    aksi: (
+      <div className="flex gap-2">
+        <button
+          onClick={() => {
+            setShowBiayaPerjalanan({ show: true, data: item.idPerjalananPegawai });
+          }}
+          className="px-3 py-1 bg-blue-600 text-white rounded hover:bg-blue-700 transition"
+        >
+          Biaya
+        </button>
+        <PrintButton
+          data={dataFile.find(p => p.nama === item.nama) || {}}
+          format="/spd-rampung-kwitansi-format.docx"
+          file={`spd-rampung-kwitansi-format-${item.nip}`}
+        />
+      </div>
+    )
+  }));
+
+  console.log(showBiayaPerjalanan);
+  const handleBiayaPerjalanan = async (values) => {
+    const idPerjalananPegawai = showBiayaPerjalanan?.data;
+    console.log(idPerjalananPegawai);
     try {
       startLoading();
       const payload = {
-        hasil: values?.hasil
+        biayaPeng: values?.biayaPeng,
+        biayaTrans: values?.biayaTrans,
+        buktiPeng: values?.buktiPeng,
+        buktiTrans: values?.buktiTrans
       };
       await updateLaporan(idPerjalananPegawai, payload);
       await fetch();
-      setShowLaporan(false);
+      setShowBiayaPerjalanan({ show: false, data: null });
     } catch (err) {
       return err;
     } finally {
@@ -43,46 +104,10 @@ export default function Component() {
     }
   };
 
-  const headCells = [
-    { id: 'nip', label: 'NIP', numeric: false },
-    { id: 'nama', label: 'Nama Pegawai', numeric: false },
-    { id: 'gol', label: 'Gol', numeric: false },
-    { id: 'jabatan', label: 'Jabatan', numeric: false },
-    { id: 'aksi', label: '', numeric: false },
-  ];
-
-  const handleFormLaporan = (type) => {
-    setShowLaporan(true);
-    setLaporan(type);
-  };
-
-  console.log("data ", data);
-  const formattedData = (data?.pegawai ?? [])?.map(item => ({
-    ...item,
-    aksi: (
-      <div className="flex gap-2">
-        <PrintButton
-          data={{
-            nama: item?.nama,
-            nip: item?.nip,
-            tglBerangkat: formatDate(data?.perjalanan?.tglBerangkat, "DD MMMM YYYY"),
-            tglKembali: formatDate(data?.perjalanan?.tglKembali, "DD MMMM YYYY"),
-            kabkota: data?.perjalanan?.kabkota,
-            kegiatan: data?.perjalanan?.kegiatan,
-            hasil: item?.hasil,
-            lama: calculateTripDuration(data?.perjalanan?.tglBerangkat, data?.perjalanan?.tglKembali)
-          }}
-          format="/laporan-format.docx"
-          file={`laporan-${item.nip}`}
-        />
-      </div>
-    )
-  }));
-
   const breadcrumbItem = [
     { label: "Home", href: "/" },
-    { label: "Daftar Laporan Perjalanan Dinas", href: "/laporan-perjalanan" },
-    { label: data?.perjalanan?.kegiatan }
+    { label: "Daftar Nominatif", href: "/laporan-perjalanan" },
+    { label: data?.surat?.noSurat}
   ];
 
   return (
@@ -90,7 +115,7 @@ export default function Component() {
       <Breadcrumb items={breadcrumbItem} />
       <div className="mb-10 gap-4">
         <h1 className="text-4xl font-bold text-gray-800 drop-shadow-[0_0_10px_rgba(234,179,8,0.7)] tracking-wide">
-          Detail Laporan Perjalanan Dinas
+          Detail Daftar Nominatif
         </h1>
       </div>
       <div className="flex mb-6 gap-6 justify-between">
@@ -98,48 +123,32 @@ export default function Component() {
           <ol className="relative border-l border-indigo-300 space-y-6">
             <li className="ml-6">
               <div className="absolute w-3 h-3 bg-indigo-600 rounded-full -left-1.5 border border-white"></div>
-              <h3 className="font-semibold text-gray-900">Tanggal Berangkat</h3>
+              <h3 className="font-semibold text-gray-900">Nomor Surat</h3>
+              <p className="text-sm text-gray-600">{data?.surat?.noSurat}</p>
+            </li>
+            <li className="ml-6">
+              <div className="absolute w-3 h-3 bg-indigo-600 rounded-full -left-1.5 border border-white"></div>
+              <h3 className="font-semibold text-gray-900">Tanggal Surat</h3>
               <p className="text-sm text-gray-600">
-                {formatDate(data?.perjalanan?.tglBerangkat)}
+                {formatDate(data?.surat?.tglSurat)}
               </p>
             </li>
             <li className="ml-6">
               <div className="absolute w-3 h-3 bg-indigo-600 rounded-full -left-1.5 border border-white"></div>
-              <h3 className="font-semibold text-gray-900">Tujuan</h3>
-              <p className="text-sm text-gray-600">{data?.perjalanan?.kabkota}</p>
-            </li>
-          </ol>
-          <ol className="relative border-l border-indigo-300 space-y-6">
-            <li className="ml-6">
-              <div className="absolute w-3 h-3 bg-indigo-600 rounded-full -left-1.5 border border-white"></div>
-              <h3 className="font-semibold text-gray-900">Tanggal Kembali</h3>
-              <p className="text-sm text-gray-600">{formatDate(data?.perjalanan?.tglKembali)}</p>
-            </li>
-            <li className="ml-6">
-              <div className="absolute w-3 h-3 bg-indigo-600 rounded-full -left-1.5 border border-white"></div>
               <h3 className="font-semibold text-gray-900">Kegiatan</h3>
-              <p className="text-sm text-gray-600">{data?.perjalanan?.kegiatan}</p>
+              <p className="text-sm text-gray-600">{data?.surat?.kegiatan}</p>
             </li>
           </ol>
         </div>
         <div className="mb-6 flex flex-row md:flex-col md:items-center m-auto gap-4">
-          <button
-            className="flex w-full cursor-pointer px-5 py-2 bg-linear-to-r bg-black text-white font-medium rounded-lg shadow"
-            onClick={() => handleFormLaporan("add")}
-          >
-            <FaPlusCircle className="my-auto w-4 h-4 mr-1"/>
-            Buat Laporan
-          </button>
+          <DaftarNominatif data={data}/>
         </div>
       </div>
       <DataTables headCells={headCells} data={formattedData} loading={isLoading}/>
-      <FormModal className="w-xl" icon={<FaEdit className="text-white w-6 h-6" />} show={showLaporan}>
-        <LaporanPerjalanan 
-          data={data?.perjalanan}
-          pegawai={pegawai?.pegawai}
-          onSubmit={handleLaporanPerjalanan}
-          onClose={() => setShowLaporan(false)}
-          type={laporan}
+      <FormModal className="w-xl" icon={<FaEdit className="text-white w-6 h-6" />} show={showBiayaPerjalanan?.show}>
+        <AddBiayaPerjalanan 
+          onSubmit={handleBiayaPerjalanan}
+          onClose={() => setShowBiayaPerjalanan({ show: false, data: null })}
         />
       </FormModal>
       <LoadingOverlay show={loading}/>

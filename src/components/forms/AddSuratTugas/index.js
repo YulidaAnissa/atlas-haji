@@ -1,7 +1,7 @@
 "use client";
 import React, { useState, useEffect } from "react";
 import { Form, Field } from "react-final-form";
-
+import { v4 as uuidv4 } from 'uuid';
 import { DatePicker } from "@/components/forms/FormField";
 import InputField from "../FormField/InputField";
 import CreateableSelect from "../FormField/CreateableSelect";
@@ -10,10 +10,6 @@ export default function ComponentForm({
   onSubmit = () => {},
   onClose = false,
   data = [],
-  // surat = [
-  //   {noSurat: 'ini value 1', tglSurat: '02-02-2026', kegiatan: 'ini kegiatan 1'},
-  //   {noSurat: 'ini value 2', tglSurat: '04-04-2026', kegiatan: 'ini kegiatan 2'}
-  // ]
 }) {
   const [noSuratOptions, setSuratOptions] = useState([]);
   
@@ -44,32 +40,43 @@ export default function ComponentForm({
             options={noSuratOptions}
             onChange={(newSurat) => {
               if (newSurat) {
-                const selected = data.find(item => item.noSurat === newSurat.value);
+                const selected = data.find(
+                  item => item.idSurat === newSurat.value || item.noSurat === newSurat.value
+                );
                 if (selected) {
-                  // isi otomatis field lain
+                  // ✅ kalau option sudah ada → pakai idSurat
+                  form.change("idSurat", selected.idSurat);
+                  form.change("noSurat", selected.noSurat);
                   form.change("tglSurat", selected.tglSurat);
                   form.change("kegiatan", selected.kegiatan);
                 } else {
-                  // kalau option baru → kosongkan field lain
+                  // ✨ kalau option baru → simpan noSurat saja
+                  form.change("idSurat", uuidv4());
+                  form.change("noSurat", newSurat.value);
                   form.change("tglSurat", "");
                   form.change("kegiatan", "");
                   setSuratOptions([...noSuratOptions, newSurat]);
                 }
               } else {
-                // kalau di-clear → kosongkan field lain
+                // kalau di-clear → kosongkan semua field
+                form.change("idSurat", null);
+                form.change("noSurat", "");
                 form.change("tglSurat", "");
                 form.change("kegiatan", "");
               }
             }}
           />
-          {/* <Field
-            component={InputField}
-            label="No Surat Tugas"
-            name="noSurat"
-            placeholder="Masukkan Nomor Surat Tugas"
-            type="text"
-            className="w-full rounded-md py-2 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
-          /> */}
+          <div className="hidden">
+            <Field
+              component={InputField}
+              label="No Surat Tugas"
+              disabled
+              name="idSurat"
+              placeholder="Masukkan Nomor Surat Tugas"
+              type="text"
+              className="w-full rounded-md py-2 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+            />
+          </div>
           <Field
             component={DatePicker}
             label="Tanggal Surat"

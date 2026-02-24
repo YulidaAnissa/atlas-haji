@@ -147,9 +147,18 @@ export const numberToWordsID = (num) => {
 };
 
 
-export const calculateTripDuration = (startDate, endDate, includeStartEndDays = false) => {
+export const calculateTripDuration = (
+  startDate,
+  endDate,
+  includeStartEndDays = false,
+  withWords = true // opsi tambahan
+) => {
   const start = new Date(startDate);
   const end = new Date(endDate);
+
+  if (isNaN(start) || isNaN(end)) {
+    return 0; // fallback kalau tanggal tidak valid
+  }
 
   // Selisih dalam milidetik
   const diffTime = Math.abs(end - start);
@@ -162,6 +171,15 @@ export const calculateTripDuration = (startDate, endDate, includeStartEndDays = 
     diffDays += 1;
   }
 
-  return `${diffDays + 1} (${numberToWordsID(diffDays + 1)})`;
-}
+  const totalDays = diffDays + 1;
+
+  // Kondisi: kalau withWords true, sertakan teks
+  if (withWords && typeof numberToWordsID === "function") {
+    return `${totalDays} (${numberToWordsID(totalDays)})`;
+  }
+
+  // Kalau tidak, cukup angka
+  return totalDays;
+};
+
 

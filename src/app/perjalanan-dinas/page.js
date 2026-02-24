@@ -12,7 +12,6 @@ export default function DaftarPerjalananDinas() {
   const [ search, setSearch ] = useState("");
   const { data, isLoading } = usePerjalanan({ params: { search: search }});
 
-  // console.log('search', search);
   const headCells = [
     { id: 'tglBerangkat', label: 'Tanggal Berangkat', numeric: false },
     { id: 'tglKembali', label: 'Tanggal Kembali', numeric: false },

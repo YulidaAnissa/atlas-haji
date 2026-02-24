@@ -10,3 +10,4 @@ export const LoadingOverlay = dynamic(() => import("./LoadingOverlay"), { ssr: f
 export const Tooltip = dynamic(() => import("./Tooltip"), { ssr: false });
 export const TooltipInfo = dynamic(() => import("./TooltipInfo"), { ssr: false });
 export const PrintButton = dynamic(() => import("./PrintButton"), { ssr: false });
+export const DaftarNominatif = dynamic(() => import("./DaftarNominatif"), { ssr: false });

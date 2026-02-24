@@ -49,6 +49,7 @@ export default function Component() {
 
       // Surat
       const suratPayload = {
+        ...(values.idSurat && { idSurat: values.idSurat }),
         ...(values.noSurat && { noSurat: values.noSurat }),
         ...(values.tglSurat && { tglSurat: formatDate(values.tglSurat, "YYYY-MM-DD")}),
         ...(values.kegiatan && { kegiatan: values.kegiatan })

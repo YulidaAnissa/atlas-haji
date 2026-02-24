@@ -37,9 +37,6 @@ export default function AddPerjalananDinas() {
         idKabKota: values.tujuan,   // pastikan tujuan = idKabKota
       };
 
-      // console.log(values);
-
-
       const res = await postPerjalanan(payload);
       form.reset();
       setShowModalSuccess(true);

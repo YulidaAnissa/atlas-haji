@@ -3,34 +3,31 @@ import { DataTables, Breadcrumb } from "@/components/elements";
 import PageBase  from "@/components/pagebase";
 import { usePathname, useRouter } from "next/navigation";
 import { useState } from "react";
-import { usePerjalanan } from "@/hooks/useData";
+import { useSuratTugas } from "@/hooks/useData";
 import { formatDate } from "@/utils/date";
-import { TroubleshootSharp } from "@mui/icons-material";
 
 export default function DaftarPerjalananDinas() {
   const router = useRouter();
-  const pathname = usePathname();
   const [ search, setSearch ] = useState("");
-  const { data, isLoading } = usePerjalanan({ params: { search: search, noSurat: true }});
+  const { data, isLoading } = useSuratTugas({ params: { search: search}});
 
   const headCells = [
-    { id: 'tglBerangkat', label: 'Tanggal Berangkat', numeric: false },
-    { id: 'tglKembali', label: 'Tanggal Kembali', numeric: false },
-    { id: 'kabkota', label: 'Tujuan', numeric: false },
-    { id: 'kegiatan', label: 'Kegiatan', numeric: false },
-    { id: 'noSurat', label: 'Nomor Surat Tugas', numeric: false },
+    { id: 'noSurat', label: 'Nomor Surat', numeric: false },
+    { id: 'tglSurat', label: 'Tanggal Surat', numeric: false },
+    { id: 'kegiatan', label: 'Kegiatan/Perihal', numeric: false },
     { id: 'aksi', label: '', numeric: false },
   ];
 
   const formattedData = (data ?? [])?.map(item => ({
     ...item,
-    tglBerangkat: item.tglBerangkat ? formatDate(item.tglBerangkat) : "",
-    tglKembali: item.tglKembali ? formatDate(item.tglKembali) : "",
+    tglSurat: item.tglSurat ? formatDate(item.tglSurat) : "",
     aksi: (
       <div className="flex gap-2">
         <button
           className="py-2 px-4 rounded bg-primary cursor-pointer text-white"
-          onClick={() => router.push(`/laporan-perjalanan/${item.idPerjalanan}`)}
+          onClick={() => {
+            router.push(`/daftar-nominatif/${item.idSurat}`);
+          }}
         >
         Lihat
         </button>
@@ -40,7 +37,7 @@ export default function DaftarPerjalananDinas() {
 
   const breadcrumbItem = [
     { label: "Home", href: "/" },
-    { label: "Daftar Laporan Perjalanan Dinas"},
+    { label: "Daftar Nominatif"},
   ];
   return (
     <PageBase className="p-16 mx-auto">
@@ -48,7 +45,7 @@ export default function DaftarPerjalananDinas() {
       <Breadcrumb items={breadcrumbItem} />
       <div className="mb-10 gap-4">
         <h1 className="text-4xl font-bold text-gray-800 drop-shadow-[0_0_10px_rgba(234,179,8,0.7)] tracking-wide">
-          Daftar Laporan Perjalanan Dinas
+          Daftar Nominatif
         </h1>
       </div>
 
@@ -60,7 +57,7 @@ export default function DaftarPerjalananDinas() {
           name="search"
           value={search ?? ""}
           onChange={(e) => setSearch(e.target.value)}
-          placeholder="🔍 Cari perjalanan..."
+          placeholder="🔍 Cari surat tugas..."
         />
       </div>
 

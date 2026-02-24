@@ -32,7 +32,7 @@ export default function FileField({ input, meta, label, ...rest }) {
   const file = input.value;
 
   return (
-    <div className="flex flex-col text-left">
+    <div className="flex flex-col text-left p-2">
       {label && (
         <label
           htmlFor={input.name}

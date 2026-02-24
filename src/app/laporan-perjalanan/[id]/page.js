@@ -56,7 +56,6 @@ export default function Component() {
     setLaporan(type);
   };
 
-  console.log("data ", data);
   const formattedData = (data?.pegawai ?? [])?.map(item => ({
     ...item,
     aksi: (
@@ -108,6 +107,11 @@ export default function Component() {
               <h3 className="font-semibold text-gray-900">Tujuan</h3>
               <p className="text-sm text-gray-600">{data?.perjalanan?.kabkota}</p>
             </li>
+            <li className="ml-6">
+              <div className="absolute w-3 h-3 bg-indigo-600 rounded-full -left-1.5 border border-white"></div>
+              <h3 className="font-semibold text-gray-900">No Surat</h3>
+              <p className="text-sm text-gray-600">{data?.perjalanan?.noSurat || "-"}</p>
+            </li>
           </ol>
           <ol className="relative border-l border-indigo-300 space-y-6">
             <li className="ml-6">
@@ -118,7 +122,12 @@ export default function Component() {
             <li className="ml-6">
               <div className="absolute w-3 h-3 bg-indigo-600 rounded-full -left-1.5 border border-white"></div>
               <h3 className="font-semibold text-gray-900">Kegiatan</h3>
-              <p className="text-sm text-gray-600">{data?.perjalanan?.kegiatan}</p>
+              <p className="text-sm text-gray-600">{data?.perjalanan?.kegiatan || "-"}</p>
+            </li>
+            <li className="ml-6">
+              <div className="absolute w-3 h-3 bg-indigo-600 rounded-full -left-1.5 border border-white"></div>
+              <h3 className="font-semibold text-gray-900">Tanggal Surat</h3>
+              <p className="text-sm text-gray-600">{data?.perjalanan?.tglSurat ? formatDate(data?.perjalanan?.tglSurat) : "-"}</p>
             </li>
           </ol>
         </div>

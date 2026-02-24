@@ -68,7 +68,7 @@ const InputBase = forwardRef(function Input(props, ref) {
     >
 
       {React.isValidElement(startAdornment) ? (
-        <div className="h-full mr-3 -ml-1 flex items-center">
+        <div className="h-full mx-2 flex items-center">
           {startAdornment}
         </div>
       ): null } 

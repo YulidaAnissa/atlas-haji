@@ -1,29 +1,17 @@
 "use client";
 import React, { useState, useEffect } from "react";
 import { Form, Field } from "react-final-form";
-import TextAreaField from "../FormField/TextAreaField";
+import { DatePicker, UploadFile } from "@/components/forms/FormField";
+import InputField from "../FormField/InputField";
 import SelectField from "../FormField/SelectField";
+import { DatePickerRange } from "@/components/forms/FormField";
+import { format } from "date-fns";
 
 export default function ComponentForm({
   data = {},
   onSubmit,
   onClose = false,
-  type = "edit",
-  pegawai = [],
 }) {
-  const [pegawaiOptions, setPegawaiOptions] = useState([]);
-
-  useEffect(() => {
-    if (type === "add" && pegawai && Array.isArray(pegawai)) {
-      // eslint-disable-next-line react-hooks/set-state-in-effect
-      setPegawaiOptions(
-        pegawai.map(item => ({
-          value: item.idPerjalananPegawai,
-          label: `${item.nip} | ${item.nama}` 
-        }))
-      );
-    }
-  }, [pegawai, type]);
 
   return (
     <Form 
@@ -38,23 +26,33 @@ export default function ComponentForm({
       }}
     >
       {({ handleSubmit }) => (
-        <form className="overflow-y-auto max-h-[80vh] flex flex-col" onSubmit={handleSubmit}>
-          {type === "add" && (
+        <form className="overflow-y-auto max-h-[80vh] flex flex-col w-full" noValidate onSubmit={handleSubmit}>
+          {/* <div className="grid grid-cols-2 gap-10"> */}
             <Field
-              className="col-span-2 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-left"
-              name="pegawai"
-              component={SelectField}
-              label="Data Pegawai"
-              options={pegawaiOptions}
+              component={InputField}
+              label="Biaya Transportasi"
+              name="biayaTrans"
+              startAdornment={<span className="text-gray-500 text-sm">Rp</span>}
+              type="number"
             />
-          )}
-          <Field
-            component={TextAreaField}
-            label="Hasil Laporan"
-            name="hasil"
-            type="text"
-            className="rounded-md py-2 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
-          />
+            <Field
+              component={UploadFile}
+              label="Bukti Pendukung Transportasi"
+              name="buktiTrans"
+            />
+            <Field
+              component={InputField}
+              label="Biaya Penginapan"
+              name="biayaPeng"
+              startAdornment={<span className="text-gray-500 text-sm">Rp</span>}
+              type="number"
+            />
+            <Field
+              component={UploadFile}
+              label="Bukti Pendukung Penginapan"
+              name="buktiPeng"
+            />
+          {/* </div> */}
           <div className="flex gap-5 mt-6 sticky bottom-0 bg-white py-3 border-t">
             <button
               type="submit"

@@ -14,7 +14,9 @@ const services = {
   },
   PERJALANAN_PEGAWAI: `${SERVICE_BASE}/perjalanan/pegawai`,
   CONVERT_PDF: `${SERVICE_BASE}/convertPDF`,
-  SURAT_TUGAS: `${SERVICE_BASE}/surat`,
+  SURAT_TUGAS: ({ id } = {}) => {
+    return id ? `${SERVICE_BASE}/surat/${id}` : `${SERVICE_BASE}/surat`;
+  },
 };
 
 export default services;

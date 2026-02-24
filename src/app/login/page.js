@@ -13,7 +13,6 @@ export default function Components() {
   //   const formData = new FormData();
   //   formData.append('nip', data.nip);
   //   formData.append('password', data.password);
-  //   console.log('Form Data Submitted:', data);
 
   //   // if (kategori === 3) {
   //   // formData.append('file', data.file[0]);

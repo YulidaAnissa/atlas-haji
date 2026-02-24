@@ -7,7 +7,7 @@
 @tailwind utilities;
 
 @theme {
-  --color-brand: #BE9C36;
+  --color-brand: #c9a961;
   --color-danger: #E11900;
   --color-primary: #3d91ff;
   --font-inter: 'Inter', sans-serif;

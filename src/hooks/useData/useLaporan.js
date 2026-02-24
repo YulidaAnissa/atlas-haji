@@ -1,8 +1,7 @@
 import useSWR from 'swr';
 import { SERVICES } from '@/configs';
-import { fetcher, deleteFetcher, auth, createSwrKey, defaultOptions, getDedupingInterval } from './../utils';
+import { fetcher, createSwrKey, defaultOptions, getDedupingInterval } from './../utils';
 import { accessTokenStorage } from '@/utils/storage';
-import useSWRMutation from "swr/mutation";
 import { useState } from 'react';
 
 export function useLaporan({ dedupingInterval, urlParams = {} } = defaultOptions) {
@@ -29,8 +28,6 @@ export function useUpdateLaporan() {
     setLoading(true);
     setError("");
 
-    console.log("update perjalanan", values);
-
     try {
       const tokenObj = accessTokenStorage.get();
       const token = tokenObj?.value;
@@ -53,8 +50,6 @@ export function useUpdateLaporan() {
       }
 
       const data = await res.json();
-
-      console.log("data ", data);
       return data;
     } catch (err) {
       setError(err.message);
