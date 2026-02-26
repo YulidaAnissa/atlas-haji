@@ -11,8 +11,9 @@ import Breadcrumb from "@/components/elements/Breadcrumb";
 
 export default function AddPegawai() {
   const [ showModalSuccess, setShowModalSuccess ] = useState(false); 
-
+  const { fetch } = usePegawai();
   const { addPegawai, loading } = useAddPegawai();
+  const router = useRouter();
   
   const handleSubmit = async (values, form) => {
     try {
@@ -20,6 +21,7 @@ export default function AddPegawai() {
 
       await addPegawai(payload);
       form.reset();
+      fetch();
       setShowModalSuccess(true);
     } catch (err) {
       return err;
@@ -44,7 +46,10 @@ export default function AddPegawai() {
         show={showModalSuccess}
         icon={<FaCheck className="text-white w-6 h-6"/>}
         title="Data berhasil disimpan"
-        onCancel={() => setShowModalSuccess(false)}
+        onCancel={() => {
+          setShowModalSuccess(false);
+          router.push("/pegawai");
+        }}
       >
         <p className="text-gray-500 mt-2">
           Pegawai sudah tersimpan dengan aman.

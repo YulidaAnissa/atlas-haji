@@ -104,3 +104,46 @@ export function useDeletePegawai() {
 
   return { deletePegawai, loading, error };
 }
+
+export function useEditPegawai() {
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+
+  const editPegawai = async ({ nip, ...values }) => {
+    setLoading(true);
+    setError("");
+
+    try {
+      const tokenObj = accessTokenStorage.get();
+      const token = tokenObj?.value;
+
+      if (!token) {
+        throw new Error("Token tidak tersedia, user belum login");
+      }
+
+      const res = await fetch(
+        `${SERVICES.PEGAWAI}/${nip}`,
+        {
+          method: "PUT",
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      if (!res.ok) {
+        throw new Error("Gagal menghapus pegawai");
+      }
+
+      const data = await res.json();
+      return data;
+    } catch (err) {
+      setError(err.message);
+      throw err;
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return { editPegawai, loading, error };
+}

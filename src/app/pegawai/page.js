@@ -1,20 +1,24 @@
 "use client";
-import { DataTables, Breadcrumb } from "@/components/elements";
+import { DataTables, Breadcrumb, FormModal } from "@/components/elements";
 import PageBase  from "@/components/pagebase";
 import { usePathname, useRouter } from "next/navigation";
 import { useState } from "react";
-import { usePegawai, useDeletePegawai } from "@/hooks/useData";
+import { usePegawai, useDeletePegawai, useEditPegawai } from "@/hooks/useData";
 import { LoadingOverlay, InfoModal } from "@/components/elements";
+import AddPegawaiForm from "@/components/forms/AddPegawai";
+import { FaEdit  } from "react-icons/fa";
+import { TbExclamationMark } from "react-icons/tb";
 
 export default function DaftarPegawai() {
   const router = useRouter();
   const pathname = usePathname();
   const [ search, setSearch ] = useState("");
-  const [ showEdit, setShowEdit ] = useState(false);
+  const [ showEdit, setShowEdit ] = useState(null);
   const [ deleted, setDeleted ] = useState(null);
-  const [ showDelete, setShowDelete ] = useState(false);
+  const [ showInfo, setShowInfo ] = useState(null);
   const { data, isLoading, fetch } = usePegawai({ params: { search: search }});
   const { deletePegawai, loading } = useDeletePegawai();
+  const { editPegawai, loading: loadingEdit } = useEditPegawai();
   const headCells = [
     { id: 'nama', label: 'Nama Pegawai', numeric: false, width: 250 },
     { id: 'nip', label: 'NIP', numeric: false },
@@ -29,10 +33,29 @@ export default function DaftarPegawai() {
         nip: deleted,
       });
       setDeleted(null);
-      setShowDelete(true);
+      setShowInfo({ show: true, message: "Pegawai berhasil dihapus" });
       await fetch();
     } catch (err) {
       console.error("Error:", err);
+    }
+  };
+
+  const handleUpdatePegawai = async (values) => {
+    try {
+      const payload = {
+        ...(values.nama && { nama: values.nama }),
+        ...(values.nip && { nip: values.nip }),
+        ...(values.pangkat && { pangkat: values.pangkat }),
+        ...(values.gol && { gol: values.gol }),
+        ...(values.jabatan && { jabatan: values.jabatan }),
+      };
+      
+      await editPegawai(payload);
+      await fetch();
+      setShowEdit({ show: false, data: null });
+      setShowInfo({ show: true, message: "Pegawai berhasil diubah" });
+    } catch (err) {
+      return err;
     }
   };
 
@@ -43,7 +66,7 @@ export default function DaftarPegawai() {
       <div className="flex gap-2">
         <button
           className="rounded cursor-pointer text-white bg-primary p-2"
-          onClick={() => setShowEdit(item.nip)}
+          onClick={() => setShowEdit({ show: true, data: item })}
         >
           Ubah
         </button>
@@ -91,11 +114,18 @@ export default function DaftarPegawai() {
       <InfoModal show={deleted} onConfirm={handleDelete} onCancel={() => setDeleted(false)}>
         <p>Apakah kamu yakin ingin menghapus pegawai ini?</p>
       </InfoModal>
-      <InfoModal show={showDelete} onCancel={() => setShowDelete(false)}>
-        <p>Pegawai berhasil dihapus</p>
+      <InfoModal show={showInfo?.show} onCancel={() => setShowInfo(null)} icon={<TbExclamationMark className="text-white w-6 h-6"/>}>
+        <p>{showInfo?.message}</p>
       </InfoModal>
+      <FormModal icon={<FaEdit className="text-white w-6 h-6" />} show={showEdit?.show}>
+        <AddPegawaiForm 
+          data={showEdit?.data}
+          onSubmit={handleUpdatePegawai} onClose={() => setShowEdit({ show: false, data: null })}
+          type="edit"
+        />
+      </FormModal>
       <DataTables headCells={headCells} data={formattedData} loading={isLoading}/>
-      <LoadingOverlay show={loading}/>
+      <LoadingOverlay show={loadingEdit || loading}/>
     </PageBase>
   );
 }
