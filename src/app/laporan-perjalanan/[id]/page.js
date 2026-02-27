@@ -1,6 +1,6 @@
 "use client";
 import PageBase  from "@/components/pagebase";
-import { DataTables, Breadcrumb, FormModal, PrintButton } from "@/components/elements";
+import { DataTables, Breadcrumb, FormModal, PrintButton, Snackbar } from "@/components/elements";
 import { useParams } from "next/navigation";
 import { useUpdateLaporan, useLaporan, usePerjalanan } from "@/hooks/useData";
 import { formatDate, calculateTripDuration } from "@/utils/date";
@@ -14,6 +14,7 @@ export default function Component() {
   const params = useParams();
   const [ showLaporan, setShowLaporan ] = useState(false);
   const [ laporan, setLaporan ] = useState({});
+  const [ showSnackbar, setShowSnackbar ] = useState({ show: false, message: "", type: "" });
   const { id } = params;
   const [loading, startLoading, endLoading] = useLoading();
   const { data, isLoading, fetch } = useLaporan({
@@ -36,7 +37,9 @@ export default function Component() {
       await updateLaporan(idPerjalananPegawai, payload);
       await fetch();
       setShowLaporan(false);
+      setShowSnackbar({ show: true, message: "Laporan berhasil disimpan", type: "success" });
     } catch (err) {
+      setShowSnackbar({ show: true, message: "Gagal menyimpan laporan", type: "error" });
       return err;
     } finally {
       endLoading();
@@ -151,6 +154,7 @@ export default function Component() {
           type={laporan}
         />
       </FormModal>
+      <Snackbar show={showSnackbar?.show} type={showSnackbar?.type} message={showSnackbar?.message} onClose={() => setShowSnackbar({ show: false, message: "", type: "" })}/>
       <LoadingOverlay show={loading}/>
     </PageBase>
   );

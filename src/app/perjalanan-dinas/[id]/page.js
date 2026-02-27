@@ -1,6 +1,6 @@
 "use client";
 import PageBase  from "@/components/pagebase";
-import { DataTables, Breadcrumb, InfoModal, FormModal } from "@/components/elements";
+import { DataTables, Breadcrumb, InfoModal, FormModal, Snackbar } from "@/components/elements";
 import { useParams } from "next/navigation";
 import { usePegawai, useUpdatePerjalanan, useKabKota, usePerjalanan, useDeletePerjalananPegawai, useAddPegawaiPerjalanan, useSuratTugas } from "@/hooks/useData";
 import { calculateTripDuration, formatDate } from "@/utils/date";
@@ -22,6 +22,7 @@ export default function Component() {
   const [ showAddPegawai, setShowAddPegawai ] = useState(false);
   const [ showAddST, setShowAddST ] = useState(false);
   const [ showUpdatePerjalanan, setShowUpdatePerjalanan ] = useState(false);
+  const [ showSnackbar, setShowSnackbar ] = useState({ show: false, message: "", type: "" });
   const { id } = params;
   const { data, isLoading, fetch } = usePerjalanan({
     urlParams: { id }
@@ -69,8 +70,9 @@ export default function Component() {
       await fetch();
       setShowUpdatePerjalanan(false);
       setShowAddST(false);
+      setShowSnackbar({ show: true, message: "Berhasil disimpan", type: "success" });
     } catch (err) {
-      console.error(err);
+      setShowSnackbar({ show: true, message: "Gagal disimpan", type: "error" });
       return err;
     } finally {
       endLoading();
@@ -87,7 +89,9 @@ export default function Component() {
       await postPegawai(payload);
       await fetch();
       setShowAddPegawai(false);
+      setShowSnackbar({ show: true, message: "Pegawai berhasil ditambahkan", type: "success" });
     } catch (err) {
+      setShowSnackbar({ show: true, message: "Gagal menambahkan pegawai", type: "error" });
       return err;
     } finally {
       endLoading();
@@ -107,7 +111,9 @@ export default function Component() {
       } else {
         await fetch();
       }
+      setShowSnackbar({ show: true, message: "Pegawai berhasil dihapus", type: "success" });
     } catch (err) {
+      setShowSnackbar({ show: true, message: "Gagal menghapus pegawai", type: "error" });
       console.error("Error:", err);
     } finally {
       endLoading();
@@ -255,6 +261,7 @@ export default function Component() {
           onSubmit={handleUpdatePerjalanan} onClose={() => setShowAddST(false)}
         />
       </FormModal>
+      <Snackbar show={showSnackbar?.show} type={showSnackbar?.type} message={showSnackbar?.message} onClose={() => setShowSnackbar({ show: false, message: "", type: "" })}/>
       <LoadingOverlay show={loading}/>
     </PageBase>
   );

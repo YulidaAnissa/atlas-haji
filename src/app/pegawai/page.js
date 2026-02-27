@@ -1,5 +1,5 @@
 "use client";
-import { DataTables, Breadcrumb, FormModal } from "@/components/elements";
+import { DataTables, Breadcrumb, FormModal, Snackbar } from "@/components/elements";
 import PageBase  from "@/components/pagebase";
 import { usePathname, useRouter } from "next/navigation";
 import { useState } from "react";
@@ -8,6 +8,7 @@ import { LoadingOverlay, InfoModal } from "@/components/elements";
 import AddPegawaiForm from "@/components/forms/AddPegawai";
 import { FaEdit  } from "react-icons/fa";
 import { TbExclamationMark } from "react-icons/tb";
+import TooltipInfo from "@/components/elements/TooltipInfo";
 
 export default function DaftarPegawai() {
   const router = useRouter();
@@ -16,6 +17,7 @@ export default function DaftarPegawai() {
   const [ showEdit, setShowEdit ] = useState(null);
   const [ deleted, setDeleted ] = useState(null);
   const [ showInfo, setShowInfo ] = useState(null);
+  const [ showSnackbar, setShowSnackbar ] = useState({ show: false, message: "", type: "" });
   const { data, isLoading, fetch } = usePegawai({ params: { search: search }});
   const { deletePegawai, loading } = useDeletePegawai();
   const { editPegawai, loading: loadingEdit } = useEditPegawai();
@@ -33,15 +35,17 @@ export default function DaftarPegawai() {
         nip: deleted,
       });
       setDeleted(null);
-      setShowInfo({ show: true, message: "Pegawai berhasil dihapus" });
+      setShowSnackbar({ show: true, message: "Pegawai berhasil dihapus", type: "success" });
       await fetch();
     } catch (err) {
+      setShowSnackbar({ show: true, message: "Gagal menghapus pegawai", type: "error" });
       console.error("Error:", err);
     }
   };
 
   const handleUpdatePegawai = async (values) => {
     try {
+      console.log("Values to update:", values);
       const payload = {
         ...(values.nama && { nama: values.nama }),
         ...(values.nip && { nip: values.nip }),
@@ -49,13 +53,16 @@ export default function DaftarPegawai() {
         ...(values.gol && { gol: values.gol }),
         ...(values.jabatan && { jabatan: values.jabatan }),
       };
+
+      console.log("Payload for update:", payload);
       
       await editPegawai(payload);
       await fetch();
       setShowEdit({ show: false, data: null });
-      setShowInfo({ show: true, message: "Pegawai berhasil diubah" });
+      setShowSnackbar({ show: true, message: "Pegawai berhasil diubah", type: "success" });
     } catch (err) {
-      return err;
+      setShowSnackbar({ show: true, message: "Gagal mengubah pegawai", type: "error" });
+      throw err;
     }
   };
 
@@ -114,9 +121,6 @@ export default function DaftarPegawai() {
       <InfoModal show={deleted} onConfirm={handleDelete} onCancel={() => setDeleted(false)}>
         <p>Apakah kamu yakin ingin menghapus pegawai ini?</p>
       </InfoModal>
-      <InfoModal show={showInfo?.show} onCancel={() => setShowInfo(null)} icon={<TbExclamationMark className="text-white w-6 h-6"/>}>
-        <p>{showInfo?.message}</p>
-      </InfoModal>
       <FormModal icon={<FaEdit className="text-white w-6 h-6" />} show={showEdit?.show}>
         <AddPegawaiForm 
           data={showEdit?.data}
@@ -125,6 +129,7 @@ export default function DaftarPegawai() {
         />
       </FormModal>
       <DataTables headCells={headCells} data={formattedData} loading={isLoading}/>
+      <Snackbar show={showSnackbar?.show} type={showSnackbar?.type} message={showSnackbar?.message} onClose={() => setShowSnackbar({ show: false, message: "" })}/>
       <LoadingOverlay show={loadingEdit || loading}/>
     </PageBase>
   );

@@ -1,6 +1,6 @@
 "use client";
 import PageBase  from "@/components/pagebase";
-import { DataTables, Breadcrumb, DaftarNominatif, PrintButton } from "@/components/elements";
+import { DataTables, Breadcrumb, DaftarNominatif, PrintButton, Snackbar } from "@/components/elements";
 import { useParams } from "next/navigation";
 import { useSuratTugas, useUpdateLaporan } from "@/hooks/useData";
 import { formatDate, calculateTripDuration } from "@/utils/date";
@@ -14,6 +14,7 @@ import LoadingOverlay from "@/components/elements/LoadingOverlay";
 export default function Component() {
   const params = useParams();
   const [ showBiayaPerjalanan, setShowBiayaPerjalanan ] = useState({ show: false, data: null });
+  const [ showSnackbar, setShowSnackbar ] = useState({ show: false, message: "", type: "" });
   const [ laporan, setLaporan ] = useState({});
   const { id } = params;
   const [loading, startLoading, endLoading] = useLoading();
@@ -97,7 +98,9 @@ export default function Component() {
       await updateLaporan(idPerjalananPegawai, payload);
       await fetch();
       setShowBiayaPerjalanan({ show: false, data: null });
+      setShowSnackbar({ show: true, message: "Biaya perjalanan berhasil disimpan", type: "success" });
     } catch (err) {
+      setShowSnackbar({ show: true, message: "Gagal menyimpan biaya perjalanan", type: "error" });
       return err;
     } finally {
       endLoading();
@@ -152,6 +155,7 @@ export default function Component() {
           onClose={() => setShowBiayaPerjalanan({ show: false, data: null })}
         />
       </FormModal>
+      <Snackbar show={showSnackbar?.show} type={showSnackbar?.type} message={showSnackbar?.message} onClose={() => setShowSnackbar({ show: false, message: "", type: "" })}/>
       <LoadingOverlay show={loading}/>
     </PageBase>
   );

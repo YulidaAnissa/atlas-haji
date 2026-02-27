@@ -109,7 +109,7 @@ export function useEditPegawai() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
-  const editPegawai = async ({ nip, ...values }) => {
+  const editPegawai = async (values) => {
     setLoading(true);
     setError("");
 
@@ -122,12 +122,14 @@ export function useEditPegawai() {
       }
 
       const res = await fetch(
-        `${SERVICES.PEGAWAI}/${nip}`,
+        `${SERVICES.PEGAWAI}/${values.nip}`,
         {
           method: "PUT",
           headers: {
             Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
           },
+          body: JSON.stringify(values),
         }
       );
 

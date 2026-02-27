@@ -66,7 +66,7 @@ export default function Sidebar({ sidebarOpen }) {
                 {(openDropdown === item.name 
                   || activeMenu === "Pegawai" 
                   || activeMenu === "Kabupaten / Kota") && (
-                  <div className="ml-8 mt-2">
+                  <div className="ml-8">
                     {item.children.map((child) => (
                       <button
                         key={child.name}
