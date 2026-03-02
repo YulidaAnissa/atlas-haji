@@ -3,71 +3,66 @@ import { DataTables, Breadcrumb, FormModal, Snackbar } from "@/components/elemen
 import PageBase  from "@/components/pagebase";
 import { usePathname, useRouter } from "next/navigation";
 import { useState } from "react";
-import { usePegawai, useDeletePegawai, useEditPegawai } from "@/hooks/useData";
+import { useDeleteKabKota, useEditKabKota, useKabKota } from "@/hooks/useData";
 import { LoadingOverlay, InfoModal } from "@/components/elements";
-import AddPegawaiForm from "@/components/forms/AddPegawai";
+import AddKabKotaForm from "@/components/forms/AddKabKota";
 import { FaEdit  } from "react-icons/fa";
 import { TbExclamationMark } from "react-icons/tb";
 import TooltipInfo from "@/components/elements/TooltipInfo";
+import { formatRupiah } from "@/utils/currency";
 
-export default function DaftarPegawai() {
+export default function DaftarKabupatenKota() {
   const router = useRouter();
   const pathname = usePathname();
   const [ search, setSearch ] = useState("");
   const [ showEdit, setShowEdit ] = useState(null);
   const [ deleted, setDeleted ] = useState(null);
   const [ showSnackbar, setShowSnackbar ] = useState({ show: false, message: "", type: "" });
-  const { data, isLoading, fetch } = usePegawai({ params: { search: search }});
-  const { deletePegawai, loading } = useDeletePegawai();
-  const { editPegawai, loading: loadingEdit } = useEditPegawai();
+  const { data, isLoading, fetch } = useKabKota({ params: { search: search }});
+  const { deleteKabKota, loading } = useDeleteKabKota();
+  const { editKabKota, loading: loadingEdit } = useEditKabKota();
   const headCells = [
-    { id: 'nama', label: 'Nama Pegawai', numeric: false, width: 250 },
-    { id: 'nip', label: 'NIP', numeric: false },
-    { id: 'pangkatGol', label: 'Pangkat / Gol', numeric: false, width: 150 },
-    { id: 'jabatan', label: 'Jabatan', numeric: false },
+    { id: 'kabkota', label: 'Kabupaten / Kota', numeric: false, width: 250 },
+    { id: 'uh', label: 'Uang Harian', numeric: false, width: 150 },
+    { id: 'alamat', label: 'Alamat', numeric: false },
     { id: 'aksi', label: '', numeric: false },
   ];
 
   const handleDelete = async () => {
     try {
-      await deletePegawai({
-        nip: deleted,
+      await deleteKabKota({
+        id: deleted,
       });
       setDeleted(null);
-      setShowSnackbar({ show: true, message: "Pegawai berhasil dihapus", type: "success" });
+      setShowSnackbar({ show: true, message: "Kabupaten / Kota berhasil dihapus", type: "success" });
       await fetch();
     } catch (err) {
-      setShowSnackbar({ show: true, message: "Gagal menghapus pegawai", type: "error" });
+      setShowSnackbar({ show: true, message: "Gagal menghapus kabupaten / kota", type: "error" });
       console.error("Error:", err);
     }
   };
 
-  const handleUpdatePegawai = async (values) => {
+  const handleUpdateKabKota = async (values) => {
     try {
-      console.log("Values to update:", values);
       const payload = {
-        ...(values.nama && { nama: values.nama }),
-        ...(values.nip && { nip: values.nip }),
-        ...(values.pangkat && { pangkat: values.pangkat }),
-        ...(values.gol && { gol: values.gol }),
-        ...(values.jabatan && { jabatan: values.jabatan }),
+        ...(values.kabkota && { kabkota: values.kabkota }),
+        ...(values.uh && { uh: values.uh }),
+        ...(values.alamat && { alamat: values.alamat }),
       };
-
-      console.log("Payload for update:", payload);
       
-      await editPegawai(payload);
+      await editKabKota(payload, showEdit?.data?.idKabKota);
       await fetch();
       setShowEdit({ show: false, data: null });
-      setShowSnackbar({ show: true, message: "Pegawai berhasil diubah", type: "success" });
+      setShowSnackbar({ show: true, message: "Kabupaten / Kota berhasil diubah", type: "success" });
     } catch (err) {
-      setShowSnackbar({ show: true, message: "Gagal mengubah pegawai", type: "error" });
+      setShowSnackbar({ show: true, message: "Gagal mengubah kabupaten / kota", type: "error" });
       throw err;
     }
   };
 
   const formattedData = (data ?? [])?.map(item => ({
     ...item,
-    pangkatGol: `${item.pangkat} / ${item.gol}`,
+    uh: formatRupiah(item.uh),
     aksi: (
       <div className="flex gap-2">
         <button
@@ -78,7 +73,7 @@ export default function DaftarPegawai() {
         </button>
         <button
           className="rounded cursor-pointer text-white bg-danger p-2"
-          onClick={() => setDeleted(item.nip)}
+          onClick={() => setDeleted(item.idKabKota)}
         >
           Hapus
         </button>
@@ -88,7 +83,7 @@ export default function DaftarPegawai() {
 
   const breadcrumbItem = [
     { label: "Home", href: "/" },
-    { label: "Daftar Pegawai"},
+    { label: "Daftar Kabupaten / Kota" },
   ];
   return (
     <PageBase className="p-16 mx-auto">
@@ -96,7 +91,7 @@ export default function DaftarPegawai() {
       <Breadcrumb items={breadcrumbItem} />
       <div className="mb-10 gap-4">
         <h1 className="text-4xl font-bold text-gray-800 drop-shadow-[0_0_10px_rgba(234,179,8,0.7)] tracking-wide">
-          Daftar Pegawai
+          Daftar Kabupaten / Kota
         </h1>
       </div>
 
@@ -114,16 +109,16 @@ export default function DaftarPegawai() {
           className="cursor-pointer  px-5 py-2 bg-linear-to-r bg-black text-white font-medium rounded-lg shadow"
           onClick={() => router.push(`${pathname}/add`)}
         >
-          + Tambah Pegawai
+          + Tambah Kabupaten / Kota
         </button>
       </div>
       <InfoModal show={deleted} onConfirm={handleDelete} onCancel={() => setDeleted(false)}>
-        <p>Apakah kamu yakin ingin menghapus pegawai ini?</p>
+        <p>Apakah kamu yakin ingin menghapus kabupaten / kota ini?</p>
       </InfoModal>
       <FormModal icon={<FaEdit className="text-white w-6 h-6" />} show={showEdit?.show}>
-        <AddPegawaiForm 
+        <AddKabKotaForm 
           data={showEdit?.data}
-          onSubmit={handleUpdatePegawai} onClose={() => setShowEdit({ show: false, data: null })}
+          onSubmit={handleUpdateKabKota} onClose={() => setShowEdit({ show: false, data: null })}
           type="edit"
         />
       </FormModal>

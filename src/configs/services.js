@@ -17,6 +17,7 @@ const services = {
   SURAT_TUGAS: ({ id } = {}) => {
     return id ? `${SERVICE_BASE}/surat/${id}` : `${SERVICE_BASE}/surat`;
   },
+  DASHBOARD_FILTER: ({ month, year }) => `${SERVICE_BASE}/perjalanan/dashboard/filter/${month}/${year}`,
 };
 
 export default services;

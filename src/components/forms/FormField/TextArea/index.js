@@ -28,7 +28,7 @@ const Textarea = forwardRef(function Input(props, ref) {
           'w-full px-3 py-2 placeholder-black-500 border rounded-lg focus:outline-none focus:ring-1 focus:ring-blue-600 focus:border-transparent',
           {
             'text-xs md:text-sm': size === 'small',
-            'border border-danger bg-danger bg-opacity-5': error,
+            'border border-danger bg-opacity-5': error,
           },
           inputClassName
         )}

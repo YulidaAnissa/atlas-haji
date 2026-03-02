@@ -12,3 +12,5 @@ export const TooltipInfo = dynamic(() => import("./TooltipInfo"), { ssr: false }
 export const PrintButton = dynamic(() => import("./PrintButton"), { ssr: false });
 export const DaftarNominatif = dynamic(() => import("./DaftarNominatif"), { ssr: false });
 export const Snackbar = dynamic(() => import("./Snackbar"), { ssr: false });
+export const StatCard = dynamic(() => import("./StatCard"), { ssr: false });
+export const MonthlySchedule = dynamic(() => import("./MonthlySchedule"), { ssr: false });
