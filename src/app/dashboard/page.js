@@ -3,7 +3,7 @@ import { useState } from "react";
 import DashboardPage from "@/components/pagebase";
 import { StatCard, MonthlySchedule } from "@/components/elements";
 import { FaCalendarAlt, FaPlayCircle, FaCheckCircle, FaHome } from "react-icons/fa";
-import { useDashboardFilter } from "@/hooks/useData";
+import { useDashboardFilter, useDashboardSummary } from "@/hooks/useData";
 import Box from '@mui/material/Box';
 import CircularProgress from '@mui/material/CircularProgress';
 import Typography from '@mui/material/Typography';
@@ -20,6 +20,7 @@ export default function PerjalananDinasPage() {
 
   const years = [2025, 2026, 2027];
   const { data, isLoading } = useDashboardFilter({ urlParams: { month, year }});
+  const { data: summary, isLoading: isSummaryLoading } = useDashboardSummary();
 
   return (
     <DashboardPage className="p-16 mx-auto">
@@ -35,28 +36,37 @@ export default function PerjalananDinasPage() {
       </div>
 
     {/* </button> */}
-       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <StatCard
-          label="Dijadwalkan"
-          count={5}
-          color="bg-gradient-to-r from-blue-100 to-indigo-200"
-          iconBg="bg-blue-400"
-          icon={<FaCalendarAlt />}
-        />
-        <StatCard
-          label="Berlangsung"
-          count={3}
-          color="bg-gradient-to-r from-yellow-100 to-orange-200"
-          iconBg="bg-orange-400"
-          icon={<FaPlayCircle />}
-        />
-        <StatCard
-          label="Selesai"
-          count={7}
-          color="bg-gradient-to-r from-green-100 to-teal-200"
-          iconBg="bg-green-400"
-          icon={<FaCheckCircle />}
-        />
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        {isSummaryLoading ? (
+          <Box sx={{ display: 'flex', justifyContent: 'center', p: 4 }}>
+            <CircularProgress />
+            <Typography sx={{ ml: 2, my: 'auto' }}>Loading summary...</Typography>
+          </Box>
+        ) : (
+          <>
+            <StatCard
+              label="Dijadwalkan"
+              count={summary?.dijadwalkan ?? 0}
+              color="bg-gradient-to-r from-blue-100 to-indigo-200"
+              iconBg="bg-blue-400"
+              icon={<FaCalendarAlt />}
+            />
+            <StatCard
+              label="Berlangsung"
+              count={summary?.berlangsung ?? 0}
+              color="bg-gradient-to-r from-yellow-100 to-orange-200"
+              iconBg="bg-orange-400"
+              icon={<FaPlayCircle />}
+            />
+            <StatCard
+              label="Selesai"
+              count={summary?.selesai ?? 0}
+              color="bg-gradient-to-r from-green-100 to-teal-200"
+              iconBg="bg-green-400"
+              icon={<FaCheckCircle />}
+            />
+          </>
+        )}
       </div>
       <div className="space-y-6 mt-10">
         {/* Dropdown filter bulan */}
