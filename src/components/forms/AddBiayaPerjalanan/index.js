@@ -9,9 +9,6 @@ export default function ComponentForm({
   onSubmit,
   onClose = false,
 }) {
-  
-  console.log("data form ", data);
-
   return (
     <div className="overflow-y-auto max-h-[80vh]">
       <div className="min-w-3/4 grid grid-cols-2 bg-gray-50 rounded-xl shadow-lg px-6 py-4 text-left mb-4">

@@ -28,6 +28,10 @@ export function useUpdateLaporan() {
     setLoading(true);
     setError("");
 
+    console.log("Updating laporan with values:", values);
+
+    const isFormData = values instanceof FormData;
+
     try {
       const tokenObj = accessTokenStorage.get();
       const token = tokenObj?.value;
@@ -37,13 +41,14 @@ export function useUpdateLaporan() {
       }
 
       const res = await fetch(SERVICES.LAPORAN({ id: idPerjalananPegawai }), {
-        method: "PUT", // atau PATCH sesuai API kamu
+        method: "PUT",
         headers: {
           Authorization: `Bearer ${token}`,
-          "Content-Type": "application/json",
+          ...(isFormData ? {} : { "Content-Type": "application/json" }),
         },
-        body: JSON.stringify(values),
+        body: isFormData ? values : JSON.stringify(values),
       });
+
 
       if (!res.ok) {
         throw new Error("Gagal mengupdate perjalanan");

@@ -34,7 +34,6 @@ export default function Component() {
   ];
 
   const uhCount = (uh, berangkat, kembali) => {
-    console.log(berangkat);
     const duration = calculateTripDuration(berangkat, kembali, false, false);
     return duration * uh;
   };
@@ -83,19 +82,16 @@ export default function Component() {
     )
   }));
 
-  console.log(showBiayaPerjalanan);
   const handleBiayaPerjalanan = async (values) => {
     const idPerjalananPegawai = showBiayaPerjalanan?.data;
-    console.log(idPerjalananPegawai);
     try {
       startLoading();
-      const payload = {
-        biayaPeng: values?.biayaPeng,
-        biayaTrans: values?.biayaTrans,
-        buktiPeng: values?.buktiPeng,
-        buktiTrans: values?.buktiTrans
-      };
-      await updateLaporan(idPerjalananPegawai, payload);
+      const formData = new FormData();
+      formData.append("biayaPeng", values?.biayaPeng);
+      formData.append("biayaTrans", values?.biayaTrans);
+      formData.append("buktiPeng", values?.buktiPeng); // file object
+      formData.append("buktiTrans", values?.buktiTrans); // file object
+      await updateLaporan(idPerjalananPegawai, formData);
       await fetch();
       setShowBiayaPerjalanan({ show: false, data: null });
       setShowSnackbar({ show: true, message: "Biaya perjalanan berhasil disimpan", type: "success" });

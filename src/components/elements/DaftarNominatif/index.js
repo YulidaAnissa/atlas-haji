@@ -21,7 +21,6 @@ export default function SuratTugas({
   };
   
   const uhCount = (uh, berangkat, kembali) => {
-    console.log(berangkat);
     const duration = calculateTripDuration(berangkat, kembali, false, false);
     return duration * uh;
   };
@@ -109,9 +108,6 @@ export default function SuratTugas({
       const formData = new FormData();
       formData.append("file", out, `${file}.docx`);
 
-
-      
-      console.log(formData);
       const res = await fetch(SERVICES.CONVERT_PDF, {
         method: "POST",
         body: formData,
@@ -128,8 +124,7 @@ export default function SuratTugas({
       endLoading();
     }
   };
-  console.log("data", data);
-  console.log("dataFile", dataFile);
+
   return (
     <div>
       <button
