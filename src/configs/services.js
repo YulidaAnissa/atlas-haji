@@ -1,4 +1,4 @@
-const SERVICE_BASE = process.env.NEXT_PUBLIC_SERVICE_BASE || 'http://atlas-haji-service.cloud';
+const SERVICE_BASE = process.env.NEXT_PUBLIC_SERVICE_BASE || 'https://atlas-haji-service.cloud';
 
 // https://atlas-haji-service.vercel.app
 
