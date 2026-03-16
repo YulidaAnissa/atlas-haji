@@ -14,3 +14,4 @@ export const DaftarNominatif = dynamic(() => import("./DaftarNominatif"), { ssr:
 export const Snackbar = dynamic(() => import("./Snackbar"), { ssr: false });
 export const StatCard = dynamic(() => import("./StatCard"), { ssr: false });
 export const MonthlySchedule = dynamic(() => import("./MonthlySchedule"), { ssr: false });
+export const VerifBiayaPerjalanan = dynamic(() => import("./VerifBiayaPerjalanan"), { ssr: false });

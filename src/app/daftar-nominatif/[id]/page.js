@@ -1,21 +1,34 @@
 "use client";
 import PageBase  from "@/components/pagebase";
-import { DataTables, Breadcrumb, DaftarNominatif, PrintButton, Snackbar } from "@/components/elements";
+import { DataTables, Breadcrumb, DaftarNominatif, PrintButton, Snackbar, VerifBiayaPerjalanan } from "@/components/elements";
 import { useParams } from "next/navigation";
 import { useSuratTugas, useUpdateLaporan } from "@/hooks/useData";
 import { formatDate, calculateTripDuration } from "@/utils/date";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useLoading } from "@/hooks";
 import FormModal from "@/components/elements/FormModal";
 import AddBiayaPerjalanan from "@/components/forms/AddBiayaPerjalanan";
 import { FaEdit } from "react-icons/fa";
 import LoadingOverlay from "@/components/elements/LoadingOverlay";
 
+async function toBase64(url) {
+  const res = await fetch(url);
+  const buffer = await res.arrayBuffer();
+  const base64 = btoa(
+    new Uint8Array(buffer).reduce(
+      (data, byte) => data + String.fromCharCode(byte),
+      ""
+    )
+  );
+  return "data:image/jpeg;base64," + base64;
+}
+
 export default function Component() {
   const params = useParams();
   const [ showBiayaPerjalanan, setShowBiayaPerjalanan ] = useState({ show: false, data: null });
+  const [ showVerifBiayaPerjalanan, setShowVerifBiayaPerjalanan ] = useState({ show: false, data: null });
   const [ showSnackbar, setShowSnackbar ] = useState({ show: false, message: "", type: "" });
-  const [ laporan, setLaporan ] = useState({});
+  const [dataFile, setDataFile] = useState([]);
   const { id } = params;
   const [loading, startLoading, endLoading] = useLoading();
   const { data, isLoading, fetch } = useSuratTugas({
@@ -27,9 +40,8 @@ export default function Component() {
   const headCells = [
     { id: 'nip', label: 'NIP', numeric: false },
     { id: 'nama', label: 'Nama Pegawai', numeric: false },
-    { id: 'gol', label: 'Gol', numeric: false },
-    { id: 'jabatan', label: 'Jabatan', numeric: false },
     { id: 'kabkota', label: 'Tujuan', numeric: false },
+    { id: 'statusPem', label: 'Status', numeric: false },
     { id: 'aksi', label: '', numeric: false },
   ];
 
@@ -47,7 +59,48 @@ export default function Component() {
     return u + t + p;
   };
 
-  const dataFile = data?.pegawai?.map((item, index) => ({
+  useEffect(() => {
+    const processData = async () => {
+      if (!data?.pegawai) return;
+
+      const result = await Promise.all(
+        data.pegawai.map(async (item, index) => {
+          const buktiTransBase64 = item.buktiTrans
+            ? await toBase64(item.buktiTrans)
+            : null;
+          const buktiPengBase64 = item.buktiPeng
+            ? await toBase64(item.buktiPeng)
+            : null;
+
+          return {
+            idx: index + 1,
+            nama: item.nama,
+            nip: item.nip,
+            kegiatan: item.kegiatan,
+            tujuan: item.kabkota,
+            lama: calculateTripDuration(item.tglBerangkat, item.tglKembali, true, true),
+            uh: item.uh,
+            uhTotal: uhCount(item.uh, item.tglBerangkat, item.tglKembali),
+            biayaTrans: item.biayaTrans,
+            biayaPeng: item.biayaPeng,
+            jumlahTotal: totalCount(
+              uhCount(item.uh, item.tglBerangkat, item.tglKembali),
+              item.biayaTrans,
+              item.biayaPeng
+            ),
+            image: buktiTransBase64,
+            buktiPeng: buktiPengBase64,
+          };
+        })
+      );
+
+      setDataFile(result);
+    };
+
+    processData();
+  }, [data]);
+
+  const dataFilePegawai = data?.pegawai?.map((item, index) => ({
     idx: index + 1,
     nama: item.nama,
     nip: item.nip,
@@ -58,28 +111,53 @@ export default function Component() {
     uhTotal: uhCount(item.uh, item.tglBerangkat, item.tglKembali),
     biayaTrans: item.biayaTrans,
     biayaPeng: item.biayaPeng,
-    jumlahTotal: totalCount(uhCount(item.uh, item.tglBerangkat, item.tglKembali), item.biayaTrans, item.biayaPeng)
+    jumlahTotal: totalCount(uhCount(item.uh, item.tglBerangkat, item.tglKembali), item.biayaTrans, item.biayaPeng),
+    image: item.buktiTrans,
+    buktiPeng: item.buktiPeng,
   }));
 
   const formattedData = (data?.pegawai ?? [])?.map(item => ({
     ...item,
     aksi: (
-      <div className="flex gap-2">
-        <button
-          onClick={() => {
-            setShowBiayaPerjalanan({ show: true, data: item.idPerjalananPegawai });
-          }}
-          className="px-3 py-1 bg-blue-600 text-white rounded hover:bg-blue-700 transition"
-        >
-          Biaya
-        </button>
+      <div className="flex gap-3">
         <PrintButton
-          data={dataFile.find(p => p.nama === item.nama) || {}}
+          data={dataFilePegawai.find(p => p.nama === item.nama) || {}}
           format="/spd-rampung-kwitansi-format.docx"
           file={`spd-rampung-kwitansi-format-${item.nip}`}
         />
+        {item?.statusPem !== "verified" && (<button
+          onClick={() => {
+            setShowBiayaPerjalanan({ show: true, data: item.idPerjalananPegawai });
+          }}
+          className="rounded bg-blue-600 cursor-pointer text-white p-2"
+        >
+          Biaya
+        </button>)}
       </div>
-    )
+    ),
+    statusPem: (
+      <span
+        className={`px-3 py-1 rounded-md text-sm font-medium cursor-pointer ${
+          item.statusPem === "verified"
+            ? "bg-green-100 text-green-800 border border-green-300"
+            : item.statusPem === "rejected"
+            ? "bg-red-100 text-red-800 border border-red-300"
+            : "bg-gray-100 text-gray-800 border border-gray-300"
+        }`}
+        onClick={() => {
+          if (item.statusPem === "pending") {
+            setShowVerifBiayaPerjalanan({ show: true, data: item.idPerjalananPegawai });
+          }
+        }}
+      >
+        {item?.statusPem === "verified"
+          ? "Verified"
+          : item?.statusPem === "rejected"
+          ? "Rejected"
+          : "Pending"}
+      </span>
+  ),
+
   }));
 
   const handleBiayaPerjalanan = async (values) => {
@@ -105,9 +183,25 @@ export default function Component() {
 
   const breadcrumbItem = [
     { label: "Home", href: "/" },
-    { label: "Daftar Nominatif", href: "/laporan-perjalanan" },
+    { label: "Daftar Nominatif", href: "/daftar-nominatif" },
     { label: data?.surat?.noSurat}
   ];
+
+  const handleVerif = async () => {
+    const idPerjalananPegawai = showVerifBiayaPerjalanan?.data;
+    try {
+      startLoading();
+      await updateLaporan(idPerjalananPegawai, { statusPem: "verified" });
+      await fetch();
+      setShowVerifBiayaPerjalanan({ show: false, data: null });
+      setShowSnackbar({ show: true, message: "Biaya perjalanan berhasil diverifikasi", type: "success" });
+    } catch (err) {
+      setShowSnackbar({ show: true, message: "Gagal memverifikasi biaya perjalanan", type: "error" });
+      return err;
+    } finally {
+      endLoading();
+    }
+  };
 
   return (
     <PageBase className="p-16 mx-auto">
@@ -149,6 +243,13 @@ export default function Component() {
           data={showBiayaPerjalanan?.data ? data?.pegawai?.find(p => p.idPerjalananPegawai === showBiayaPerjalanan.data) : {}} 
           onSubmit={handleBiayaPerjalanan}
           onClose={() => setShowBiayaPerjalanan({ show: false, data: null })}
+        />
+      </FormModal>
+      <FormModal className="w-xl" icon={<FaEdit className="text-white w-6 h-6" />} show={showVerifBiayaPerjalanan?.show}>
+        <VerifBiayaPerjalanan
+          data={showVerifBiayaPerjalanan?.data ? data?.pegawai?.find(p => p.idPerjalananPegawai === showVerifBiayaPerjalanan.data) : {}} 
+          onSubmit={handleVerif}
+          onClose={() => setShowVerifBiayaPerjalanan({ show: false, data: null })}
         />
       </FormModal>
       <Snackbar show={showSnackbar?.show} type={showSnackbar?.type} message={showSnackbar?.message} onClose={() => setShowSnackbar({ show: false, message: "", type: "" })}/>

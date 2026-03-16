@@ -2,7 +2,7 @@
 import PageBase  from "@/components/pagebase";
 import { useRouter } from "next/navigation";
 import AddPerjalananForm from "@/components/forms/AddPerjalanan";
-import { useKabKota, usePegawai } from "@/hooks/useData";
+import { useKabKota, usePegawai, useSuratTugas } from "@/hooks/useData";
 import { postPerjalanan } from "./actions";
 import { useLoading } from "@/hooks";
 import InfoModal from "@/components/elements/InfoModal";
@@ -21,8 +21,10 @@ export default function AddPerjalananDinas() {
 
   const { data: kabkota } = useKabKota();
   const { data: pegawai } = usePegawai();
+  const { data: pejabat } = usePegawai({ params: { status: "pejabat" }});
   const [loading, startLoading, endLoading] = useLoading();
-  
+  const { data: suratTugas } = useSuratTugas();
+
   const handleSubmit = async (values, form) => {
     try {
       startLoading();
@@ -30,11 +32,26 @@ export default function AddPerjalananDinas() {
         ? values.pegawai.map(opt => opt) // ambil hanya NIP string
         : [];
 
-      const payload = {
+      const perjalananPayload = {
         pegawai: pegawaiArray,
+        nip: values.nip, // pastikan ini adalah NIP pejabat
         tglBerangkat: values.dateRange.formattedStart,
         tglKembali: values.dateRange.formattedEnd,
         idKabKota: values.tujuan,   // pastikan tujuan = idKabKota
+        status: "perjalanan",
+      };
+
+       // Surat
+      const suratPayload = {
+        ...(values.idSurat && { idSurat: values.idSurat }),
+        ...(values.noSurat && { noSurat: values.noSurat }),
+        ...(values.tglSurat && { tglSurat: formatDate(values.tglSurat, "YYYY-MM-DD")}),
+        ...(values.kegiatan && { kegiatan: values.kegiatan })
+      };
+
+      const payload = {
+        ...perjalananPayload,
+        ...suratPayload
       };
 
       const res = await postPerjalanan(payload);
@@ -110,6 +127,8 @@ export default function AddPerjalananDinas() {
         onSubmit={handleSubmit} 
         kabkota={kabkota}
         pegawai={pegawai}
+        pejabat={pejabat}
+        st={suratTugas}
       />
       <LoadingOverlay show={loading}/>
     </PageBase>

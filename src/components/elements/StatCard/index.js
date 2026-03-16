@@ -1,21 +1,15 @@
 // components/StatusCard.jsx
 
 
-export default function StatusCard({ label, count, color, iconBg, icon }) {
+export default function StatusCard({ title, count, subtitle, color, icon }) {
   return (
-    <div
-      className={`flex items-center p-6 rounded-xl shadow-md hover:shadow-lg ${color} transition-transform transform hover:scale-105`}
-    >
-      {/* Ikon dengan lingkaran background */}
-      <div className={`flex items-center justify-center h-14 w-14 rounded-full ${iconBg} shadow-md mr-4`}>
-        <div className="text-3xl text-white">{icon}</div>
+    <div className={`rounded-lg shadow-md p-4 ${color} text-white w-full`}>
+      <div className="flex items-center gap-2 mb-2">
+        {icon}
+        <h3 className="text-lg font-bold">{title}</h3>
       </div>
-
-      {/* Konten teks */}
-      <div>
-        <p className="text-2xl font-bold text-gray-800">{count}</p>
-        <p className="text-sm font-medium text-gray-600">{label}</p>
-      </div>
+      <p className="text-4xl font-bold">{count}</p>
+      <p className="text-sm">{subtitle}</p>
     </div>
   );
 }

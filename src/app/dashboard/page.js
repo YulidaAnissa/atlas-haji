@@ -2,11 +2,12 @@
 import { useState } from "react";
 import DashboardPage from "@/components/pagebase";
 import { StatCard, MonthlySchedule } from "@/components/elements";
-import { FaCalendarAlt, FaPlayCircle, FaCheckCircle, FaHome } from "react-icons/fa";
+import { FaCar, FaCreditCard, FaCheckCircle, FaHome } from "react-icons/fa";
 import { useDashboardFilter, useDashboardSummary } from "@/hooks/useData";
 import Box from '@mui/material/Box';
 import CircularProgress from '@mui/material/CircularProgress';
 import Typography from '@mui/material/Typography';
+
 
 export default function PerjalananDinasPage() {
   const today = new Date();
@@ -36,7 +37,7 @@ export default function PerjalananDinasPage() {
       </div>
 
     {/* </button> */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
         {isSummaryLoading ? (
           <Box sx={{ display: 'flex', justifyContent: 'center', p: 4 }}>
             <CircularProgress />
@@ -45,24 +46,31 @@ export default function PerjalananDinasPage() {
         ) : (
           <>
             <StatCard
-              label="Dijadwalkan"
-              count={summary?.dijadwalkan ?? 0}
-              color="bg-gradient-to-r from-blue-100 to-indigo-200"
-              iconBg="bg-blue-400"
-              icon={<FaCalendarAlt />}
+              title="Perjalanan"
+              count={summary?.perjalanan ?? 0}
+              subtitle="Sedang Berlangsung atau Dijadwalkan"
+              color="bg-blue-500"
+              icon={<FaCar />}
             />
             <StatCard
-              label="Berlangsung"
-              count={summary?.berlangsung ?? 0}
-              color="bg-gradient-to-r from-yellow-100 to-orange-200"
-              iconBg="bg-orange-400"
-              icon={<FaPlayCircle />}
+              title="Pengajuan"
+              count={summary?.pengajuan ?? 0}
+              subtitle="Menunggu Verifikasi Pembayaran"
+              color="bg-orange-500"
+              icon={<FaCreditCard />}
             />
             <StatCard
-              label="Selesai"
+              title="Verifikasi"
+              count={summary?.verifikasi_pembayaran ?? 0}
+              subtitle="Terverifikasi Pembayaran, Menunggu Selesai"
+              color="bg-yellow-500"
+              icon={<FaCar />}
+            />
+            <StatCard
+              title="Selesai"
               count={summary?.selesai ?? 0}
-              color="bg-gradient-to-r from-green-100 to-teal-200"
-              iconBg="bg-green-400"
+              subtitle="Telah Dibayarkan dan Selesai"
+              color="bg-green-500"
               icon={<FaCheckCircle />}
             />
           </>

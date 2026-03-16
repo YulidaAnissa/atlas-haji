@@ -5,28 +5,32 @@ export default function MonthlySchedule({ data, month, year }) {
   const daysInMonth = new Date(year, month, 0).getDate();
   const days = Array.from({ length: daysInMonth }, (_, i) => i + 1);
 
-  // Warna berbeda per orang
-  const colors = [
-    "bg-green-200",
-    "bg-blue-200",
-    "bg-yellow-200",
-    "bg-pink-200",
-    "bg-purple-200",
-  ];
+  console.log("Data untuk MonthlySchedule:", data); // Debug: cek data yang diterima oleh MonthlySchedule
+
+  const statusColors = {
+    perjalanan: "bg-blue-500",
+    pengajuan: "bg-orange-500",
+    verifikasi: "bg-yellow-500",
+    selesai: "bg-green-500",
+  };
+
 
   return (
     <div className="space-y-4">
       {/* Legend */}
-      <div className="flex items-center gap-6 text-xs text-gray-700">
-        <div className="flex items-center gap-2">
-          <div className="h-4 w-4 bg-brand rounded-sm shadow-sm"></div>
-          <span>Perjalanan</span>
-        </div>
+      <div className="flex flex-wrap items-center gap-6 text-xs text-gray-700">
+        {Object.entries(statusColors).map(([status, color]) => (
+          <div key={status} className="flex items-center gap-2">
+            <div className={`h-4 w-4 ${color} rounded-sm shadow-sm border border-gray-300`}></div>
+            <span className="capitalize">{status}</span>
+          </div>
+        ))}
         <div className="flex items-center gap-2">
           <div className="h-4 w-4 bg-white border border-gray-300 rounded-sm"></div>
           <span>Tidak ada perjalanan</span>
         </div>
       </div>
+
 
       {/* Table */}
       <div className="overflow-x-auto rounded-lg shadow-md">
@@ -56,20 +60,20 @@ export default function MonthlySchedule({ data, month, year }) {
                   {person.nama}
                 </td>
                 {days.map((d) => {
-                  const isTravel = person.perjalanan.some((p) => {
+                  const travel = person.perjalanan.find((p) => {
                     const start = new Date(p.tglBerangkat);
                     const end = new Date(p.tglKembali);
                     const current = new Date(year, month - 1, d);
                     return current >= start && current <= end;
                   });
+
+                  // ambil warna sesuai status
+                  const colorClass = travel ? statusColors[travel.status] : "bg-white";
+                  console.log('travel', travel); // Debug: cek warna yang diterapkan
                   return (
                     <td
                       key={d}
-                      className={`border px-1 py-2 text-center w-8 ${
-                        isTravel
-                          ? `bg-brand text-gray-900 font-bold rounded-sm`
-                          : "bg-white"
-                      }`}
+                      className={`border px-1 py-2 text-center w-8 ${colorClass}`}
                     >
                       {/* Kosong, hanya warna */}
                     </td>

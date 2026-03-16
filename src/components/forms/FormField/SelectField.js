@@ -58,7 +58,7 @@ function SelectField({ input, options, ...rest }) {
   };
 
   return (
-    <FormField onClear={handleClearFieldState} {...rest} className="p-2">
+    <FormField onClear={handleClearFieldState} {...rest} className="w-full p-2">
       <Select
         {...rest}
         styles={customSelectStyles}

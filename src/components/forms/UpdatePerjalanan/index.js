@@ -1,21 +1,28 @@
 "use client";
 import React, { useState, useEffect } from "react";
 import { Form, Field } from "react-final-form";
-import { DatePicker, UploadFile } from "@/components/forms/FormField";
 import InputField from "../FormField/InputField";
 import SelectField from "../FormField/SelectField";
 import validation from "./validate";
-import { DatePickerRange } from "@/components/forms/FormField";
-import { format } from "date-fns";
+import { DatePickerRange, DatePicker } from "@/components/forms/FormField";
+import { v4 as uuidv4 } from 'uuid';
+import CreateableSelect from "../FormField/CreateableSelect";
 
 export default function ComponentForm({
   data = {},
   onSubmit,
   onClose = false,
-  kabkota = []
+  kabkota = [],
+  pejabat = [],
+  st = [],
 }) {
 
+  console.log("Data di form perjalanan:", data); // Debug: cek data yang diterima oleh form
+
   const [kabkotaOptions, setKabKotaOptions] = useState([]);
+  const [noSuratOptions, setSuratOptions] = useState([]);
+  const [pejabatOptions, setPejabatOptions] = useState([]);
+
   useEffect(() => {
     if (kabkota && Array.isArray(kabkota)) {
       // eslint-disable-next-line react-hooks/set-state-in-effect
@@ -26,7 +33,24 @@ export default function ComponentForm({
         }))
       );
     }
-  }, [kabkota]);
+    if (pejabat && Array.isArray(pejabat)) {
+      setPejabatOptions(
+        pejabat.map(item => ({
+          value: item.nip,
+          label: item.jabatan
+        }))
+      );
+    }
+    if (st && Array.isArray(st)) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
+      setSuratOptions(
+        st.map(item => ({
+          value: item.noSurat,
+          label: item.noSurat 
+        }))
+      );
+    }
+  }, [kabkota, pejabat, st]);
   return (
     <Form 
       onSubmit={onSubmit}
@@ -40,7 +64,7 @@ export default function ComponentForm({
       }}
       validate={validation}
     >
-      {({ handleSubmit }) => (
+      {({ handleSubmit, form }) => (
         <form className="overflow-y-auto max-h-[80vh] flex flex-col w-full" noValidate onSubmit={handleSubmit}>
           <div className="grid grid-cols-2 gap-10">
             <Field name="dateRange">
@@ -64,6 +88,65 @@ export default function ComponentForm({
               component={SelectField}
               label="Tujuan Kabupaten/Kota"
               options={kabkotaOptions}
+            />
+            {/* SUrat Tugas */}
+            <Field
+              className="col-span-2 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-left"
+              name="noSurat"
+              component={CreateableSelect}
+              label="Nomor Surat"
+              options={noSuratOptions}
+              onChange={(newSurat) => {
+                if (newSurat) {
+                  const selected = st.find(
+                    item => item.idSurat === newSurat.value || item.noSurat === newSurat.value
+                  );
+                  if (selected) {
+                    // ✅ kalau option sudah ada → pakai idSurat
+                    form.change("idSurat", selected.idSurat);
+                    form.change("noSurat", selected.noSurat);
+                    form.change("tglSurat", selected.tglSurat);
+                    form.change("kegiatan", selected.kegiatan);
+                  } else {
+                    // ✨ kalau option baru → simpan noSurat saja
+                    form.change("idSurat", uuidv4());
+                    form.change("noSurat", newSurat.value);
+                    form.change("tglSurat", "");
+                    form.change("kegiatan", "");
+                    setSuratOptions([...noSuratOptions, newSurat]);
+                  }
+                } else {
+                  // kalau di-clear → kosongkan semua field
+                  form.change("idSurat", null);
+                  form.change("noSurat", "");
+                  form.change("tglSurat", "");
+                  form.change("kegiatan", "");
+                }
+              }}
+            />
+            <div className="hidden">
+              <Field
+                component={InputField}
+                label="No Surat Tugas"
+                disabled
+                name="idSurat"
+                placeholder="Masukkan Nomor Surat Tugas"
+                type="text"
+                className="w-full rounded-md py-2 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+              />
+            </div>
+            <Field
+              component={DatePicker}
+              label="Tanggal Surat"
+              name="tglSurat"
+              type="text"
+              className="w-full rounded-md py-2 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+            />
+            <Field
+              component={InputField}
+              label="Kegiatan"
+              name="kegiatan"
+              placeholder="Masukkan kegiatan"
             />
           </div>
           </div>

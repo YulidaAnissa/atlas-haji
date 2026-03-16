@@ -11,6 +11,9 @@ module.exports = {
       // animation: {
       //   'spin-slow': 'spin 3s linear infinite',
       // },
+      width: {
+        inherit: 'inherit',
+      },
       colors: {
         brand: {
           DEFAULT: "#BE9C36",   // bg-brand

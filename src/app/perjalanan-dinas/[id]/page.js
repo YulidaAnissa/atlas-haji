@@ -223,13 +223,6 @@ export default function Component() {
             <FaPlusCircle className="my-auto w-4 h-4 mr-1"/>
             Tambah Pegawai
           </button>
-          <button
-            className="flex w-full cursor-pointer  px-5 py-2 bg-linear-to-r bg-brand text-white font-medium rounded-lg shadow"
-            onClick={() => setShowAddST(true)}
-          >
-            <IoDocumentTextOutline className="my-auto w-4 h-4 mr-1"/>
-            Upload Surat Tugas
-          </button>
         </div>
       </div>
       <InfoModal show={deleted} onConfirm={handleDelete} onCancel={() => setDeleted(false)}>
@@ -250,16 +243,11 @@ export default function Component() {
           kabkota={kabkota} 
           onSubmit={handleUpdatePerjalanan}
           onClose={() => setShowUpdatePerjalanan(false)}
+          st={suratTugas}
         />
       </FormModal>
       <FormModal icon={<FaPlusCircle className="text-white w-6 h-6" />} show={showAddPegawai}>
         <AddPegawaiPerjalanan onSubmit={handleAddPegawai} onClose={() => setShowAddPegawai(false)} pegawai={pegawaiTanpaPerjalanan}/>
-      </FormModal>
-      <FormModal icon={<IoDocumentTextOutline className="text-white w-6 h-6" />} show={showAddST}>
-        <AddSuratTugas 
-          data={suratTugas}
-          onSubmit={handleUpdatePerjalanan} onClose={() => setShowAddST(false)}
-        />
       </FormModal>
       <Snackbar show={showSnackbar?.show} type={showSnackbar?.type} message={showSnackbar?.message} onClose={() => setShowSnackbar({ show: false, message: "", type: "" })}/>
       <LoadingOverlay show={loading}/>
