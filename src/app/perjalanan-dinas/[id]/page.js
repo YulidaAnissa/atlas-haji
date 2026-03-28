@@ -27,6 +27,7 @@ export default function Component() {
   const { data, isLoading, fetch } = usePerjalanan({
     urlParams: { id }
   });
+  const { data: pejabat } = usePegawai({ params: { status: "pejabat" }});
   const { data: pegawai } = usePegawai();
   const { data: kabkota } = useKabKota();
   const { data: suratTugas } = useSuratTugas();
@@ -39,10 +40,13 @@ export default function Component() {
     (p) => !data?.pegawai?.some((pp) => pp.nip === p.nip)
   );
 
+  console.log('data ', data);
+
   const handleUpdatePerjalanan = async (values) => {
     try {
       startLoading();
       const perjalananPayload = {
+        ...(values.nip && { nip: values.nip }),
         ...(values.dateRange?.formattedStart && { tglBerangkat: values.dateRange.formattedStart }),
         ...(values.dateRange?.formattedEnd && { tglKembali: values.dateRange.formattedEnd }),
         ...(values.tujuan && { idKabKota: values.tujuan }),
@@ -145,7 +149,11 @@ export default function Component() {
             tglBerangkat: formatDate(data?.perjalanan?.tglBerangkat, "DD MMMM YYYY"),
             tglKembali: formatDate(data?.perjalanan?.tglKembali, "DD MMMM YYYY"),
             kabkota: data?.perjalanan?.kabkota,
-            kegiatan: data?.perjalanan?.kegiatan
+            kegiatan: data?.perjalanan?.kegiatan,
+            unit: data?.perjalanan?.unit,
+            jabatanPPK: data?.perjalanan?.jabatan,
+            nipPPK: data?.perjalanan?.nip,
+            namaPPK: data?.perjalanan?.nama,
           }}
           format="/spd-format.docx"
           file={`spd-${item.nip}`}
@@ -244,6 +252,7 @@ export default function Component() {
           onSubmit={handleUpdatePerjalanan}
           onClose={() => setShowUpdatePerjalanan(false)}
           st={suratTugas}
+          pejabat={pejabat}
         />
       </FormModal>
       <FormModal icon={<FaPlusCircle className="text-white w-6 h-6" />} show={showAddPegawai}>

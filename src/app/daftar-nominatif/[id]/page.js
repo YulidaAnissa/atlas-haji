@@ -41,7 +41,7 @@ export default function Component() {
     { id: 'nip', label: 'NIP', numeric: false },
     { id: 'nama', label: 'Nama Pegawai', numeric: false },
     { id: 'kabkota', label: 'Tujuan', numeric: false },
-    { id: 'statusPem', label: 'Status', numeric: false },
+    { id: 'status', label: 'Status', numeric: false },
     { id: 'aksi', label: '', numeric: false },
   ];
 
@@ -125,7 +125,7 @@ export default function Component() {
           format="/spd-rampung-kwitansi-format.docx"
           file={`spd-rampung-kwitansi-format-${item.nip}`}
         />
-        {item?.statusPem !== "verified" && (<button
+        {item?.status !== "verified" && (<button
           onClick={() => {
             setShowBiayaPerjalanan({ show: true, data: item.idPerjalananPegawai });
           }}
@@ -135,24 +135,24 @@ export default function Component() {
         </button>)}
       </div>
     ),
-    statusPem: (
+    status: (
       <span
         className={`px-3 py-1 rounded-md text-sm font-medium cursor-pointer ${
-          item.statusPem === "verified"
+          item.status === "verifikasi"
             ? "bg-green-100 text-green-800 border border-green-300"
-            : item.statusPem === "rejected"
+            : item.status === "tolak"
             ? "bg-red-100 text-red-800 border border-red-300"
             : "bg-gray-100 text-gray-800 border border-gray-300"
         }`}
         onClick={() => {
-          if (item.statusPem === "pending") {
+          if (item.status === "perjalanan") {
             setShowVerifBiayaPerjalanan({ show: true, data: item.idPerjalananPegawai });
           }
         }}
       >
-        {item?.statusPem === "verified"
+        {item?.status === "verifikasi"
           ? "Verified"
-          : item?.statusPem === "rejected"
+          : item?.status === "tolak"
           ? "Rejected"
           : "Pending"}
       </span>
@@ -187,11 +187,11 @@ export default function Component() {
     { label: data?.surat?.noSurat}
   ];
 
-  const handleVerif = async () => {
+  const handleConfirmBiaya = async (aksi, catatan = null) => {
     const idPerjalananPegawai = showVerifBiayaPerjalanan?.data;
     try {
       startLoading();
-      await updateLaporan(idPerjalananPegawai, { statusPem: "verified" });
+      await updateLaporan(idPerjalananPegawai, { status: aksi, catatan });
       await fetch();
       setShowVerifBiayaPerjalanan({ show: false, data: null });
       setShowSnackbar({ show: true, message: "Biaya perjalanan berhasil diverifikasi", type: "success" });
@@ -248,7 +248,7 @@ export default function Component() {
       <FormModal className="w-xl" icon={<FaEdit className="text-white w-6 h-6" />} show={showVerifBiayaPerjalanan?.show}>
         <VerifBiayaPerjalanan
           data={showVerifBiayaPerjalanan?.data ? data?.pegawai?.find(p => p.idPerjalananPegawai === showVerifBiayaPerjalanan.data) : {}} 
-          onSubmit={handleVerif}
+          onSubmit={handleConfirmBiaya}
           onClose={() => setShowVerifBiayaPerjalanan({ show: false, data: null })}
         />
       </FormModal>

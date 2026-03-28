@@ -22,7 +22,7 @@ export default function PerjalananDinasPage() {
   const years = [2025, 2026, 2027];
   const { data, isLoading } = useDashboardFilter({ urlParams: { month, year }});
   const { data: summary, isLoading: isSummaryLoading } = useDashboardSummary();
-
+  console.log(data);
   return (
     <DashboardPage className="p-16 mx-auto">
       <div className="flex items-center gap-3 mb-6">

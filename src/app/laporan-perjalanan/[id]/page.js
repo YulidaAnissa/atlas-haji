@@ -32,7 +32,8 @@ export default function Component() {
     try {
       startLoading();
       const payload = {
-        hasil: values?.hasil
+        hasil: values?.hasil,
+        status: "pengajuan"
       };
       await updateLaporan(idPerjalananPegawai, payload);
       await fetch();

@@ -1,14 +1,14 @@
 "use client";
+import { set } from "date-fns";
 import React, { useState } from "react";
 
 export default function ComponentForm({
   data = {},
   onSubmit,
   onClose = false,
-  onVerifikasi, onTolak
 }) {
   const [showAlasan, setShowAlasan] = useState(false);
-  const [alasan, setAlasan] = useState("");
+  const [catatan, setCatatan] = useState("");
 
   return (
     <div className="overflow-y-auto max-h-[80vh]">
@@ -62,7 +62,7 @@ export default function ComponentForm({
         <div className="flex justify-between items-center pt-4 border-t">
           <div className="flex gap-3">
             <button
-              onClick={onSubmit}
+              onClick={() => onSubmit("verifikasi")}
               className="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700"
             >
               Verifikasi
@@ -89,14 +89,14 @@ export default function ComponentForm({
               Alasan Penolakan
             </label>
             <textarea
-              value={alasan}
-              onChange={(e) => setAlasan(e.target.value)}
+              value={catatan}
+              onChange={(e) => setCatatan(e.target.value)}
               rows={3}
               className="w-full border rounded-md p-2 focus:ring focus:ring-red-300"
               placeholder="Tuliskan alasan penolakan..."
             />
             <button
-              onClick={() => onReject(data, alasan)}
+              onClick={() => onSubmit("tolak", catatan)}
               className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700"
             >
               Kirim Penolakan

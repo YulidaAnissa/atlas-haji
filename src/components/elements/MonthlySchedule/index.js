@@ -68,7 +68,10 @@ export default function MonthlySchedule({ data, month, year }) {
                   });
 
                   // ambil warna sesuai status
-                  const colorClass = travel ? statusColors[travel.status] : "bg-white";
+                  const normalizedStatus = travel?.status === "tolak" ? "pengajuan" : travel?.status;
+                  const colorClass = normalizedStatus ? statusColors[normalizedStatus] : "bg-white";
+
+                  // const colorClass = travel ? statusColors[travel.status] : "bg-white";
                   console.log('travel', travel); // Debug: cek warna yang diterapkan
                   return (
                     <td

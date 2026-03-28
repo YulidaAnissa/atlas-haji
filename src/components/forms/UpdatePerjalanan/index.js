@@ -82,73 +82,80 @@ export default function ComponentForm({
               )}
             </Field>
             <div>
-            <Field
-              className="text-left col-span-2 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
-              name="tujuan"
-              component={SelectField}
-              label="Tujuan Kabupaten/Kota"
-              options={kabkotaOptions}
-            />
-            {/* SUrat Tugas */}
-            <Field
-              className="col-span-2 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-left"
-              name="noSurat"
-              component={CreateableSelect}
-              label="Nomor Surat"
-              options={noSuratOptions}
-              onChange={(newSurat) => {
-                if (newSurat) {
-                  const selected = st.find(
-                    item => item.idSurat === newSurat.value || item.noSurat === newSurat.value
-                  );
-                  if (selected) {
-                    // ✅ kalau option sudah ada → pakai idSurat
-                    form.change("idSurat", selected.idSurat);
-                    form.change("noSurat", selected.noSurat);
-                    form.change("tglSurat", selected.tglSurat);
-                    form.change("kegiatan", selected.kegiatan);
+              <Field
+                className="text-left col-span-2 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                name="nip"
+                component={SelectField}
+                label="Pejabat Pembuat Komitmen (PPK)"
+                options={pejabatOptions}
+              />
+              <Field
+                className="text-left col-span-2 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                name="tujuan"
+                component={SelectField}
+                label="Tujuan Kabupaten/Kota"
+                options={kabkotaOptions}
+              />
+              {/* SUrat Tugas */}
+              <Field
+                className="col-span-2 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-left"
+                name="noSurat"
+                component={CreateableSelect}
+                label="Nomor Surat"
+                options={noSuratOptions}
+                onChange={(newSurat) => {
+                  if (newSurat) {
+                    const selected = st.find(
+                      item => item.idSurat === newSurat.value || item.noSurat === newSurat.value
+                    );
+                    if (selected) {
+                      // ✅ kalau option sudah ada → pakai idSurat
+                      form.change("idSurat", selected.idSurat);
+                      form.change("noSurat", selected.noSurat);
+                      form.change("tglSurat", selected.tglSurat);
+                      form.change("kegiatan", selected.kegiatan);
+                    } else {
+                      // ✨ kalau option baru → simpan noSurat saja
+                      form.change("idSurat", uuidv4());
+                      form.change("noSurat", newSurat.value);
+                      form.change("tglSurat", "");
+                      form.change("kegiatan", "");
+                      setSuratOptions([...noSuratOptions, newSurat]);
+                    }
                   } else {
-                    // ✨ kalau option baru → simpan noSurat saja
-                    form.change("idSurat", uuidv4());
-                    form.change("noSurat", newSurat.value);
+                    // kalau di-clear → kosongkan semua field
+                    form.change("idSurat", null);
+                    form.change("noSurat", "");
                     form.change("tglSurat", "");
                     form.change("kegiatan", "");
-                    setSuratOptions([...noSuratOptions, newSurat]);
                   }
-                } else {
-                  // kalau di-clear → kosongkan semua field
-                  form.change("idSurat", null);
-                  form.change("noSurat", "");
-                  form.change("tglSurat", "");
-                  form.change("kegiatan", "");
-                }
-              }}
-            />
-            <div className="hidden">
+                }}
+              />
+              <div className="hidden">
+                <Field
+                  component={InputField}
+                  label="No Surat Tugas"
+                  disabled
+                  name="idSurat"
+                  placeholder="Masukkan Nomor Surat Tugas"
+                  type="text"
+                  className="w-full rounded-md py-2 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                />
+              </div>
               <Field
-                component={InputField}
-                label="No Surat Tugas"
-                disabled
-                name="idSurat"
-                placeholder="Masukkan Nomor Surat Tugas"
+                component={DatePicker}
+                label="Tanggal Surat"
+                name="tglSurat"
                 type="text"
                 className="w-full rounded-md py-2 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
               />
+              <Field
+                component={InputField}
+                label="Kegiatan"
+                name="kegiatan"
+                placeholder="Masukkan kegiatan"
+              />
             </div>
-            <Field
-              component={DatePicker}
-              label="Tanggal Surat"
-              name="tglSurat"
-              type="text"
-              className="w-full rounded-md py-2 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
-            />
-            <Field
-              component={InputField}
-              label="Kegiatan"
-              name="kegiatan"
-              placeholder="Masukkan kegiatan"
-            />
-          </div>
           </div>
           <div className="flex gap-5 mt-6 sticky bottom-0 bg-white py-3 border-t">
             <button
