@@ -1,15 +1,16 @@
 "use client";
 import { useState } from "react";
 import DashboardPage from "@/components/pagebase";
-import { StatCard, MonthlySchedule } from "@/components/elements";
+import { StatCard, MonthlySchedule, NotificationDashboard } from "@/components/elements";
 import { FaCar, FaCreditCard, FaCheckCircle, FaHome } from "react-icons/fa";
-import { useDashboardFilter, useDashboardSummary } from "@/hooks/useData";
+import { useDashboardFilter, useDashboardSummary, useNotifPegawai } from "@/hooks/useData";
 import Box from '@mui/material/Box';
 import CircularProgress from '@mui/material/CircularProgress';
 import Typography from '@mui/material/Typography';
-
+import { useRouter } from "next/navigation";
 
 export default function PerjalananDinasPage() {
+  const router = useRouter();
   const today = new Date();
   const [month, setMonth] = useState(today.getMonth() + 1); // getMonth() mulai dari 0
   const [year, setYear] = useState(today.getFullYear());
@@ -22,7 +23,9 @@ export default function PerjalananDinasPage() {
   const years = [2025, 2026, 2027];
   const { data, isLoading } = useDashboardFilter({ urlParams: { month, year }});
   const { data: summary, isLoading: isSummaryLoading } = useDashboardSummary();
-  console.log(data);
+  const { data: notifications } = useNotifPegawai({ params: { status: "tolak" }});
+  console.log("notifications:", notifications);
+  
   return (
     <DashboardPage className="p-16 mx-auto">
       <div className="flex items-center gap-3 mb-6">
@@ -35,8 +38,18 @@ export default function PerjalananDinasPage() {
           Dashboard
         </h1>
       </div>
-
-    {/* </button> */}
+      {notifications && notifications.length > 0 && notifications.map((notif, idx) => (
+        <NotificationDashboard 
+          key={idx}
+          message="Pembiayaan perjalanan dinas anda ditolak."
+          note={notif.catatan}
+          type="danger"
+          onDetail={() => {
+            router.push(`/daftar-nominatif/${notif.idSurat}`);
+          }}
+        />
+      ))}
+      
       <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
         {isSummaryLoading ? (
           <Box sx={{ display: 'flex', justifyContent: 'center', p: 4 }}>

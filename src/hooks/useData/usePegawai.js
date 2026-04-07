@@ -1,8 +1,8 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import useSWR from 'swr';
 import { SERVICES } from '@/configs';
 import { fetcher, auth, createSwrKey, defaultOptions, getDedupingInterval } from './../utils';
-import { accessTokenStorage } from '@/utils/storage';
+import { accessTokenStorage, profileStorage } from '@/utils/storage';
 
 export function usePegawai({ dedupingInterval, params = {} } = defaultOptions) {
   const token = accessTokenStorage.get().value;
@@ -149,3 +149,26 @@ export function useEditPegawai() {
 
   return { editPegawai, loading, error };
 }
+
+export function useNotifPegawai({ dedupingInterval, params = {} } = defaultOptions) {
+  const token = accessTokenStorage.get().value;
+  const [ profil, setProfil ] = useState(null);
+  useEffect(() => {
+    const storedProfile = profileStorage.get();
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setProfil(storedProfile);
+  }, []);
+  const { data: { data } = {}, error, mutate } = useSWR(
+    createSwrKey(SERVICES.NOTIFICATIONS({ id: profil?.nip }), { params }), 
+    fetcher({ headers: { Authorization: `Bearer ${token}` } }),
+    { dedupingInterval: getDedupingInterval(dedupingInterval) }
+  );
+
+  return {
+    data: data,
+    isLoading: !error && !data,
+    error,
+    fetch: mutate
+  };
+}
+

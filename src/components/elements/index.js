@@ -15,3 +15,4 @@ export const Snackbar = dynamic(() => import("./Snackbar"), { ssr: false });
 export const StatCard = dynamic(() => import("./StatCard"), { ssr: false });
 export const MonthlySchedule = dynamic(() => import("./MonthlySchedule"), { ssr: false });
 export const VerifBiayaPerjalanan = dynamic(() => import("./VerifBiayaPerjalanan"), { ssr: false });
+export const NotificationDashboard = dynamic(() => import("./NotificationDashboard"), { ssr: false });

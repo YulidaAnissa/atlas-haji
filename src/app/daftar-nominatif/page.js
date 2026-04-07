@@ -37,7 +37,7 @@ export default function DaftarPerjalananDinas() {
 
   const breadcrumbItem = [
     { label: "Home", href: "/" },
-    { label: "Daftar Nominatif"},
+    { label: "Biaya Perjalanan"},
   ];
   return (
     <PageBase className="p-16 mx-auto">
@@ -45,7 +45,7 @@ export default function DaftarPerjalananDinas() {
       <Breadcrumb items={breadcrumbItem} />
       <div className="mb-10 gap-4">
         <h1 className="text-4xl font-bold text-gray-800 drop-shadow-[0_0_10px_rgba(234,179,8,0.7)] tracking-wide">
-          Daftar Nominatif
+          Biaya Perjalanan
         </h1>
       </div>
 

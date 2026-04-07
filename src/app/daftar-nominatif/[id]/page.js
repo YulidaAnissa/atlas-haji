@@ -10,6 +10,7 @@ import FormModal from "@/components/elements/FormModal";
 import AddBiayaPerjalanan from "@/components/forms/AddBiayaPerjalanan";
 import { FaEdit } from "react-icons/fa";
 import LoadingOverlay from "@/components/elements/LoadingOverlay";
+import { form } from "@heroui/react";
 
 async function toBase64(url) {
   const res = await fetch(url);
@@ -145,7 +146,7 @@ export default function Component() {
             : "bg-gray-100 text-gray-800 border border-gray-300"
         }`}
         onClick={() => {
-          if (item.status === "perjalanan") {
+          if (item.status === "pengajuan") {
             setShowVerifBiayaPerjalanan({ show: true, data: item.idPerjalananPegawai });
           }
         }}
@@ -169,6 +170,7 @@ export default function Component() {
       formData.append("biayaTrans", values?.biayaTrans);
       formData.append("buktiPeng", values?.buktiPeng); // file object
       formData.append("buktiTrans", values?.buktiTrans); // file object
+      formData.append("status", "pengajuan");
       await updateLaporan(idPerjalananPegawai, formData);
       await fetch();
       setShowBiayaPerjalanan({ show: false, data: null });
@@ -183,7 +185,7 @@ export default function Component() {
 
   const breadcrumbItem = [
     { label: "Home", href: "/" },
-    { label: "Daftar Nominatif", href: "/daftar-nominatif" },
+    { label: "Biaya Perjalanan", href: "/daftar-nominatif" },
     { label: data?.surat?.noSurat}
   ];
 
@@ -208,7 +210,7 @@ export default function Component() {
       <Breadcrumb items={breadcrumbItem} />
       <div className="mb-10 gap-4">
         <h1 className="text-4xl font-bold text-gray-800 drop-shadow-[0_0_10px_rgba(234,179,8,0.7)] tracking-wide">
-          Detail Daftar Nominatif
+          Detail Biaya Perjalanan
         </h1>
       </div>
       <div className="flex mb-6 gap-6 justify-between">

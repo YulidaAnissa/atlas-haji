@@ -27,7 +27,7 @@ export default function Sidebar({ sidebarOpen }) {
     { name: "Dashboard", icon: <RxDashboard />, path: "/dashboard" },
     { name: "Perjalanan Dinas", icon: <RxDashboard />, path: "/perjalanan-dinas" },
     { name: "Laporan Perjalanan Dinas", icon: <RxDashboard />, path: "/laporan-perjalanan" },
-    { name: "Daftar Nominatif", icon: <RxDashboard />, path: "/daftar-nominatif" },
+    { name: "Biaya Perjalanan", icon: <RxDashboard />, path: "/daftar-nominatif" },
     {
       name: "Data Master",
       icon: <RxDashboard />,

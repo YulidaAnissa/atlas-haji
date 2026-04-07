@@ -40,8 +40,6 @@ export default function Component() {
     (p) => !data?.pegawai?.some((pp) => pp.nip === p.nip)
   );
 
-  console.log('data ', data);
-
   const handleUpdatePerjalanan = async (values) => {
     try {
       startLoading();
@@ -136,12 +134,14 @@ export default function Component() {
     ...item,
     aksi: (
       <div className="flex gap-2">
-        <button
-          className="rounded cursor-pointer text-white bg-danger p-2"
-          onClick={() => setDeleted(item.nip)}
-        >
-          Hapus
-        </button>
+        {data?.perjalanan?.status === 'perjalanan' && (
+          <button
+            className="rounded cursor-pointer text-white bg-danger p-2"
+            onClick={() => setDeleted(item.nip)}
+          >
+            Hapus
+          </button>
+        )}
         <PrintButton 
           data={{
             ...item,
