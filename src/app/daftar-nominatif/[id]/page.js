@@ -60,61 +60,71 @@ export default function Component() {
     return u + t + p;
   };
 
-  useEffect(() => {
-    const processData = async () => {
-      if (!data?.pegawai) return;
+  // useEffect(() => {
+  //   const processData = async () => {
+  //     if (!data?.pegawai) return;
 
-      const result = await Promise.all(
-        data.pegawai.map(async (item, index) => {
-          const buktiTransBase64 = item.buktiTrans
-            ? await toBase64(item.buktiTrans)
-            : null;
-          const buktiPengBase64 = item.buktiPeng
-            ? await toBase64(item.buktiPeng)
-            : null;
+  //     const result = await Promise.all(
+  //       data.pegawai.map(async (item, index) => {
+  //         const buktiTransBase64 = item.buktiTrans
+  //           ? await toBase64(item.buktiTrans)
+  //           : null;
+  //         const buktiPengBase64 = item.buktiPeng
+  //           ? await toBase64(item.buktiPeng)
+  //           : null;
 
-          return {
-            idx: index + 1,
-            nama: item.nama,
-            nip: item.nip,
-            kegiatan: item.kegiatan,
-            tujuan: item.kabkota,
-            lama: calculateTripDuration(item.tglBerangkat, item.tglKembali, true, true),
-            uh: item.uh,
-            uhTotal: uhCount(item.uh, item.tglBerangkat, item.tglKembali),
-            biayaTrans: item.biayaTrans,
-            biayaPeng: item.biayaPeng,
-            jumlahTotal: totalCount(
-              uhCount(item.uh, item.tglBerangkat, item.tglKembali),
-              item.biayaTrans,
-              item.biayaPeng
-            ),
-            image: buktiTransBase64,
-            buktiPeng: buktiPengBase64,
-          };
-        })
-      );
+  //         return {
+  //           idx: index + 1,
+  //           nama: item.nama,
+  //           nip: item.nip,
+  //           kegiatan: item.kegiatan,
+  //           tujuan: item.kabkota,
+  //           lama: calculateTripDuration(item.tglBerangkat, item.tglKembali, true, true),
+  //           uh: item.uh,
+  //           uhTotal: uhCount(item.uh, item.tglBerangkat, item.tglKembali),
+  //           biayaTrans: item.biayaTrans,
+  //           biayaPeng: item.biayaPeng,
+  //           jumlahTotal: totalCount(
+  //             uhCount(item.uh, item.tglBerangkat, item.tglKembali),
+  //             item.biayaTrans,
+  //             item.biayaPeng
+  //           ),
+  //           image: buktiTransBase64,
+  //           buktiPeng: buktiPengBase64,
+  //         };
+  //       })
+  //     );
 
-      setDataFile(result);
-    };
+  //     setDataFile(result);
+  //   };
 
-    processData();
-  }, [data]);
+  //   processData();
+  // }, [data]);
+  const formatRupiah = (angka) => {
+    if (!angka) return 0;
+    return Number(angka).toLocaleString("id-ID");
+  };
 
+  console.log("data for file generation:", data);
   const dataFilePegawai = data?.pegawai?.map((item, index) => ({
     idx: index + 1,
     nama: item.nama,
     nip: item.nip,
     kegiatan: item.kegiatan,
     tujuan: item.kabkota,
-    lama: calculateTripDuration(item.tglBerangkat, item.tglKembali, true, true),
-    uh: item.uh,
-    uhTotal: uhCount(item.uh, item.tglBerangkat, item.tglKembali),
-    biayaTrans: item.biayaTrans,
-    biayaPeng: item.biayaPeng,
-    jumlahTotal: totalCount(uhCount(item.uh, item.tglBerangkat, item.tglKembali), item.biayaTrans, item.biayaPeng),
+    lama: calculateTripDuration(item.tglBerangkat, item.tglKembali),
+    uh: formatRupiah(item.uh),
+    uhTotal: formatRupiah(uhCount(item.uh, item.tglBerangkat, item.tglKembali)),
+    biayaTrans: formatRupiah(item.biayaTrans),
+    biayaPeng: formatRupiah(item.biayaPeng),
+    jumlahTotal: formatRupiah(totalCount(uhCount(item.uh, item.tglBerangkat, item.tglKembali), item.biayaTrans, item.biayaPeng)),
     image: item.buktiTrans,
     buktiPeng: item.buktiPeng,
+    nipPPK: item?.nipPPK,
+    namaPPK: item?.namaPPK,
+    unitPPK: item?.unitPPK,
+    trans: formatRupiah(item.biayaTrans) === 0 ? "" : "- Transportasi",
+    peng: formatRupiah(item.biayaPeng) === 0 ? "" : "- Penginapan",
   }));
 
   const formattedData = (data?.pegawai ?? [])?.map(item => ({

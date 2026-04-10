@@ -14,6 +14,8 @@ export default function SuratTugas({
   const [loading, startLoading, endLoading] = useLoading();
   const [previewUrl, setPreviewUrl] = useState(null);
 
+  console.log("data for doc generation:", data);
+
   const handleGenerate = async () => {
     try {
       startLoading();

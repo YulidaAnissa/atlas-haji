@@ -64,7 +64,10 @@ export default function SuratTugas({
           uhFormat: formatRupiah(uhVal),
           biayaTransFormat: formatRupiah(item.biayaTrans) || "",
           biayaPengFormat: formatRupiah(item.biayaPeng) || "",
-          jumlahFormat: formatRupiah(totalCount(uhVal, item.biayaTrans, item.biayaPeng))
+          jumlahFormat: formatRupiah(totalCount(uhVal, item.biayaTrans, item.biayaPeng)),
+          nipPPK: item?.nipPPK,
+          namaPPK: item?.namaPPK,
+          unitPPK: item?.unitPPK,
         };
       });
 
@@ -114,10 +117,8 @@ export default function SuratTugas({
       });
 
       const pdfBlob = await res.blob();
-      const link = document.createElement("a");
-      link.href = URL.createObjectURL(pdfBlob);
-      link.download = `${file}.pdf`;
-      link.click();
+      const url = URL.createObjectURL(pdfBlob);
+      window.open(url, "_blank");
     } catch (err) {
       console.error("Error generating PDF:", err);
     } finally {
@@ -131,7 +132,7 @@ export default function SuratTugas({
         className="rounded cursor-pointer text-white bg-black p-2"
         onClick={handleGenerate}
       >
-       Download Daftar Nominatif
+       Lihat Daftar Nominatif
       </button>
       <LoadingOverlay show={loading}/>
     </div>
