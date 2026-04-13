@@ -28,44 +28,44 @@ export default function AddPerjalananDinas() {
   const handleSubmit = async (values, form) => {
     try {
       startLoading();
+
       const pegawaiArray = Array.isArray(values.pegawai)
         ? values.pegawai.map(opt => opt) // ambil hanya NIP string
         : [];
 
-      const perjalananPayload = {
-        pegawai: pegawaiArray,
-        nip: values.nip, // pastikan ini adalah NIP pejabat
-        tglBerangkat: values.dateRange.formattedStart,
-        tglKembali: values.dateRange.formattedEnd,
-        idKabKota: values.tujuan,   // pastikan tujuan = idKabKota
-        status: "perjalanan",
-      };
+      // Buat FormData
+      const formData = new FormData();
+      
+      // Perjalanan
+      formData.append("pegawai", JSON.stringify(pegawaiArray));
+      formData.append("nip", values.nip); // NIP pejabat
+      formData.append("tglBerangkat", values.dateRange.formattedStart);
+      formData.append("tglKembali", values.dateRange.formattedEnd);
+      formData.append("idKabKota", values.tujuan);
+      formData.append("status", "perjalanan");
 
-       // Surat
-      const suratPayload = {
-        ...(values.idSurat && { idSurat: values.idSurat }),
-        ...(values.noSurat && { noSurat: values.noSurat }),
-        ...(values.tglSurat && { tglSurat: formatDate(values.tglSurat, "YYYY-MM-DD")}),
-        ...(values.kegiatan && { kegiatan: values.kegiatan })
-      };
+      // Surat (opsional)
+      if (values.idSurat) formData.append("idSurat", values.idSurat);
+      if (values.noSurat) formData.append("noSurat", values.noSurat);
+      if (values.tglSurat) formData.append("tglSurat", formatDate(values.tglSurat, "YYYY-MM-DD"));
+      if (values.kegiatan) formData.append("kegiatan", values.kegiatan);
+      if (values.fileSurat) formData.append("fileSurat", values.fileSurat);
 
-      const payload = {
-        ...perjalananPayload,
-        ...suratPayload
-      };
+      // Kirim ke API
+      const res = await postPerjalanan(formData);
 
-      const res = await postPerjalanan(payload);
       form.reset();
       setShowModalSuccess(true);
       setDataRes(res.idPerjalanan);
+
     } catch (err) {
+      console.log('error:', err);
       setShowModalError(true);
       setDataRes({
         data: [...err?.konflik],
-          tglBerangkatValue: values.dateRange.formattedStart,
-          tglKembaliValue: values.dateRange.formattedEnd, // usually end, not start
+        tglBerangkatValue: values.dateRange.formattedStart,
+        tglKembaliValue: values.dateRange.formattedEnd,
       });
-
     } finally {
       endLoading();
     }

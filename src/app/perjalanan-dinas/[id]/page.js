@@ -130,11 +130,12 @@ export default function Component() {
     { id: 'aksi', label: '', numeric: false },
   ];
 
+  console.log("data perjalanan:", data?.pegawai);
   const formattedData = (data?.pegawai ?? [])?.map(item => ({
     ...item,
     aksi: (
       <div className="flex gap-2">
-        {data?.perjalanan?.status === 'perjalanan' && (
+        {item.status === 'perjalanan' && (
           <button
             className="rounded cursor-pointer text-white bg-danger p-2"
             onClick={() => setDeleted(item.nip)}

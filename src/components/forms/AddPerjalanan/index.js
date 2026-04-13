@@ -10,6 +10,7 @@ import arrayMutators from "final-form-arrays";
 import { FaRegTrashAlt } from "react-icons/fa";
 import CreateableSelect from "../FormField/CreateableSelect";
 import { v4 as uuidv4 } from 'uuid';
+import { UploadFile } from "@/components/forms/FormField";
 
 export default function LoginPage({
   onSubmit = () => {},
@@ -151,6 +152,11 @@ export default function LoginPage({
                 label="Kegiatan"
                 name="kegiatan"
                 placeholder="Masukkan kegiatan"
+              />
+              <Field
+                component={UploadFile}
+                label="File Surat Tugas"
+                name="fileSurat"
               />
               {/* Section Pegawai */}
               <h3 className="text-lg font-semibold border-b pb-2">Daftar Pegawai</h3>              
