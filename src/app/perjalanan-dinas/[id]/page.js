@@ -14,6 +14,7 @@ import PrintButton from "@/components/elements/PrintButton";
 import { FaEdit, FaPlusCircle  } from "react-icons/fa";
 import { useLoading } from "@/hooks";
 import LoadingOverlay from "@/components/elements/LoadingOverlay";
+import { form } from "@heroui/react";
 
 export default function Component() {
   const params = useParams();
@@ -33,53 +34,56 @@ export default function Component() {
   const { data: suratTugas } = useSuratTugas();
   const { postPegawai } = useAddPegawaiPerjalanan();
   const { deletePerjalananPegawai } = useDeletePerjalananPegawai();
-  const { updatePerjalanan } = useUpdatePerjalanan();
+  const { updatePerjalanan, error } = useUpdatePerjalanan();
   const [loading, startLoading, endLoading] = useLoading();
   
   const pegawaiTanpaPerjalanan = pegawai?.filter(
     (p) => !data?.pegawai?.some((pp) => pp.nip === p.nip)
   );
 
-  const handleUpdatePerjalanan = async (values) => {
-    try {
-      startLoading();
-      const perjalananPayload = {
-        ...(values.nip && { nip: values.nip }),
-        ...(values.dateRange?.formattedStart && { tglBerangkat: values.dateRange.formattedStart }),
-        ...(values.dateRange?.formattedEnd && { tglKembali: values.dateRange.formattedEnd }),
-        ...(values.tujuan && { idKabKota: values.tujuan }),
-      };
+ const handleUpdatePerjalanan = async (values) => {
+  try {
+    startLoading();
+    console.log("Updating perjalanan with values:", values);
 
-      // Surat
-      const suratPayload = {
-        ...(values.idSurat && { idSurat: values.idSurat }),
-        ...(values.noSurat && { noSurat: values.noSurat }),
-        ...(values.tglSurat && { tglSurat: formatDate(values.tglSurat, "YYYY-MM-DD")}),
-        ...(values.kegiatan && { kegiatan: values.kegiatan })
-      };
+    const formData = new FormData();
+    if (values.nip) formData.append("nip", values.nip); // NIP pejabat
+    if (values.dateRange?.formattedStart) formData.append("tglBerangkat", values.dateRange.formattedStart);
+    if (values.dateRange?.formattedEnd) formData.append("tglKembali", values.dateRange.formattedEnd);
+    if (values.tujuan) formData.append("idKabKota", values.tujuan);
 
-      // Gabungkan sesuai kondisi
-      const payload = {
-        ...perjalananPayload,
-        ...suratPayload
-      };
+    // Surat (opsional)
+    if (values.idSurat) formData.append("idSurat", values.idSurat);
+    if (values.noSurat) formData.append("noSurat", values.noSurat);
+    if (values.tglSurat) formData.append("tglSurat", formatDate(values.tglSurat, "YYYY-MM-DD"));
+    if (values.kegiatan) formData.append("kegiatan", values.kegiatan);
+    if (values.file) formData.append("file", values.file);
 
-      if (Object.keys(payload).length === 0) {
-        throw new Error("Tidak ada data untuk update");
-      }
-
-      await updatePerjalanan(id, payload);
-      await fetch();
-      setShowUpdatePerjalanan(false);
-      setShowAddST(false);
-      setShowSnackbar({ show: true, message: "Berhasil disimpan", type: "success" });
-    } catch (err) {
-      setShowSnackbar({ show: true, message: "Gagal disimpan", type: "error" });
-      return err;
-    } finally {
-      endLoading();
+    // Debug isi FormData
+    console.log("FormData entries:");
+    for (let [key, value] of formData.entries()) {
+      console.log(key, value);
     }
-  };
+
+    if (!values || Object.keys(values).length === 0) {
+      throw new Error("Tidak ada data untuk update");
+    }
+
+    // Kirim ke API
+    await updatePerjalanan(id, formData);
+
+    await fetch();
+    setShowUpdatePerjalanan(false);
+    setShowAddST(false);
+    setShowSnackbar({ show: true, message: "Berhasil disimpan", type: "success" });
+  } catch (err) {
+    setShowSnackbar({ show: true, message: "Gagal disimpan:" + err.message, type: "error" });
+    return err;
+  } finally {
+    endLoading();
+  }
+};
+
 
   const handleAddPegawai = async (values) => {
     try {
@@ -130,7 +134,6 @@ export default function Component() {
     { id: 'aksi', label: '', numeric: false },
   ];
 
-  console.log("data perjalanan:", data?.pegawai);
   const formattedData = (data?.pegawai ?? [])?.map(item => ({
     ...item,
     aksi: (

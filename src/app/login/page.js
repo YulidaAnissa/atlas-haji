@@ -1,42 +1,25 @@
 "use client";
-import React from "react";
+import React, { useState, useEffect } from "react";
 import Image from 'next/image';
 import LoginPage from '../../components/forms/Login';
 import { useAuth } from "@/hooks/useAuth";
 import LoadingOverlay from "@/components/elements/LoadingOverlay";
+import InfoModal from "@/components/elements/InfoModal";
+import { FaExclamationTriangle } from "react-icons/fa";
 
 export default function Components() {
+  const [ infoError, setInfoError ] = useState("");
   const { login, loading, error } = useAuth();
-
-  // const { register, handleSubmit, formState: { errors }, reset } = useForm();
-  // const onSubmit = async (data) => {
-  //   const formData = new FormData();
-  //   formData.append('nip', data.nip);
-  //   formData.append('password', data.password);
-
-  //   // if (kategori === 3) {
-  //   // formData.append('file', data.file[0]);
-  //   // } else {
-  //   //   formData.append('link', data.link);
-  //   // }
-
-  //   // const result = await postModul(formData);
-
-  //   // if (result) {
-  //   //   setShowModal(true);
-  //   //   reset(); // reset semua input form
-  //   //   setFileName('');
-  //   //   setPreviewURL(null);
-
-  //   // } else {
-  //   //   alert('Gagal mengirim modul.');
-  //   // }
-  // };
 
   const handleSubmit = async (values) => {
     login(values)
   };
 
+  useEffect(() => {
+    if(error) {
+      setInfoError(true);
+    }
+  }, [error]);
 
   return (
     <div className="min-h-screen flex from-green-50 via-white to-yellow-50">
@@ -59,6 +42,16 @@ export default function Components() {
           />
         </div>
         <LoadingOverlay show={loading}/>
+        <InfoModal
+          show={infoError}
+          icon={<FaExclamationTriangle className="text-white w-6 h-6"/>}
+          title="Login Gagal"
+          onCancel={() => setInfoError(false)}
+        >
+          <p className="text-gray-500 mt-2">
+            {error}
+          </p>
+        </InfoModal>
       </div>
     </div>
   );

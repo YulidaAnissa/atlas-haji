@@ -4,7 +4,8 @@ import {
   PROFILE_FULLNAME_STORAGE,
   PROFILE_GOLONGAN_STORAGE,
   PROFILE_ID_STORAGE,
-  PROFILE_JABATAN_STORAGE
+  PROFILE_JABATAN_STORAGE,
+  PROFILE_ROLE_STORAGE
 } from "@/configs";
 import nookies from 'nookies';
 import { encrypt, decrypt } from "./crypto";
@@ -79,7 +80,8 @@ export const profileStorage = {
   _id: createCookieStorage(PROFILE_ID_STORAGE, { encrypt: true }),
   _jabatan: createCookieStorage(PROFILE_JABATAN_STORAGE, { encrypt: true }),
   _gol: createCookieStorage(PROFILE_GOLONGAN_STORAGE, { encrypt: true }),
-  set({ nama, nip, jabatan, gol }, options = {}) {
+  _role: createCookieStorage(PROFILE_ROLE_STORAGE, { encrypt: true }),
+  set({ nama, nip, jabatan, gol, role }, options = {}) {
     const finalOptions = {
       ...options
     };
@@ -90,13 +92,15 @@ export const profileStorage = {
     this._id.set(nip, finalOptions);
     this._jabatan.set(jabatan, finalOptions);
     this._gol.set(gol, finalOptions);
+    this._role.set(role, finalOptions);
   },
   get(ctx) {
     return {
       nama: this._fullname.get(ctx),
       nip: this._id.get(ctx),
       jabatan: this._jabatan.get(ctx),
-      gol: this._gol.get(ctx)
+      gol: this._gol.get(ctx),
+      role: this._role.get(ctx),
     };
   },
   remove(ctx) {
@@ -107,5 +111,6 @@ export const profileStorage = {
     this._id.remove(ctx, options);
     this._jabatan.remove(ctx, options);
     this._gol.remove(ctx, options);
+    this._role.remove(ctx, options);
   }
 };

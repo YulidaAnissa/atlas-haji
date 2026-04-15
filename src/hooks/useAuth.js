@@ -23,7 +23,9 @@ export function useAuth() {
       });
 
       if (!res.ok) {
-        throw new Error("Login gagal");
+        const errorData = await res.json();
+        setError("Autentikasi gagal. Periksa kembali username dan password Anda.");
+        return;
       }
 
       const data = await res.json();
@@ -33,7 +35,7 @@ export function useAuth() {
         { expires: new Date(data.expiredAt) }
       );
       profileStorage.set(data?.profile);
-
+      
       router.push("/dashboard");
     } catch (err) {
       setError(err.message);

@@ -102,7 +102,7 @@ const InputBase = forwardRef(function Input(props, ref) {
       ): null }
 
       {!isShowClearIcon && React.isValidElement(endAdornment) ? (
-        <div className="h-full ml-3 flex items-center">
+        <div className="h-full mr-3 flex items-center">
           {endAdornment}
         </div>
       ): null }

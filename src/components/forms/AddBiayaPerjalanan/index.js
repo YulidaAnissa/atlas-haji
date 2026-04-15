@@ -9,6 +9,7 @@ export default function ComponentForm({
   onSubmit,
   onClose = false,
 }) {
+
   return (
     <div className="overflow-y-auto max-h-[80vh]">
       <div className="min-w-3/4 grid grid-cols-2 bg-gray-50 rounded-xl shadow-lg px-6 py-4 text-left mb-4">
@@ -30,7 +31,10 @@ export default function ComponentForm({
       <Form 
         onSubmit={onSubmit}
         initialValues={{
-          ...data,
+          biayaTrans: data?.biayaTrans || "",
+          buktiTrans: data?.buktiTrans || null, // URL string dari server
+          biayaPeng: data?.biayaPeng || "",
+          buktiPeng: data?.buktiPeng || null,   // URL string dari server
         }}
       >
         {({ handleSubmit }) => (

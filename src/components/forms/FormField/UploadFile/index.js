@@ -95,12 +95,18 @@ export default function FileField({ input, meta, label, ...rest }) {
       {/* Tampilkan nama file + tombol hapus */}
       {file && (
         <div className="flex items-center justify-between mt-2 p-2 border rounded bg-gray-50">
+          {typeof file === "string" ? (
+          <a href={file} target="_blank" rel="noopener noreferrer" className="text-blue-600 text-sm">
+            File lama (klik untuk lihat)
+          </a>
+        ) : (
           <div className="text-sm text-gray-700">
             <span className="font-medium">{file.name}</span>
             <span className="ml-2 text-gray-400 text-xs">
               {file.webkitRelativePath || file.type}
             </span>
           </div>
+        )}
           <button
             type="button"
             onClick={handleRemove}

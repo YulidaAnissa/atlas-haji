@@ -11,6 +11,7 @@ import AddBiayaPerjalanan from "@/components/forms/AddBiayaPerjalanan";
 import { FaEdit } from "react-icons/fa";
 import LoadingOverlay from "@/components/elements/LoadingOverlay";
 import { form } from "@heroui/react";
+import { profileStorage } from "@/utils/storage";
 
 async function toBase64(url) {
   const res = await fetch(url);
@@ -29,7 +30,7 @@ export default function Component() {
   const [ showBiayaPerjalanan, setShowBiayaPerjalanan ] = useState({ show: false, data: null });
   const [ showVerifBiayaPerjalanan, setShowVerifBiayaPerjalanan ] = useState({ show: false, data: null });
   const [ showSnackbar, setShowSnackbar ] = useState({ show: false, message: "", type: "" });
-  const [dataFile, setDataFile] = useState([]);
+  const [ profil, setProfil ] = useState(null);
   const { id } = params;
   const [loading, startLoading, endLoading] = useLoading();
   const { data, isLoading, fetch } = useSuratTugas({
@@ -60,58 +61,26 @@ export default function Component() {
     return u + t + p;
   };
 
-  // useEffect(() => {
-  //   const processData = async () => {
-  //     if (!data?.pegawai) return;
+  useEffect(() => {
+      const storedProfile = profileStorage.get();
+      // eslint-disable-next-line react-hooks/set-state-in-effect
+      setProfil(storedProfile);
+    }, []);
 
-  //     const result = await Promise.all(
-  //       data.pegawai.map(async (item, index) => {
-  //         const buktiTransBase64 = item.buktiTrans
-  //           ? await toBase64(item.buktiTrans)
-  //           : null;
-  //         const buktiPengBase64 = item.buktiPeng
-  //           ? await toBase64(item.buktiPeng)
-  //           : null;
-
-  //         return {
-  //           idx: index + 1,
-  //           nama: item.nama,
-  //           nip: item.nip,
-  //           kegiatan: item.kegiatan,
-  //           tujuan: item.kabkota,
-  //           lama: calculateTripDuration(item.tglBerangkat, item.tglKembali, true, true),
-  //           uh: item.uh,
-  //           uhTotal: uhCount(item.uh, item.tglBerangkat, item.tglKembali),
-  //           biayaTrans: item.biayaTrans,
-  //           biayaPeng: item.biayaPeng,
-  //           jumlahTotal: totalCount(
-  //             uhCount(item.uh, item.tglBerangkat, item.tglKembali),
-  //             item.biayaTrans,
-  //             item.biayaPeng
-  //           ),
-  //           image: buktiTransBase64,
-  //           buktiPeng: buktiPengBase64,
-  //         };
-  //       })
-  //     );
-
-  //     setDataFile(result);
-  //   };
-
-  //   processData();
-  // }, [data]);
   const formatRupiah = (angka) => {
     if (!angka) return 0;
     return Number(angka).toLocaleString("id-ID");
   };
 
-  console.log("data for file generation:", data);
+  console.log("Data surat tugas:", data);
+
   const dataFilePegawai = data?.pegawai?.map((item, index) => ({
     idx: index + 1,
     nama: item.nama,
     nip: item.nip,
-    kegiatan: item.kegiatan,
+    kegiatan: data?.surat?.kegiatan,
     tujuan: item.kabkota,
+    tglBerangkat: formatDate(item.tglBerangkat, "DD MMMM YYYY"),
     lama: calculateTripDuration(item.tglBerangkat, item.tglKembali),
     uh: formatRupiah(item.uh),
     uhTotal: formatRupiah(uhCount(item.uh, item.tglBerangkat, item.tglKembali)),
@@ -157,7 +126,9 @@ export default function Component() {
         }`}
         onClick={() => {
           if (item.status === "pengajuan") {
-            setShowVerifBiayaPerjalanan({ show: true, data: item.idPerjalananPegawai });
+            {profil?.role === "finance" && (
+              setShowVerifBiayaPerjalanan({ show: true, data: item.idPerjalananPegawai })
+            )}
           }
         }}
       >

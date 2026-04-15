@@ -7,6 +7,8 @@ import validation from "./validate";
 import { DatePickerRange, DatePicker } from "@/components/forms/FormField";
 import { v4 as uuidv4 } from 'uuid';
 import CreateableSelect from "../FormField/CreateableSelect";
+import { UploadFile } from "@/components/forms/FormField";
+import { fi } from "date-fns/locale";
 
 export default function ComponentForm({
   data = {},
@@ -16,8 +18,6 @@ export default function ComponentForm({
   pejabat = [],
   st = [],
 }) {
-
-  console.log("Data di form perjalanan:", data); // Debug: cek data yang diterima oleh form
 
   const [kabkotaOptions, setKabKotaOptions] = useState([]);
   const [noSuratOptions, setSuratOptions] = useState([]);
@@ -51,6 +51,7 @@ export default function ComponentForm({
       );
     }
   }, [kabkota, pejabat, st]);
+
   return (
     <Form 
       onSubmit={onSubmit}
@@ -60,7 +61,8 @@ export default function ComponentForm({
         dateRange: {
           startDate: data?.tglBerangkat ? new Date(data.tglBerangkat) : new Date(),
           endDate: data?.tglKembali ? new Date(data.tglKembali) : new Date()
-        }
+        },
+        file: data?.file || null,
       }}
       validate={validation}
     >
@@ -154,6 +156,11 @@ export default function ComponentForm({
                 label="Kegiatan"
                 name="kegiatan"
                 placeholder="Masukkan kegiatan"
+              />
+              <Field
+                component={UploadFile}
+                label="File Surat Tugas"
+                name="file"
               />
             </div>
           </div>

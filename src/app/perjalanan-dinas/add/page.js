@@ -59,7 +59,6 @@ export default function AddPerjalananDinas() {
       setDataRes(res.idPerjalanan);
 
     } catch (err) {
-      console.log('error:', err);
       setShowModalError(true);
       setDataRes({
         data: [...err?.konflik],

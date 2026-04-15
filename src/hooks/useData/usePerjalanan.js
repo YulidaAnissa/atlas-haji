@@ -123,21 +123,17 @@ export function useUpdatePerjalanan() {
       const token = tokenObj?.value;
 
       if (!token) {
-        throw new Error("Token tidak tersedia, user belum login");
+        setError("Token tidak tersedia, user belum login");
+        return;
       }
 
       const res = await fetch(SERVICES.PERJALANAN({ id: idPerjalanan }), {
         method: "PUT", // atau PATCH sesuai API kamu
         headers: {
           Authorization: `Bearer ${token}`,
-          "Content-Type": "application/json",
         },
-        body: JSON.stringify(values),
+        body: values,
       });
-
-      if (!res.ok) {
-        throw new Error("Gagal mengupdate perjalanan");
-      }
 
       const data = await res.json();
       return data;
