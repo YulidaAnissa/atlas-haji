@@ -1,50 +1,70 @@
 "use client";
-import { DataTables, Breadcrumb, FormModal, Snackbar } from "@/components/elements";
-import PageBase  from "@/components/pagebase";
+
+import {
+  DataTables,
+  Breadcrumb,
+  FormModal,
+  Snackbar,
+  LoadingOverlay,
+  InfoModal,
+} from "@/components/elements";
+import PageBase from "@/components/pagebase";
 import { usePathname, useRouter } from "next/navigation";
 import { useState } from "react";
 import { usePegawai, useDeletePegawai, useEditPegawai } from "@/hooks/useData";
-import { LoadingOverlay, InfoModal } from "@/components/elements";
 import AddPegawaiForm from "@/components/forms/AddPegawai";
-import { FaEdit  } from "react-icons/fa";
-import { TbExclamationMark } from "react-icons/tb";
-import TooltipInfo from "@/components/elements/TooltipInfo";
+import { FaEdit } from "react-icons/fa";
+import { FiEdit2, FiPlus, FiSearch, FiTrash2, FiX } from "react-icons/fi";
 
 export default function DaftarPegawai() {
   const router = useRouter();
   const pathname = usePathname();
-  const [ search, setSearch ] = useState("");
-  const [ showEdit, setShowEdit ] = useState(null);
-  const [ deleted, setDeleted ] = useState(null);
-  const [ showSnackbar, setShowSnackbar ] = useState({ show: false, message: "", type: "" });
-  const { data, isLoading, fetch } = usePegawai({ params: { search: search }});
+
+  const [search, setSearch] = useState("");
+  const [showEdit, setShowEdit] = useState(null);
+  const [deleted, setDeleted] = useState(null);
+  const [showSnackbar, setShowSnackbar] = useState({
+    show: false,
+    message: "",
+    type: "",
+  });
+
+  const { data, isLoading, fetch } = usePegawai({
+    params: { search },
+  });
   const { deletePegawai, loading } = useDeletePegawai();
   const { editPegawai, loading: loadingEdit } = useEditPegawai();
+
   const headCells = [
-    { id: 'nama', label: 'Nama Pegawai', numeric: false, width: 250 },
-    { id: 'nip', label: 'NIP', numeric: false },
-    { id: 'pangkatGol', label: 'Pangkat / Gol', numeric: false, width: 150 },
-    { id: 'jabatan', label: 'Jabatan', numeric: false },
-    { id: 'aksi', label: '', numeric: false },
+    { id: "nama", label: "Nama Pegawai", numeric: false, width: 250 },
+    { id: "nip", label: "NIP", numeric: false },
+    { id: "pangkatGol", label: "Pangkat / Gol", numeric: false, width: 150 },
+    { id: "jabatan", label: "Jabatan", numeric: false },
+    { id: "aksi", label: "", numeric: false },
   ];
 
   const handleDelete = async () => {
     try {
-      await deletePegawai({
-        nip: deleted,
-      });
+      await deletePegawai({ nip: deleted });
       setDeleted(null);
-      setShowSnackbar({ show: true, message: "Pegawai berhasil dihapus", type: "success" });
+      setShowSnackbar({
+        show: true,
+        message: "Pegawai berhasil dihapus",
+        type: "success",
+      });
       await fetch();
     } catch (err) {
-      setShowSnackbar({ show: true, message: "Gagal menghapus pegawai", type: "error" });
+      setShowSnackbar({
+        show: true,
+        message: "Gagal menghapus pegawai",
+        type: "error",
+      });
       console.error("Error:", err);
     }
   };
 
   const handleUpdatePegawai = async (values) => {
     try {
-      console.log("Values to update:", values);
       const payload = {
         ...(values.nama && { nama: values.nama }),
         ...(values.nip && { nip: values.nip }),
@@ -53,83 +73,155 @@ export default function DaftarPegawai() {
         ...(values.jabatan && { jabatan: values.jabatan }),
       };
 
-      console.log("Payload for update:", payload);
-      
       await editPegawai(payload);
       await fetch();
+
       setShowEdit({ show: false, data: null });
-      setShowSnackbar({ show: true, message: "Pegawai berhasil diubah", type: "success" });
+      setShowSnackbar({
+        show: true,
+        message: "Pegawai berhasil diubah",
+        type: "success",
+      });
     } catch (err) {
-      setShowSnackbar({ show: true, message: "Gagal mengubah pegawai", type: "error" });
+      setShowSnackbar({
+        show: true,
+        message: "Gagal mengubah pegawai",
+        type: "error",
+      });
       throw err;
     }
   };
 
-  const formattedData = (data ?? [])?.map(item => ({
+  const formattedData = (data ?? []).map((item) => ({
     ...item,
     pangkatGol: `${item.pangkat} / ${item.gol}`,
     aksi: (
       <div className="flex gap-2">
         <button
-          className="rounded cursor-pointer text-white bg-primary p-2"
+          type="button"
+          className="inline-flex items-center gap-2 rounded-lg bg-[#fbf7ec] px-3 py-2 text-sm font-semibold text-brand transition hover:bg-brand hover:text-white"
           onClick={() => setShowEdit({ show: true, data: item })}
         >
+          <FiEdit2 className="h-4 w-4" />
           Ubah
         </button>
+
         <button
-          className="rounded cursor-pointer text-white bg-danger p-2"
+          type="button"
+          className="inline-flex items-center gap-2 rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm font-semibold text-red-700 transition hover:bg-red-100"
           onClick={() => setDeleted(item.nip)}
         >
+          <FiTrash2 className="h-4 w-4" />
           Hapus
         </button>
       </div>
-    )
+    ),
   }));
 
   const breadcrumbItem = [
     { label: "Home", href: "/" },
-    { label: "Daftar Pegawai"},
+    { label: "Daftar Pegawai" },
   ];
+
   return (
-    <PageBase className="p-16 mx-auto">
-      {/* Header */}
-      <Breadcrumb items={breadcrumbItem} />
-      <div className="mb-10 gap-4">
-        <h1 className="text-4xl font-bold text-gray-800 drop-shadow-[0_0_10px_rgba(234,179,8,0.7)] tracking-wide">
-          Daftar Pegawai
-        </h1>
+    <PageBase className="mx-auto p-6 sm:p-8 lg:p-10">
+      <div className="mb-8">
+        <Breadcrumb items={breadcrumbItem} />
       </div>
 
-      {/* Search */}
-      <div className="mb-6 flex flex-col md:flex-row md:justify-between md:items-center gap-4">
-        <input
-          className="w-full md:w-1/3 px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 transition"
-          id="search"
-          name="search"
-          value={search ?? ""}
-          onChange={(e) => setSearch(e.target.value)}
-          placeholder="🔍 Cari perjalanan..."
+      <section className="mb-8 rounded-2xl border border-[#eadfbe] bg-white px-6 py-6 shadow-[0_18px_50px_rgba(201,169,97,0.12)]">
+        <div className="flex flex-col gap-5 lg:flex-row lg:items-center lg:justify-between">
+          <div>
+            <p className="mb-2 text-xs font-bold uppercase tracking-[0.28em] text-brand">
+              Data Master
+            </p>
+
+            <h1 className="text-3xl font-black tracking-tight text-slate-950 sm:text-4xl">
+              Daftar Pegawai
+            </h1>
+
+            <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-500">
+              Kelola data pegawai, NIP, pangkat, golongan, dan jabatan untuk
+              kebutuhan perjalanan dinas.
+            </p>
+          </div>
+
+          <button
+            type="button"
+            className="inline-flex h-11 items-center justify-center gap-2 rounded-xl bg-brand px-5 text-sm font-bold text-white shadow-lg shadow-[#c9a961]/25 transition hover:bg-[#b5964f] focus:outline-none focus:ring-4 focus:ring-[#c9a961]/25"
+            onClick={() => router.push(`${pathname}/add`)}
+          >
+            <FiPlus className="h-4 w-4" />
+            Tambah Pegawai
+          </button>
+        </div>
+      </section>
+
+      <section className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+        <div className="mb-5 flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+          <div className="flex h-11 w-full items-center rounded-xl border border-slate-200 bg-slate-50 px-3 transition focus-within:border-brand focus-within:bg-white focus-within:ring-4 focus-within:ring-[#c9a961]/15 md:max-w-sm">
+            <FiSearch className="mr-3 h-4 w-4 shrink-0 text-slate-400" />
+
+            <input
+              type="text"
+              id="search"
+              name="search"
+              value={search}
+              onChange={(event) => setSearch(event.target.value)}
+              placeholder="Cari pegawai..."
+              className="min-w-0 flex-1 bg-transparent text-sm font-medium text-slate-800 outline-none placeholder:text-slate-400"
+            />
+
+            {search && (
+              <button
+                type="button"
+                aria-label="Hapus pencarian"
+                className="ml-2 grid h-7 w-7 place-items-center rounded-full text-slate-400 transition hover:bg-slate-200 hover:text-slate-700"
+                onClick={() => setSearch("")}
+              >
+                <FiX className="h-4 w-4" />
+              </button>
+            )}
+          </div>
+        </div>
+
+        <DataTables
+          headCells={headCells}
+          data={formattedData}
+          loading={isLoading}
         />
-        <button
-          className="cursor-pointer  px-5 py-2 bg-linear-to-r bg-black text-white font-medium rounded-lg shadow"
-          onClick={() => router.push(`${pathname}/add`)}
-        >
-          + Tambah Pegawai
-        </button>
-      </div>
-      <InfoModal show={deleted} onConfirm={handleDelete} onCancel={() => setDeleted(false)}>
+      </section>
+
+      <InfoModal
+        show={deleted}
+        onConfirm={handleDelete}
+        onCancel={() => setDeleted(null)}
+      >
         <p>Apakah kamu yakin ingin menghapus pegawai ini?</p>
       </InfoModal>
-      <FormModal icon={<FaEdit className="text-white w-6 h-6" />} show={showEdit?.show}>
-        <AddPegawaiForm 
+
+      <FormModal
+        icon={<FaEdit className="h-6 w-6 text-white" />}
+        show={showEdit?.show}
+      >
+        <AddPegawaiForm
           data={showEdit?.data}
-          onSubmit={handleUpdatePegawai} onClose={() => setShowEdit({ show: false, data: null })}
+          onSubmit={handleUpdatePegawai}
+          onClose={() => setShowEdit({ show: false, data: null })}
           type="edit"
         />
       </FormModal>
-      <DataTables headCells={headCells} data={formattedData} loading={isLoading}/>
-      <Snackbar show={showSnackbar?.show} type={showSnackbar?.type} message={showSnackbar?.message} onClose={() => setShowSnackbar({ show: false, message: "" })}/>
-      <LoadingOverlay show={loadingEdit || loading}/>
+
+      <Snackbar
+        show={showSnackbar.show}
+        type={showSnackbar.type}
+        message={showSnackbar.message}
+        onClose={() =>
+          setShowSnackbar({ show: false, message: "", type: "" })
+        }
+      />
+
+      <LoadingOverlay show={loadingEdit || loading} />
     </PageBase>
   );
 }

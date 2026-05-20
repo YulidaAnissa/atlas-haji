@@ -6,59 +6,128 @@ import FormField from "./FormField"; // komponen wrapper label+error
 import { useForm } from 'react-final-form';
 
 // Komponen SelectField
-function SelectField({ input, options, onChange, ...rest }) {
+function SelectField({ input, options, meta, onChange, ...rest }) {
   const form = useForm();
   const handleClearFieldState = () => {
     form.resetFieldState(input?.name);
     input?.onChange('');
   };
+
+  const hasError =
+    (meta?.touched || meta?.submitFailed) &&
+    (meta?.error || meta?.submitError);
+
   const customSelectStyles = {
     control: (base, state) => ({
       ...base,
-      display: "flex",
-      alignItems: "left",
-      borderRadius: "0.5rem", // rounded-lg
-      height: state.selectProps.size === "small" ? "h-6" : "h-10", // h-9 / h-12
-      border: state.isFocused
-        ? "1px solid #2563eb" // border-blue-600
-        : state.selectProps.error
-        ? "1px solid #dc2626" // border-danger
-        : "1px solid #000000", // default border
-      backgroundColor: state.selectProps.disabled
-        ? "#e5e7eb" // bg-black-200
-        : "#fff",
-      color: state.selectProps.disabled ? "#9ca3af" : "#1f2937", // text-black-400 / text-gray-800
-      boxShadow: "none",
+      minHeight: state.selectProps.size === "small" ? 40 : 46,
+      borderRadius: 7,
+      borderColor: hasError
+        ? "#ef4444"
+        : state.isFocused
+        ? "#2563eb"
+        : "#d1d5db",
+      backgroundColor: state.isDisabled ? "#f3f4f6" : "#ffffff",
+      boxShadow: state.isFocused
+        ? "0 0 0 4px rgba(37, 99, 235, 0.12)"
+        : "0 1px 2px rgba(15, 23, 42, 0.04)",
+      cursor: state.isDisabled ? "not-allowed" : "pointer",
+      transition: "all 160ms ease",
       "&:hover": {
-        borderColor: state.isFocused ? "#2563eb" : "#000000",
+        borderColor: hasError ? "#ef4444" : "#2563eb",
       },
-      paddingLeft: "0.5rem", // px-4
-      fontSize: state.selectProps.size === "small" ? "0.875rem" : "1rem", // text-xs / text-base
     }),
+
+    valueContainer: (base) => ({
+      ...base,
+      paddingInline: 14,
+    }),
+
+    input: (base) => ({
+      ...base,
+      color: "#111827",
+      margin: 0,
+      padding: 0,
+    }),
+
     placeholder: (base) => ({
       ...base,
-      color: "#9ca3af", // placeholder-gray-400
+      color: "#9ca3af",
+      fontSize: 14,
     }),
-    singleValue: (base) => ({
+
+    singleValue: (base, state) => ({
       ...base,
-      color: "#1f2937", // text-gray-800
+      color: state.isDisabled ? "#9ca3af" : "#111827",
+      fontSize: 14,
+      fontWeight: 500,
     }),
-    dropdownIndicator: (base) => ({
+
+    dropdownIndicator: (base, state) => ({
       ...base,
-      paddingRight: "0.75rem",
+      color: state.isFocused ? "#2563eb" : "#9ca3af",
+      paddingInline: 10,
+      transition: "all 160ms ease",
+      "&:hover": {
+        color: "#2563eb",
+      },
     }),
+
     clearIndicator: (base) => ({
       ...base,
-      paddingRight: "0.75rem",
+      color: "#9ca3af",
+      paddingInline: 8,
+      "&:hover": {
+        color: "#ef4444",
+      },
     }),
-    menu: (base, state) => ({
+
+    indicatorSeparator: () => ({
+      display: "none",
+    }),
+
+    menu: (base) => ({
       ...base,
-      fontSize: state.selectProps.size === "small" ? "0.875rem" : "1rem",
-    })
+      zIndex: 30,
+      overflow: "hidden",
+      borderRadius: 14,
+      border: "1px solid #e5e7eb",
+      boxShadow: "0 16px 40px rgba(15, 23, 42, 0.12)",
+    }),
+
+    menuList: (base) => ({
+      ...base,
+      padding: 6,
+    }),
+
+    option: (base, state) => ({
+      ...base,
+      borderRadius: 10,
+      padding: "10px 12px",
+      color: state.isSelected ? "#ffffff" : "#374151",
+      backgroundColor: state.isSelected
+        ? "#2563eb"
+        : state.isFocused
+        ? "#eff6ff"
+        : "#ffffff",
+      fontSize: 14,
+      fontWeight: state.isSelected ? 600 : 500,
+      cursor: "pointer",
+      "&:active": {
+        backgroundColor: state.isSelected ? "#2563eb" : "#dbeafe",
+      },
+    }),
+
+    noOptionsMessage: (base) => ({
+      ...base,
+      color: "#6b7280",
+      fontSize: 14,
+      padding: "12px",
+    }),
   };
 
   return (
-    <FormField onClear={handleClearFieldState} {...rest} className="p-2">
+    <FormField onClear={handleClearFieldState} {...rest}>
       <CreatableSelect
         {...rest}
         styles={customSelectStyles}

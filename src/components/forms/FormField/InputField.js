@@ -12,7 +12,7 @@ function InputField(props) {
   };
 
   return (
-    <FormField {...props} onClear={handleClearFieldState} className="p-2"> 
+    <FormField {...props} onClear={handleClearFieldState}> 
       <InputBase />
     </FormField>
   );

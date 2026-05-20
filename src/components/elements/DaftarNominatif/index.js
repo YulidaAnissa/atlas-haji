@@ -6,6 +6,7 @@ import { SERVICES } from "@/configs";
 import { useLoading } from "@/hooks";
 import LoadingOverlay from "@/components/elements/LoadingOverlay";
 import { formatDate, calculateTripDuration } from "@/utils/date";
+import { toUpperCase } from "@/utils/string";
 
 export default function SuratTugas({ 
   data,
@@ -91,50 +92,73 @@ export default function SuratTugas({
         uhTotal: formatRupiah(totals.uhTotal),
         transTotal: formatRupiah(totals.transTotal),
         pengTotal: formatRupiah(totals.pengTotal),
-        jumlahAll: formatRupiah(totals.jumlahAll)
+        jumlahAll: formatRupiah(totals.jumlahAll),
+        nipPPK: data.surat?.nip || "",
+        namaPPK: data.surat?.nama || "",
+        unitPPK: toUpperCase(data.surat?.unit) || "",
       });
     }
   }, [data]);
   
   const handleGenerate = async () => {
-    try {
-      startLoading();
-      const response = await fetch(format);
-      const content = await response.arrayBuffer();
-      
-      const zip = new PizZip(content);
-      const doc = new Docxtemplater(zip, { paragraphLoop: true, linebreaks: true });
-      doc.render(dataFile);
+  try {
+    startLoading();
 
-      const out = doc.getZip().generate({ type: "blob" });
+    // 1. ambil template
+    const response = await fetch(format);
+    const content = await response.arrayBuffer();
 
-      const formData = new FormData();
-      formData.append("file", out, `${file}.docx`);
+    // 2. generate DOCX
+    const zip = new PizZip(content);
+    const doc = new Docxtemplater(zip, {
+      paragraphLoop: true,
+      linebreaks: true,
+    });
 
-      const res = await fetch(SERVICES.CONVERT_PDF, {
-        method: "POST",
-        body: formData,
-      });
+    doc.render(dataFile);
 
-      const pdfBlob = await res.blob();
-      const url = URL.createObjectURL(pdfBlob);
-      window.open(url, "_blank");
-    } catch (err) {
-      console.error("Error generating PDF:", err);
-    } finally {
-      endLoading();
-    }
-  };
+    const docxBlob = doc.getZip().generate({ type: "blob" });
+
+    // 3. kirim ke backend
+    const formData = new FormData();
+    formData.append("file", docxBlob, `${file}.docx`);
+
+    const res = await fetch(SERVICES.CONVERT_PDF, {
+      method: "POST",
+      body: formData,
+    });
+
+    if (!res.ok) throw new Error("Convert failed");
+
+    // 4. tampilkan PDF
+    const pdfBlob = await res.blob();
+    const url = URL.createObjectURL(pdfBlob);
+
+    window.open(url, "_blank");
+
+  } catch (err) {
+    console.error("Error:", err);
+  } finally {
+    endLoading();
+  }
+};
 
   return (
-    <div>
-      <button
-        className="rounded cursor-pointer text-white bg-black p-2"
+    <>
+      <span
+        tabIndex={0}
         onClick={handleGenerate}
+        onKeyDown={(event) => {
+          if (event.key === "Enter" || event.key === " ") {
+            handleGenerate();
+          }
+        }}
+        className="inline-flex cursor-pointer items-center justify-center text-sm font-semibold"
       >
-       Lihat Daftar Nominatif
-      </button>
-      <LoadingOverlay show={loading}/>
-    </div>
+        Daftar Nominatif
+      </span>
+
+      <LoadingOverlay show={loading} />
+    </>
   );
 }

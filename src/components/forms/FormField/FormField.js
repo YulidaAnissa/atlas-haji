@@ -1,25 +1,100 @@
-import React from 'react';
-import PropTypes from 'prop-types';
-import clsx from 'clsx';
-import TooltipInfo from '../../elements/TooltipInfo';
-import cloneChildren from '@/utils/cloneChildern';
-import { AlertDangerIcon, ErrorOutlineIcon, InfoTriangleIcon, VerificationCheckIcon } from '../../elements/Icons';
+import React from "react";
+import PropTypes from "prop-types";
+import clsx from "clsx";
+
+import TooltipInfo from "../../elements/TooltipInfo";
+import cloneChildren from "@/utils/cloneChildern";
+import {
+  AlertDangerIcon,
+  ErrorOutlineIcon,
+  InfoTriangleIcon,
+  VerificationCheckIcon,
+} from "../../elements/Icons";
+
+function VerificationBadge({ verified }) {
+  return (
+    <span
+      className={clsx(
+        "ml-2 inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-2xs font-medium leading-4",
+        verified
+          ? "border-blue-200 bg-blue-50 text-blue-700"
+          : "border-red-200 bg-red-50 text-red-700"
+      )}
+    >
+      {verified ? <VerificationCheckIcon /> : <AlertDangerIcon />}
+      {verified ? "Sudah diverifikasi" : "Belum diverifikasi"}
+    </span>
+  );
+}
+
+function FieldMessage({
+  helperText,
+  errors,
+  touched,
+  haveErrors,
+  renderError,
+  value,
+  showErrorIcon,
+  errorPosition,
+}) {
+  const errorItem = Array.isArray(errors) ? errors[0] : errors;
+  const errorMessage = Array.isArray(errors) ? errors[0]?.message : errors;
+  const errorInfo = Array.isArray(errors) ? errors[0]?.info : null;
+
+  if (renderError) {
+    return renderError({ errors, touched, value });
+  }
+
+  if (touched && haveErrors) {
+    return (
+      <p
+        className={clsx(
+          "flex items-center text-danger",
+          errorPosition === "top"
+            ? "text-sm font-medium leading-5"
+            : "text-xs leading-5"
+        )}
+      >
+        {errorPosition === "top" && <ErrorOutlineIcon className="mr-2" />}
+        {errorPosition === "bottom" && showErrorIcon && (
+          <InfoTriangleIcon className="mr-2" fill="currentColor" />
+        )}
+
+        {errorInfo && (
+          <TooltipInfo
+            className="mr-2"
+            content={errorInfo}
+            contentClassName="max-w-full"
+            error
+          />
+        )}
+
+        {errorMessage || errorItem}
+      </p>
+    );
+  }
+
+  if (helperText) {
+    return <p className="text-xs leading-5 text-gray-400">{helperText}</p>;
+  }
+
+  return null;
+}
 
 function FormField(props) {
-  const { 
-    label, 
-    // meta : { touched, error, submitError: metaSubmitError, dirtySinceLastSubmit },
+  const {
+    label,
     meta: {
       touched,
       error,
       submitError: metaSubmitError,
-      dirtySinceLastSubmit
-    } = {}, 
-    helperText, 
+      dirtySinceLastSubmit,
+    } = {},
+    helperText,
     children,
     noLabel,
     hideLabel,
-    input = {}, 
+    input = {},
     className,
     renderError,
     primary,
@@ -27,12 +102,13 @@ function FormField(props) {
     showErrorIcon,
     withVerification,
     isVerified,
-    ...inputProps  
+    ...inputProps
   } = props;
 
-  const submitError = (!dirtySinceLastSubmit ? metaSubmitError : null);
+  const submitError = !dirtySinceLastSubmit ? metaSubmitError : null;
   const errors = submitError || error || [];
-  const haveErrors = !!errors?.length || submitError
+  const haveErrors = Array.isArray(errors) ? errors.length > 0 : !!errors;
+  const showError = touched && haveErrors;
 
   const childrenProps = {
     ...input,
@@ -40,98 +116,85 @@ function FormField(props) {
     label,
     errors,
     errorposition: errorPosition,
-    error: !!(touched && haveErrors)
+    error: showError,
   };
 
-  const renderTooltipInfo = (content) => (
-    <TooltipInfo 
-      className="mr-2"
-      content={content}
-      contentClassName="max-w-full"
-      error
-    />
-  );
-
-  const renderVerified = (verified) => {
-
-    if (verified) {
-      return (
-        <div className="text-2xs leading-4 border-[#BBDEFF] rounded-full border px-1 ml-2 flex items-center justify-center"> 
-          <VerificationCheckIcon/> 
-          <p className="px-1 pt-0.5">Sudah diverifikasi</p> 
-        </div>
-      );
-    } else {
-      return (
-        <div className="text-2xs leading-4 border-[#FDA29B] rounded-full border px-1 ml-2 flex items-center justify-center bg-[#FFEFEB]"> 
-          <AlertDangerIcon/> 
-          <p className="px-1 pt-0.5">Belum diverifikasi</p> 
-        </div>
-      );
-    }
-  
+  const messageProps = {
+    helperText,
+    errors,
+    touched,
+    haveErrors,
+    renderError,
+    value: input.value,
+    showErrorIcon,
+    errorPosition,
   };
-
 
   return (
-    <div className={clsx('flex flex-col', className)}>
-      { !noLabel &&
-        <label 
-          className={clsx(
-            'mb-1 text-xs sm:text-base tracking-wide text-gray-800 font-semibold flex',
-            { 'sr-only': hideLabel }
-          )}
+    <div className={clsx("flex flex-col gap-1.5", className)}>
+      {!noLabel && (
+        <label
           htmlFor={input.name}
+          className={clsx(
+            "flex items-center text-sm font-semibold tracking-wide text-gray-800",
+            { "sr-only": hideLabel }
+          )}
         >
-          {label}
-          {primary && <p className="text-red-600">*</p>}
-          {withVerification && renderVerified(isVerified)}
+          <span>{label}</span>
+
+          {primary && <span className="ml-1 text-red-600">*</span>}
+
+          {withVerification && <VerificationBadge verified={isVerified} />}
         </label>
-      }
-      {errorPosition === 'top' && (
-        <div className="mt-1 min-h-5 mb-3">
-          {(helperText && (!haveErrors || !touched)) && <p className="text-gray-400 text-xs leading-5">{helperText}</p>}
-          {renderError && renderError({ errors, touched, value: input.value })}
-          {(!renderError && touched && haveErrors) && 
-            <p className="text-danger text-sm font-medium leading-5 flex items-center">
-              <ErrorOutlineIcon className="mr-2" />
-              {Array.isArray(errors) && errors[0].info && renderTooltipInfo(errors[0].info) }
-              {Array.isArray(errors) ? errors[0].message : errors }
-            </p>
-          }  
+      )}
+
+      {errorPosition === "top" && (
+        <div className="min-h-5">
+          <FieldMessage {...messageProps} />
         </div>
       )}
-      <div>
-        {cloneChildren(
-          children, 
-          { ...childrenProps }
+
+      <div
+        className={clsx(
+          "relative",
+          showError && "rounded-lg ring-1 ring-danger/20"
         )}
+      >
+        {cloneChildren(children, childrenProps)}
       </div>
-      {errorPosition === 'bottom' && (
-        <div className="mt-1 min-h-1">
-          {(helperText && (!haveErrors || !touched)) && <p className="text-gray-400 text-xs leading-5">{helperText}</p>}
-          {renderError && renderError({ errors, touched, value: input.value })}
-          {(!renderError && touched && haveErrors) && 
-            <p className="text-danger text-xs leading-5 flex items-center">
-              {showErrorIcon && <InfoTriangleIcon className="mr-2" fill="currentColor" />}
-              {Array.isArray(errors) && errors[0].info && renderTooltipInfo(errors[0].info) }
-              {Array.isArray(errors) ? errors[0].message : errors }
-            </p>
-          }  
+
+      {errorPosition === "bottom" && (
+        <div className="min-h-4">
+          <FieldMessage {...messageProps} />
         </div>
       )}
     </div>
   );
 }
 
+VerificationBadge.propTypes = {
+  verified: PropTypes.bool,
+};
+
+FieldMessage.propTypes = {
+  errors: PropTypes.oneOfType([PropTypes.array, PropTypes.string, PropTypes.object]),
+  errorPosition: PropTypes.oneOf(["bottom", "top", "inside"]),
+  haveErrors: PropTypes.bool,
+  helperText: PropTypes.string,
+  renderError: PropTypes.oneOfType([PropTypes.func, PropTypes.oneOf([null])]),
+  showErrorIcon: PropTypes.bool,
+  touched: PropTypes.bool,
+  value: PropTypes.any,
+};
+
 FormField.defaultProps = {
-  className: '',
+  className: "",
   errorPosition: "bottom",
-  helperText: '',
+  helperText: "",
   hideLabel: false,
   input: {},
   isVerified: false,
-  label: '',
+  label: "",
   meta: {},
   noLabel: false,
   primary: false,
@@ -143,7 +206,7 @@ FormField.defaultProps = {
 FormField.propTypes = {
   children: PropTypes.element.isRequired,
   className: PropTypes.string,
-  errorPosition: PropTypes.oneOf(['bottom', 'top', 'inside']),
+  errorPosition: PropTypes.oneOf(["bottom", "top", "inside"]),
   helperText: PropTypes.string,
   hideLabel: PropTypes.bool,
   input: PropTypes.object,

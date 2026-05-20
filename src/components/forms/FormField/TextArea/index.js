@@ -1,35 +1,42 @@
-import React, { forwardRef, useRef } from 'react';
-import PropTypes from 'prop-types';
-import clsx from 'clsx';
-import { useMergeRefs } from '../../../../hooks';
+import React, { forwardRef, useRef } from "react";
+import PropTypes from "prop-types";
+import clsx from "clsx";
 
-const Textarea = forwardRef(function Input(props, ref) {
+import { useMergeRefs } from "../../../../hooks";
+
+const sizeClass = {
+  small: "min-h-24 text-sm",
+  medium: "min-h-32 text-base",
+  big: "min-h-40 text-base",
+};
+
+const Textarea = forwardRef(function Textarea(props, ref) {
   const {
     error,
     inputClassName,
     name,
     placeholder,
     endAdornment,
-    size,
-    clearOnError,
+    size = "medium",
     disabled,
     ...inputProps
   } = props;
 
-  const inputRef = useRef();
+  const inputRef = useRef(null);
   const mergedRef = useMergeRefs([inputRef, ref]);
 
-  const isShowClearIcon = (error && clearOnError);
-
   return (
-    <>
+    <div className="relative w-full">
       <textarea
         className={clsx(
-          'w-full px-3 py-2 placeholder-black-500 border rounded-lg focus:outline-none focus:ring-1 focus:ring-blue-600 focus:border-transparent',
-          {
-            'text-xs md:text-sm': size === 'small',
-            'border border-danger bg-opacity-5': error,
-          },
+          "w-full resize-y rounded-xl border bg-white px-4 py-3 font-medium text-gray-900 shadow-sm outline-none transition placeholder:text-sm placeholder:font-normal placeholder:text-gray-400",
+          sizeClass[size],
+          disabled &&
+            "cursor-not-allowed border-gray-200 bg-gray-100 text-gray-400",
+          error
+            ? "border-red-500 ring-1 ring-red-100"
+            : "border-gray-300 hover:border-gray-400 focus:border-blue-600 focus:ring-4 focus:ring-blue-100",
+          endAdornment && "pr-12",
           inputClassName
         )}
         disabled={disabled}
@@ -37,16 +44,16 @@ const Textarea = forwardRef(function Input(props, ref) {
         name={name}
         placeholder={placeholder}
         ref={mergedRef}
-        rows="4"
+        rows={4}
         {...inputProps}
       />
-      {!isShowClearIcon && React.isValidElement(endAdornment) ? (
-        <div className="h-full ml-3 flex items-center">
+
+      {React.isValidElement(endAdornment) && (
+        <div className="pointer-events-none absolute right-3 top-3 text-gray-400">
           {endAdornment}
         </div>
-      ): null }
-
-    </>
+      )}
+    </div>
   );
 });
 
@@ -55,14 +62,14 @@ Textarea.defaultProps = {
   disabled: false,
   endAdornment: null,
   error: false,
-  inputClassName: '',
-  label: '',
-  name: '',
+  inputClassName: "",
+  label: "",
+  name: "",
   onBlur: () => {},
   onClear: () => {},
   onClick: () => {},
-  placeholder: '',
-  size: 'medium',
+  placeholder: "",
+  size: "medium",
 };
 
 Textarea.propTypes = {
@@ -77,7 +84,7 @@ Textarea.propTypes = {
   onClear: PropTypes.func,
   onClick: PropTypes.func,
   placeholder: PropTypes.string,
-  size: PropTypes.oneOf(['big', 'small', 'medium']),
+  size: PropTypes.oneOf(["big", "small", "medium"]),
 };
 
 export default Textarea;

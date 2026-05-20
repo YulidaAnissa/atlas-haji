@@ -7,6 +7,10 @@ export default function validation(values) {
       // { message: 'pilih tujuan '},
       { rule: 'required' },
     ]),
+    nip: validate(values.nip, [
+      // { message: 'pilih tujuan '},
+      { rule: 'required' },
+    ]),
     pegawai: !values.pegawai || values.pegawai.length === 0
       ? ['Minimal 1 pegawai wajib dipilih']
       : values.pegawai.map((p, i) =>

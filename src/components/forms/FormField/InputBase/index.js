@@ -1,11 +1,12 @@
-import React, { useState, forwardRef, useRef } from 'react';
-import PropTypes from 'prop-types';
-import clsx from 'clsx';
-import useMergeRefs from '../../../../hooks/useMergeRefs';
-import { CloseIcon } from '../../../elements/Icons';
+import React, { useState, forwardRef, useRef } from "react";
+import PropTypes from "prop-types";
+import clsx from "clsx";
 
-const InputBase = forwardRef(function Input(props, ref) {
-  const { 
+import useMergeRefs from "../../../../hooks/useMergeRefs";
+import { CloseIcon } from "../../../elements/Icons";
+
+const InputBase = forwardRef(function InputBase(props, ref) {
+  const {
     autoComplete,
     className,
     error,
@@ -18,67 +19,105 @@ const InputBase = forwardRef(function Input(props, ref) {
     placeholder,
     startAdornment,
     endAdornment,
-    size = 'small',
+    size = "small",
     succes,
     clearOnError,
     disabled,
     ...inputProps
   } = props;
-  const [ focused, setFocused ] = useState(false);
 
-  const inputRef = useRef();
+  const [focused, setFocused] = useState(false);
+
+  const inputRef = useRef(null);
   const mergedRef = useMergeRefs([inputRef, ref]);
 
-  const isShowClearIcon = (error && clearOnError);
+  const hasValue =
+    inputProps.value !== undefined &&
+    inputProps.value !== null &&
+    inputProps.value !== "";
 
-  const handleInputBlur = (e) => {
-    e.stopPropagation();
+  const isShowClearIcon = clearOnError ? error || hasValue : hasValue;
+
+  const handleInputBlur = (event) => {
+    event.stopPropagation();
     setFocused(false);
-    onBlur(e);
+    onBlur(event);
   };
 
-  const handleInputClick = (e) => {
-    e.stopPropagation();
-    setFocused(true);
-    onClick?.(e);
+  const handleInputClick = (event) => {
+    event.stopPropagation();
+    onClick?.(event);
   };
 
-  const handleWapperClick = (e) => {
-    e.stopPropagation();
-    inputRef.current.click();
-    inputRef.current.focus();
+  const handleWrapperClick = (event) => {
+    event.stopPropagation();
+
+    if (disabled) return;
+
+    inputRef.current?.focus();
+    inputRef.current?.click();
+  };
+
+  const handleClear = (event) => {
+    event.stopPropagation();
+
+    if (typeof onClear === "function") {
+      onClear(event);
+    }
+
+    inputRef.current?.focus();
   };
 
   return (
-    <div 
+    <div
       className={clsx(
-        'flex items-center rounded-lg overflow-hidden',
-        { 
-          'h-12': size === 'medium',
-          'h-9': size === 'small',
-          'border border-blue-600': !error && focused,
-          'border': !noBorder,
-          'border border-danger bg-danger bg-opacity-5': error,
-          'border border-success bg-success bg-opacity-5': !error && succes,
-          'border bg-black-200 text-black-400': !inputClassName?.includes('bg-') && disabled,
+        "group flex w-full items-stretch overflow-hidden rounded-lg bg-white transition",
+        {
+          "min-h-10": size === "small",
+          "min-h-12": size === "medium",
+          "min-h-14": size === "big",
+
+          border: !noBorder,
+
+          "cursor-not-allowed border-gray-200 bg-gray-100 text-gray-400":
+            disabled,
+
+          "border-red-500 ring-1 ring-red-100": error && !disabled,
+
+          "border-success ring-1 ring-success/10":
+            !error && succes && !disabled,
+
+          "border-brand ring-4 ring-[#c9a961]/20":
+            focused && !error && !disabled,
+
+          "border-gray-300 bg-white hover:border-[#c9a961]":
+            !focused && !error && !succes && !disabled,
         },
         className
       )}
-      onClick={handleWapperClick}
+      onClick={handleWrapperClick}
     >
-
-      {React.isValidElement(startAdornment) ? (
-        <div className="h-full mx-2 flex items-center">
+      {React.isValidElement(startAdornment) && (
+        <div
+          className={clsx(
+            "flex shrink-0 items-center pl-3 text-gray-400",
+            focused && !error && !disabled && "text-brand"
+          )}
+        >
           {startAdornment}
         </div>
-      ): null } 
+      )}
 
-      <input 
+      <input
         autoComplete={autoComplete}
         className={clsx(
-          'w-full h-10 px-4 text-base text-gray-800 placeholder-gray-400 bg-white rounded-lg focus:outline-none focus:ring-0 focus:border-gray-400',
+          "min-w-0 flex-1 bg-transparent px-3 text-sm font-medium text-gray-900 outline-none placeholder:text-sm placeholder:font-normal placeholder:text-gray-400 disabled:cursor-not-allowed disabled:text-gray-400",
           {
-            'text-xs md:text-sm': size === 'small',
+            "min-h-10": size === "small",
+            "min-h-12 text-base": size === "medium",
+            "min-h-14 text-base": size === "big",
+            "pl-4": !startAdornment,
+            "pr-3": true,
           },
           inputClassName
         )}
@@ -93,40 +132,48 @@ const InputBase = forwardRef(function Input(props, ref) {
         {...inputProps}
       />
 
-      {isShowClearIcon ? (
-        <div className="h-full ml-3 flex items-center p-1.5">
-          <button onClick={onClear} type="button">
-            <CloseIcon />
-          </button>
-        </div>
-      ): null }
+      {isShowClearIcon && (
+        <button
+          type="button"
+          className="flex w-10 shrink-0 items-center justify-center text-gray-400 transition hover:bg-gray-50 hover:text-red-500 disabled:cursor-not-allowed"
+          disabled={disabled}
+          onClick={handleClear}
+        >
+          <CloseIcon />
+        </button>
+      )}
 
-      {!isShowClearIcon && React.isValidElement(endAdornment) ? (
-        <div className="h-full mr-3 flex items-center">
+      {React.isValidElement(endAdornment) && (
+        <div
+          className={clsx(
+            "flex w-11 shrink-0 items-center justify-center border-l border-gray-200 text-gray-400 transition",
+            focused && !error && !disabled && "text-brand",
+            disabled && "text-gray-300"
+          )}
+        >
           {endAdornment}
         </div>
-      ): null }
-
+      )}
     </div>
   );
 });
 
 InputBase.defaultProps = {
-  autoComplete: '',
-  className: '',
+  autoComplete: "",
+  className: "",
   clearOnError: false,
   disabled: false,
   endAdornment: null,
   error: false,
-  inputClassName: '',
-  label: '',
-  name: '',
+  inputClassName: "",
+  label: "",
+  name: "",
   noBorder: false,
   onBlur: () => {},
   onClear: () => {},
   onClick: () => {},
-  placeholder: '',
-  size: 'medium',
+  placeholder: "",
+  size: "medium",
   startAdornment: null,
   succes: false,
 };
@@ -146,7 +193,7 @@ InputBase.propTypes = {
   onClear: PropTypes.func,
   onClick: PropTypes.func,
   placeholder: PropTypes.string,
-  size: PropTypes.oneOf(['big', 'small', 'medium']),
+  size: PropTypes.oneOf(["big", "small", "medium"]),
   startAdornment: PropTypes.element,
   succes: PropTypes.bool,
 };

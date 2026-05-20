@@ -1,135 +1,165 @@
 "use client";
-import PageBase  from "@/components/pagebase";
+
+import { useState } from "react";
 import { useRouter } from "next/navigation";
-import AddPerjalananForm from "@/components/forms/AddPerjalanan";
-import { useKabKota, usePegawai, useSuratTugas } from "@/hooks/useData";
-import { postPerjalanan } from "./actions";
-import { useLoading } from "@/hooks";
-import InfoModal from "@/components/elements/InfoModal";
-import { useState } from 'react';
 import { FaCheck } from "react-icons/fa";
 import { IoAlert } from "react-icons/io5";
-import { formatDate } from "@/utils/date";
+
+import PageBase from "@/components/pagebase";
+import AddPerjalananForm from "@/components/forms/AddPerjalanan";
+import InfoModal from "@/components/elements/InfoModal";
 import LoadingOverlay from "@/components/elements/LoadingOverlay";
 import Breadcrumb from "@/components/elements/Breadcrumb";
 
+import { useKabKota, usePegawai, useSuratTugas } from "@/hooks/useData";
+import { useLoading } from "@/hooks";
+import { formatDate } from "@/utils/date";
+import { postPerjalanan } from "./actions";
+
+const breadcrumbItems = [
+  { label: "Home", href: "/" },
+  { label: "Daftar Perjalanan Dinas", href: "/perjalanan-dinas" },
+  { label: "Tambah" },
+];
+
+function buildPerjalananFormData(values) {
+  const formData = new FormData();
+  const pegawai = Array.isArray(values.pegawai) ? values.pegawai : [];
+
+  formData.append("pegawai", JSON.stringify(pegawai));
+  formData.append("nip", values.nip);
+  formData.append("tglBerangkat", values.dateRange.formattedStart);
+  formData.append("tglKembali", values.dateRange.formattedEnd);
+  formData.append("idKabKota", values.tujuan);
+  formData.append("status", "perjalanan");
+
+  if (values.idSurat) formData.append("idSurat", values.idSurat);
+  if (values.noSurat) formData.append("noSurat", values.noSurat);
+  if (values.tglSurat) {
+    formData.append("tglSurat", formatDate(values.tglSurat, "YYYY-MM-DD"));
+  }
+  if (values.kegiatan) formData.append("kegiatan", values.kegiatan);
+  if (values.fileSurat) formData.append("fileSurat", values.fileSurat);
+
+  return formData;
+}
+
 export default function AddPerjalananDinas() {
   const router = useRouter();
-  const [ showModalSuccess, setShowModalSuccess ] = useState(false); 
-  const [ showModalError, setShowModalError ] = useState(false); 
-  const [ dataRes, setDataRes ] = useState({}); 
+
+  const [showSuccessModal, setShowSuccessModal] = useState(false);
+  const [showErrorModal, setShowErrorModal] = useState(false);
+  const [savedPerjalananId, setSavedPerjalananId] = useState(null);
+  const [conflictData, setConflictData] = useState(null);
 
   const { data: kabkota } = useKabKota();
   const { data: pegawai } = usePegawai();
-  const { data: pejabat } = usePegawai({ params: { status: "pejabat" }});
-  const [loading, startLoading, endLoading] = useLoading();
+  const { data: pejabat } = usePegawai({ params: { status: "pejabat" } });
   const { data: suratTugas } = useSuratTugas();
+
+  const [loading, startLoading, endLoading] = useLoading();
 
   const handleSubmit = async (values, form) => {
     try {
       startLoading();
 
-      const pegawaiArray = Array.isArray(values.pegawai)
-        ? values.pegawai.map(opt => opt) // ambil hanya NIP string
-        : [];
-
-      // Buat FormData
-      const formData = new FormData();
-      
-      // Perjalanan
-      formData.append("pegawai", JSON.stringify(pegawaiArray));
-      formData.append("nip", values.nip); // NIP pejabat
-      formData.append("tglBerangkat", values.dateRange.formattedStart);
-      formData.append("tglKembali", values.dateRange.formattedEnd);
-      formData.append("idKabKota", values.tujuan);
-      formData.append("status", "perjalanan");
-
-      // Surat (opsional)
-      if (values.idSurat) formData.append("idSurat", values.idSurat);
-      if (values.noSurat) formData.append("noSurat", values.noSurat);
-      if (values.tglSurat) formData.append("tglSurat", formatDate(values.tglSurat, "YYYY-MM-DD"));
-      if (values.kegiatan) formData.append("kegiatan", values.kegiatan);
-      if (values.fileSurat) formData.append("fileSurat", values.fileSurat);
-
-      // Kirim ke API
+      const formData = buildPerjalananFormData(values);
       const res = await postPerjalanan(formData);
 
       form.reset();
-      setShowModalSuccess(true);
-      setDataRes(res.idPerjalanan);
-
+      setSavedPerjalananId(res.idPerjalanan);
+      setShowSuccessModal(true);
     } catch (err) {
-      setShowModalError(true);
-      setDataRes({
-        data: [...err?.konflik],
-        tglBerangkatValue: values.dateRange.formattedStart,
-        tglKembaliValue: values.dateRange.formattedEnd,
+      setConflictData({
+        data: err?.konflik ?? [],
+        tglBerangkat: values.dateRange.formattedStart,
+        tglKembali: values.dateRange.formattedEnd,
       });
+      setShowErrorModal(true);
     } finally {
       endLoading();
     }
   };
 
-  const breadcrumbItem = [
-    { label: "Home", href: "/" },
-    { label: "Daftar Perjalanan Dinas", href: "/perjalanan-dinas" },
-    { label: "Tambah" }
-  ];
   return (
-    <PageBase className="p-16 mx-auto">
-      {/* Header */}
-      <Breadcrumb items={breadcrumbItem} />
-      <div className="mb-10 gap-4">
-        <h1 className="text-4xl font-bold text-gray-800 drop-shadow-[0_0_10px_rgba(234,179,8,0.7)] tracking-wide">
+    <PageBase className="mx-auto max-w-7xl px-6 py-10 lg:px-12">
+      <Breadcrumb items={breadcrumbItems} />
+
+      <header className="mb-10 mt-6">
+        <p className="mb-2 text-sm font-semibold uppercase tracking-wide text-yellow-600">
+          Perjalanan Dinas
+        </p>
+        <h1 className="text-3xl font-bold tracking-tight text-gray-900 md:text-4xl">
           Tambah Perjalanan Dinas Baru
         </h1>
-      </div>
-      <InfoModal 
-        onConfirm={() => router.push(`/perjalanan-dinas/${dataRes}`)}
-        show={showModalSuccess}
-        icon={<FaCheck className="text-white w-6 h-6"/>}
+        <p className="mt-3 max-w-2xl text-sm leading-6 text-gray-500">
+          Lengkapi data pegawai, tujuan, tanggal keberangkatan, dan surat tugas
+          untuk membuat perjalanan dinas baru.
+        </p>
+      </header>
+
+      <section className="rounded-2xl border border-gray-200 bg-white/90 p-6 shadow-sm backdrop-blur md:p-8">
+        <AddPerjalananForm
+          onSubmit={handleSubmit}
+          kabkota={kabkota}
+          pegawai={pegawai}
+          pejabat={pejabat}
+          st={suratTugas}
+        />
+      </section>
+
+      <InfoModal
+        show={showSuccessModal}
+        icon={<FaCheck className="h-6 w-6 text-white" />}
         title="Data berhasil disimpan"
-        onCancel={() => setShowModalSuccess(false)}
+        onCancel={() => setShowSuccessModal(false)}
+        onConfirm={() => router.push(`/perjalanan-dinas/${savedPerjalananId}`)}
       >
-        <p className="text-gray-500 mt-2">
-          Perubahan sudah tersimpan dengan aman. Apakah kamu ingin melanjutkan?
+        <p className="mt-2 text-gray-500">
+          Perjalanan dinas berhasil dibuat. Kamu bisa melanjutkan untuk melihat
+          detail data yang baru disimpan.
         </p>
       </InfoModal>
+
       <InfoModal
-        show={showModalError}
-        icon={<IoAlert className="text-white w-6 h-6"/>}
+        show={showErrorModal}
+        icon={<IoAlert className="h-6 w-6 text-white" />}
         title="Data gagal disimpan"
-        onCancel={() => setShowModalError(false)}
+        onCancel={() => setShowErrorModal(false)}
       >
-        <div>
-          <p className="text-gray-500 my-2">
-            Ada pegawai yang sudah punya perjalanan di tanggal {dataRes?.tglBerangkatValue} s/d. {dataRes?.tglKembaliValue}
+        <div className="text-left">
+          <p className="my-2 text-sm leading-6 text-gray-500">
+            Ada pegawai yang sudah memiliki perjalanan pada tanggal{" "}
+            <span className="font-semibold text-gray-700">
+              {conflictData?.tglBerangkat}
+            </span>{" "}
+            s/d{" "}
+            <span className="font-semibold text-gray-700">
+              {conflictData?.tglKembali}
+            </span>
+            .
           </p>
-          <ul className="space-y-2 text-left">
-            {dataRes?.data?.map((item, index) => (
+
+          <ul className="mt-4 max-h-72 space-y-2 overflow-y-auto pr-1">
+            {conflictData?.data?.map((item, index) => (
               <li
-                key={index}
-                className="grid p-2 rounded-lg border border-gray-200 hover:shadow-md transition"
+                key={`${item.nama}-${index}`}
+                className="rounded-xl border border-gray-200 bg-gray-50 p-3 transition hover:border-yellow-300 hover:bg-yellow-50"
               >
-                  <p className="text-sm font-semibold text-gray-700">{item.nama}</p>
-                  <p className="text-xs text-gray-500">
-                    {formatDate(item.tglBerangkat)} s/d. {formatDate(item.tglKembali)} Tujuan {item.kabkota}
-                  </p>
-                
+                <p className="text-sm font-semibold text-gray-800">
+                  {item.nama}
+                </p>
+                <p className="mt-1 text-xs leading-5 text-gray-500">
+                  {formatDate(item.tglBerangkat)} s/d{" "}
+                  {formatDate(item.tglKembali)} · Tujuan {item.kabkota}
+                </p>
               </li>
             ))}
           </ul>
-
         </div>
       </InfoModal>
-      <AddPerjalananForm 
-        onSubmit={handleSubmit} 
-        kabkota={kabkota}
-        pegawai={pegawai}
-        pejabat={pejabat}
-        st={suratTugas}
-      />
-      <LoadingOverlay show={loading}/>
+
+      <LoadingOverlay show={loading} />
     </PageBase>
   );
 }

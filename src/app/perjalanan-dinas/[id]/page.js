@@ -1,103 +1,145 @@
 "use client";
-import PageBase  from "@/components/pagebase";
-import { DataTables, Breadcrumb, InfoModal, FormModal, Snackbar } from "@/components/elements";
-import { useParams } from "next/navigation";
-import { usePegawai, useUpdatePerjalanan, useKabKota, usePerjalanan, useDeletePerjalananPegawai, useAddPegawaiPerjalanan, useSuratTugas } from "@/hooks/useData";
-import { calculateTripDuration, formatDate } from "@/utils/date";
-import { IoDocumentTextOutline } from "react-icons/io5";
+
 import { useState } from "react";
-import { useRouter } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
+import { IoDocumentTextOutline } from "react-icons/io5";
+import { FaEdit, FaPlusCircle } from "react-icons/fa";
+
+import PageBase from "@/components/pagebase";
+import {
+  DataTables,
+  Breadcrumb,
+  InfoModal,
+  FormModal,
+  Snackbar,
+} from "@/components/elements";
+import PrintButton from "@/components/elements/PrintButton";
+import LoadingOverlay from "@/components/elements/LoadingOverlay";
+
 import AddPegawaiPerjalanan from "@/components/forms/AddPegawaiPerjalanan";
 import UpdatePerjalanan from "@/components/forms/UpdatePerjalanan";
-import AddSuratTugas from "@/components/forms/AddSuratTugas";
-import PrintButton from "@/components/elements/PrintButton";
-import { FaEdit, FaPlusCircle  } from "react-icons/fa";
+
+import {
+  usePegawai,
+  useUpdatePerjalanan,
+  useKabKota,
+  usePerjalanan,
+  useDeletePerjalananPegawai,
+  useAddPegawaiPerjalanan,
+  useSuratTugas,
+} from "@/hooks/useData";
 import { useLoading } from "@/hooks";
-import LoadingOverlay from "@/components/elements/LoadingOverlay";
-import { form } from "@heroui/react";
+import { calculateTripDuration, formatDate } from "@/utils/date";
+
+function DetailItem({ label, value }) {
+  return (
+    <div className="rounded-xl border border-gray-200 bg-white px-4 py-3 shadow-sm">
+      <p className="text-xs font-semibold uppercase tracking-wide text-gray-400">
+        {label}
+      </p>
+      <p className="mt-1 text-sm font-semibold leading-6 text-gray-800">
+        {value || "-"}
+      </p>
+    </div>
+  );
+}
 
 export default function Component() {
-  const params = useParams();
+  const { id } = useParams();
   const router = useRouter();
-  const [ deleted, setDeleted ] = useState();
-  const [ showAddPegawai, setShowAddPegawai ] = useState(false);
-  const [ showAddST, setShowAddST ] = useState(false);
-  const [ showUpdatePerjalanan, setShowUpdatePerjalanan ] = useState(false);
-  const [ showSnackbar, setShowSnackbar ] = useState({ show: false, message: "", type: "" });
-  const { id } = params;
-  const { data, isLoading, fetch } = usePerjalanan({
-    urlParams: { id }
+
+  const [deleted, setDeleted] = useState(null);
+  const [showAddPegawai, setShowAddPegawai] = useState(false);
+  const [showUpdatePerjalanan, setShowUpdatePerjalanan] = useState(false);
+  const [showSnackbar, setShowSnackbar] = useState({
+    show: false,
+    message: "",
+    type: "",
   });
-  const { data: pejabat } = usePegawai({ params: { status: "pejabat" }});
+
+  const [loading, startLoading, endLoading] = useLoading();
+
+  const { data, isLoading, fetch } = usePerjalanan({ urlParams: { id } });
+  const { data: pejabat } = usePegawai({ params: { status: "pejabat" } });
   const { data: pegawai } = usePegawai();
   const { data: kabkota } = useKabKota();
   const { data: suratTugas } = useSuratTugas();
+
   const { postPegawai } = useAddPegawaiPerjalanan();
   const { deletePerjalananPegawai } = useDeletePerjalananPegawai();
-  const { updatePerjalanan, error } = useUpdatePerjalanan();
-  const [loading, startLoading, endLoading] = useLoading();
-  
+  const { updatePerjalanan } = useUpdatePerjalanan();
+
+  const perjalanan = data?.perjalanan;
+
   const pegawaiTanpaPerjalanan = pegawai?.filter(
     (p) => !data?.pegawai?.some((pp) => pp.nip === p.nip)
   );
 
- const handleUpdatePerjalanan = async (values) => {
-  try {
-    startLoading();
-    console.log("Updating perjalanan with values:", values);
+  const handleUpdatePerjalanan = async (values) => {
+    try {
+      startLoading();
 
-    const formData = new FormData();
-    if (values.nip) formData.append("nip", values.nip); // NIP pejabat
-    if (values.dateRange?.formattedStart) formData.append("tglBerangkat", values.dateRange.formattedStart);
-    if (values.dateRange?.formattedEnd) formData.append("tglKembali", values.dateRange.formattedEnd);
-    if (values.tujuan) formData.append("idKabKota", values.tujuan);
+      const formData = new FormData();
 
-    // Surat (opsional)
-    if (values.idSurat) formData.append("idSurat", values.idSurat);
-    if (values.noSurat) formData.append("noSurat", values.noSurat);
-    if (values.tglSurat) formData.append("tglSurat", formatDate(values.tglSurat, "YYYY-MM-DD"));
-    if (values.kegiatan) formData.append("kegiatan", values.kegiatan);
-    if (values.file) formData.append("file", values.file);
+      if (values.nip) formData.append("nip", values.nip);
+      if (values.dateRange?.formattedStart) {
+        formData.append("tglBerangkat", values.dateRange.formattedStart);
+      }
+      if (values.dateRange?.formattedEnd) {
+        formData.append("tglKembali", values.dateRange.formattedEnd);
+      }
+      if (values.tujuan) formData.append("idKabKota", values.tujuan);
+      if (values.idSurat) formData.append("idSurat", values.idSurat);
+      if (values.noSurat) formData.append("noSurat", values.noSurat);
+      if (values.tglSurat) {
+        formData.append("tglSurat", formatDate(values.tglSurat, "YYYY-MM-DD"));
+      }
+      if (values.kegiatan) formData.append("kegiatan", values.kegiatan);
+      if (values.file) formData.append("file", values.file);
 
-    // Debug isi FormData
-    console.log("FormData entries:");
-    for (let [key, value] of formData.entries()) {
-      console.log(key, value);
+      await updatePerjalanan(id, formData);
+      await fetch();
+
+      setShowUpdatePerjalanan(false);
+      setShowSnackbar({
+        show: true,
+        message: "Perjalanan berhasil disimpan",
+        type: "success",
+      });
+    } catch (err) {
+      setShowSnackbar({
+        show: true,
+        message: `Gagal disimpan${err?.message ? `: ${err.message}` : ""}`,
+        type: "error",
+      });
+      return err;
+    } finally {
+      endLoading();
     }
-
-    if (!values || Object.keys(values).length === 0) {
-      throw new Error("Tidak ada data untuk update");
-    }
-
-    // Kirim ke API
-    await updatePerjalanan(id, formData);
-
-    await fetch();
-    setShowUpdatePerjalanan(false);
-    setShowAddST(false);
-    setShowSnackbar({ show: true, message: "Berhasil disimpan", type: "success" });
-  } catch (err) {
-    setShowSnackbar({ show: true, message: "Gagal disimpan:" + err.message, type: "error" });
-    return err;
-  } finally {
-    endLoading();
-  }
-};
-
+  };
 
   const handleAddPegawai = async (values) => {
     try {
       startLoading();
-      const payload = {
-        pegawai: [values.pegawai],
-        idPerjalanan: id
-      };
-      await postPegawai(payload);
+
+      await postPegawai({
+        pegawai: [values.pegawai.value],
+        idPerjalanan: id,
+      });
+
       await fetch();
       setShowAddPegawai(false);
-      setShowSnackbar({ show: true, message: "Pegawai berhasil ditambahkan", type: "success" });
+      setShowSnackbar({
+        show: true,
+        message: "Pegawai berhasil ditambahkan",
+        type: "success",
+      });
     } catch (err) {
-      setShowSnackbar({ show: true, message: "Gagal menambahkan pegawai", type: "error" });
+      setShowSnackbar({
+        show: true,
+        message: "Gagal menambahkan pegawai",
+        type: "error",
+      });
       return err;
     } finally {
       endLoading();
@@ -107,163 +149,237 @@ export default function Component() {
   const handleDelete = async () => {
     try {
       startLoading();
+
       const result = await deletePerjalananPegawai({
         idPerjalanan: id,
         nip: deleted,
       });
-      setDeleted();
+
+      setDeleted(null);
+
       if (result?.message?.includes("perjalanan otomatis terhapus")) {
         router.push("/perjalanan-dinas");
       } else {
         await fetch();
       }
-      setShowSnackbar({ show: true, message: "Pegawai berhasil dihapus", type: "success" });
+
+      setShowSnackbar({
+        show: true,
+        message: "Pegawai berhasil dihapus",
+        type: "success",
+      });
     } catch (err) {
-      setShowSnackbar({ show: true, message: "Gagal menghapus pegawai", type: "error" });
-      console.error("Error:", err);
+      setShowSnackbar({
+        show: true,
+        message: "Gagal menghapus pegawai",
+        type: "error",
+      });
     } finally {
       endLoading();
     }
   };
 
   const headCells = [
-    { id: 'nip', label: 'NIP', numeric: false },
-    { id: 'nama', label: 'Nama Pegawai', numeric: false },
-    { id: 'gol', label: 'Gol', numeric: false },
-    { id: 'jabatan', label: 'Jabatan', numeric: false },
-    { id: 'aksi', label: '', numeric: false },
+    { id: "nip", label: "NIP", numeric: false },
+    { id: "nama", label: "Nama Pegawai", numeric: false },
+    { id: "gol", label: "Gol", numeric: false },
+    { id: "jabatan", label: "Jabatan", numeric: false },
+    { id: "aksi", label: "", numeric: false, align: "right" },
   ];
 
-  const formattedData = (data?.pegawai ?? [])?.map(item => ({
+  const formattedData = (data?.pegawai ?? []).map((item) => ({
     ...item,
     aksi: (
-      <div className="flex gap-2">
-        {item.status === 'perjalanan' && (
+      <div className="flex w-max gap-2">
+        {item.status === "perjalanan" && (
           <button
-            className="rounded cursor-pointer text-white bg-danger p-2"
+            type="button"
+            className="inline-flex items-center justify-center rounded-xl border border-red-200 bg-red-50 px-3 py-2 text-sm font-semibold text-red-700 transition hover:bg-red-100"
             onClick={() => setDeleted(item.nip)}
           >
             Hapus
           </button>
         )}
-        <PrintButton 
+
+        <PrintButton
           data={{
             ...item,
-            lama: calculateTripDuration(data?.perjalanan?.tglBerangkat, data?.perjalanan?.tglKembali),
-            tglBerangkat: formatDate(data?.perjalanan?.tglBerangkat, "DD MMMM YYYY"),
-            tglKembali: formatDate(data?.perjalanan?.tglKembali, "DD MMMM YYYY"),
-            kabkota: data?.perjalanan?.kabkota,
-            kegiatan: data?.perjalanan?.kegiatan,
-            unit: data?.perjalanan?.unit,
-            jabatanPPK: data?.perjalanan?.jabatan,
-            nipPPK: data?.perjalanan?.nip,
-            namaPPK: data?.perjalanan?.nama,
+            lama: calculateTripDuration(
+              perjalanan?.tglBerangkat,
+              perjalanan?.tglKembali
+            ),
+            tglBerangkat: formatDate(perjalanan?.tglBerangkat, "DD MMMM YYYY"),
+            tglKembali: formatDate(perjalanan?.tglKembali, "DD MMMM YYYY"),
+            kabkota: perjalanan?.kabkota,
+            kegiatan: perjalanan?.kegiatan,
+            unit: perjalanan?.unit,
+            jabatanPPK: perjalanan?.jabatan,
+            nipPPK: perjalanan?.nip,
+            namaPPK: perjalanan?.nama,
           }}
           format="/spd-format.docx"
           file={`spd-${item.nip}`}
+          text="Cetak SPD"
         />
       </div>
-    )
+    ),
   }));
 
   const breadcrumbItem = [
     { label: "Home", href: "/" },
     { label: "Daftar Perjalanan Dinas", href: "/perjalanan-dinas" },
-    { label: data?.perjalanan?.kegiatan }
+    { label: perjalanan?.kegiatan || "Detail" },
   ];
 
   return (
-    <PageBase className="p-16 mx-auto">
+    <PageBase className="mx-auto max-w-7xl px-6 py-10 lg:px-12">
       <Breadcrumb items={breadcrumbItem} />
-      <div className="mb-10 gap-4">
-        <h1 className="text-4xl font-bold text-gray-800 drop-shadow-[0_0_10px_rgba(234,179,8,0.7)] tracking-wide">
-          Detail Perjalanan Dinas
-        </h1>
-      </div>
-      <div className="flex mb-6 gap-6 justify-between">
-        <div className="tracking-widest leading-loose grid grid-cols-2 gap-16 min-w-3/4 bg-gray-50 rounded-xl shadow-lg p-6 space-y-6">
-          <ol className="relative border-l border-indigo-300 space-y-6">
-            <li className="ml-6">
-              <div className="absolute w-3 h-3 bg-indigo-600 rounded-full -left-1.5 border border-white"></div>
-              <h3 className="font-semibold text-gray-900">Tanggal Berangkat</h3>
-              <p className="text-sm text-gray-600">
-                {formatDate(data?.perjalanan?.tglBerangkat)}
-              </p>
-            </li>
-            <li className="ml-6">
-              <div className="absolute w-3 h-3 bg-indigo-600 rounded-full -left-1.5 border border-white"></div>
-              <h3 className="font-semibold text-gray-900">Tujuan</h3>
-              <p className="text-sm text-gray-600">{data?.perjalanan?.kabkota}</p>
-            </li>
-            <li className="ml-6">
-              <div className="absolute w-3 h-3 bg-indigo-600 rounded-full -left-1.5 border border-white"></div>
-              <h3 className="font-semibold text-gray-900">No Surat</h3>
-              <p className="text-sm text-gray-600">{data?.perjalanan?.noSurat || "-"}</p>
-            </li>
-          </ol>
-          <ol className="relative border-l border-indigo-300 space-y-6">
-            <li className="ml-6">
-              <div className="absolute w-3 h-3 bg-indigo-600 rounded-full -left-1.5 border border-white"></div>
-              <h3 className="font-semibold text-gray-900">Tanggal Kembali</h3>
-              <p className="text-sm text-gray-600">{formatDate(data?.perjalanan?.tglKembali)}</p>
-            </li>
-            <li className="ml-6">
-              <div className="absolute w-3 h-3 bg-indigo-600 rounded-full -left-1.5 border border-white"></div>
-              <h3 className="font-semibold text-gray-900">Kegiatan</h3>
-              <p className="text-sm text-gray-600">{data?.perjalanan?.kegiatan || "-"}</p>
-            </li>
-            <li className="ml-6">
-              <div className="absolute w-3 h-3 bg-indigo-600 rounded-full -left-1.5 border border-white"></div>
-              <h3 className="font-semibold text-gray-900">Tanggal Surat</h3>
-              <p className="text-sm text-gray-600">{data?.perjalanan?.tglSurat ? formatDate(data?.perjalanan?.tglSurat) : "-"}</p>
-            </li>
-          </ol>
+
+      <header className="mb-8 mt-6 flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
+        <div>
+          <p className="text-sm font-semibold uppercase tracking-wide text-blue-600">
+            Perjalanan Dinas
+          </p>
+          <h1 className="mt-2 text-3xl font-bold tracking-tight text-gray-900 md:text-4xl">
+            Detail Perjalanan Dinas
+          </h1>
+          <p className="mt-3 max-w-2xl text-sm leading-6 text-gray-500">
+            Kelola data perjalanan, surat tugas, dan daftar pegawai dalam satu
+            halaman.
+          </p>
         </div>
-        {/* Search */}
-        <div className="mb-6 flex flex-row md:flex-col md:items-center m-auto gap-4">
+
+        <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap">
+          {perjalanan?.file && (
+            <a
+              href={perjalanan.file}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center justify-center gap-2 rounded-xl border border-gray-200 bg-white px-5 py-2.5 text-sm font-semibold text-gray-700 shadow-sm transition hover:bg-gray-50"
+            >
+              <IoDocumentTextOutline className="h-4 w-4" />
+              Lihat Surat Tugas
+            </a>
+          )}
+
           <button
-            className="w-full cursor-pointer flex px-5 py-2 bg-linear-to-r bg-primary text-white font-medium rounded-lg shadow"
+            type="button"
+            className="inline-flex items-center justify-center gap-2 rounded-xl bg-primary px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:brightness-95 focus:outline-none focus:ring-4 focus:ring-blue-100"
             onClick={() => setShowUpdatePerjalanan(true)}
           >
-            <FaEdit className="my-auto w-4 h-4 mr-1"/>
+            <FaEdit className="h-4 w-4" />
             Ubah Perjalanan
           </button>
+
           <button
-            className="flex w-full cursor-pointer px-5 py-2 bg-linear-to-r bg-black text-white font-medium rounded-lg shadow"
+            type="button"
+            className="inline-flex items-center justify-center gap-2 rounded-xl border border-gray-800 bg-gray-900 px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-black"
             onClick={() => setShowAddPegawai(true)}
           >
-            <FaPlusCircle className="my-auto w-4 h-4 mr-1"/>
+            <FaPlusCircle className="h-4 w-4" />
             Tambah Pegawai
           </button>
         </div>
-      </div>
-      <InfoModal show={deleted} onConfirm={handleDelete} onCancel={() => setDeleted(false)}>
+      </header>
+
+      <section className="mb-8 overflow-hidden rounded-2xl border border-gray-200 bg-gray-50 shadow-sm">
+        <div className="border-b border-gray-200 bg-white px-6 py-5">
+          <h2 className="text-lg font-semibold text-gray-900">
+            Informasi Perjalanan
+          </h2>
+          <p className="mt-1 text-sm text-gray-500">
+            Ringkasan tanggal, tujuan, kegiatan, dan surat tugas.
+          </p>
+        </div>
+
+        <div className="grid gap-4 p-6 md:grid-cols-2 xl:grid-cols-3">
+          <DetailItem
+            label="Tanggal Berangkat"
+            value={formatDate(perjalanan?.tglBerangkat)}
+          />
+          <DetailItem
+            label="Tanggal Kembali"
+            value={formatDate(perjalanan?.tglKembali)}
+          />
+          <DetailItem label="Tujuan" value={perjalanan?.kabkota} />
+          <DetailItem label="Kegiatan" value={perjalanan?.kegiatan} />
+          <DetailItem label="No Surat" value={perjalanan?.noSurat} />
+          <DetailItem
+            label="Tanggal Surat"
+            value={
+              perjalanan?.tglSurat ? formatDate(perjalanan.tglSurat) : "-"
+            }
+          />
+        </div>
+      </section>
+
+      <section className="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
+        <div className="mb-5">
+          <h2 className="text-lg font-semibold text-gray-900">
+            Daftar Pegawai
+          </h2>
+          <p className="mt-1 text-sm text-gray-500">
+            Cetak SPD atau hapus pegawai dari perjalanan jika masih dalam status
+            perjalanan.
+          </p>
+        </div>
+
+        <DataTables
+          headCells={headCells}
+          data={formattedData}
+          loading={isLoading}
+        />
+      </section>
+
+      <InfoModal
+        show={!!deleted}
+        onConfirm={handleDelete}
+        onCancel={() => setDeleted(null)}
+      >
         {data?.pegawai?.length === 1 ? (
           <p>
-            Pegawai ini adalah pegawai terakhir dalam perjalanan. 
-            Jika kamu tetap menghapus, perjalanan otomatis akan terhapus. 
-            Apakah kamu yakin?
+            Pegawai ini adalah pegawai terakhir dalam perjalanan. Jika tetap
+            dihapus, perjalanan otomatis akan terhapus. Apakah kamu yakin?
           </p>
         ) : (
           <p>Apakah kamu yakin ingin menghapus pegawai ini dari perjalanan?</p>
         )}
       </InfoModal>
-      <DataTables headCells={headCells} data={formattedData} loading={isLoading}/>
-      <FormModal className="w-3xl" icon={<FaEdit className="text-white w-6 h-6" />} show={showUpdatePerjalanan}>
-        <UpdatePerjalanan 
-          data={data?.perjalanan}
-          kabkota={kabkota} 
+
+      <FormModal
+        className="w-4xl"
+        icon={<FaEdit className="h-6 w-6 text-white" />}
+        show={showUpdatePerjalanan}
+      >
+        <UpdatePerjalanan
+          data={perjalanan}
+          kabkota={kabkota}
           onSubmit={handleUpdatePerjalanan}
           onClose={() => setShowUpdatePerjalanan(false)}
           st={suratTugas}
           pejabat={pejabat}
         />
       </FormModal>
-      <FormModal icon={<FaPlusCircle className="text-white w-6 h-6" />} show={showAddPegawai}>
-        <AddPegawaiPerjalanan onSubmit={handleAddPegawai} onClose={() => setShowAddPegawai(false)} pegawai={pegawaiTanpaPerjalanan}/>
+
+      <FormModal
+        icon={<FaPlusCircle className="h-6 w-6 text-white" />}
+        show={showAddPegawai}
+      >
+        <AddPegawaiPerjalanan
+          onSubmit={handleAddPegawai}
+          onClose={() => setShowAddPegawai(false)}
+          pegawai={pegawaiTanpaPerjalanan}
+        />
       </FormModal>
-      <Snackbar show={showSnackbar?.show} type={showSnackbar?.type} message={showSnackbar?.message} onClose={() => setShowSnackbar({ show: false, message: "", type: "" })}/>
-      <LoadingOverlay show={loading}/>
+
+      <Snackbar
+        show={showSnackbar.show}
+        type={showSnackbar.type}
+        message={showSnackbar.message}
+        onClose={() => setShowSnackbar({ show: false, message: "", type: "" })}
+      />
+
+      <LoadingOverlay show={loading} />
     </PageBase>
   );
 }
