@@ -1,52 +1,91 @@
+"use client";
+
+import { useMemo } from "react";
+import PropTypes from "prop-types";
 import { DateRange } from "react-date-range";
+import { format } from "date-fns";
+import { id } from "date-fns/locale";
 import "react-date-range/dist/styles.css";
 import "react-date-range/dist/theme/default.css";
-import { format } from "date-fns";
+
+import styles from "./DatePickerRange.module.css";
+
+const accentColor = "#0f8b75";
+
+function toPayload(startDate, endDate) {
+  return {
+    startDate,
+    endDate,
+    formattedStart: startDate ? format(startDate, "yyyy-MM-dd") : null,
+    formattedEnd: endDate ? format(endDate, "yyyy-MM-dd") : null,
+  };
+}
 
 export default function DatePickerRange({ input, className = "" }) {
-  const state = [
-    {
-      startDate: input.value?.startDate || new Date(),
-      endDate: input.value?.endDate || input.value?.startDate || new Date(),
-      key: "selection",
-    },
-  ];
+  const today = useMemo(() => new Date(), []);
+
+  const selection = {
+    startDate: input.value?.startDate || today,
+    endDate: input.value?.endDate || input.value?.startDate || today,
+    key: "selection",
+  };
+
+  const rangeLabel = `${format(selection.startDate, "dd MMM yyyy", {
+    locale: id,
+  })} - ${format(selection.endDate, "dd MMM yyyy", { locale: id })}`;
 
   const handleChange = (item) => {
-    const start = item.selection.startDate;
-    const end = item.selection.endDate;
+    const { startDate, endDate } = item.selection;
+    input.onChange(toPayload(startDate, endDate));
+  };
 
+  const clearRange = () => {
     input.onChange({
-      startDate: start,
-      endDate: end,
-      formattedStart: start ? format(start, "yyyy-MM-dd") : null,
-      formattedEnd: end ? format(end, "yyyy-MM-dd") : null,
+      startDate: null,
+      endDate: null,
+      formattedStart: null,
+      formattedEnd: null,
     });
   };
 
   return (
-    <div
-      className={[
-        "w-full overflow-hidden rounded-xl border border-gray-200 bg-white",
-        "[&_.rdrCalendarWrapper]:w-full",
-        "[&_.rdrMonth]:w-full",
-        "[&_.rdrMonth]:p-3",
-        "[&_.rdrDateDisplayWrapper]:bg-gray-50",
-        "[&_.rdrDateDisplay]:m-3",
-        "[&_.rdrDayNumber_span]:text-sm",
-        className,
-      ].join(" ")}
-    >
+    <div className={`${styles.shell} ${className}`}>
+      <div className={styles.topbar}>
+        <div>
+          <p className={styles.eyebrow}>Rentang tanggal</p>
+          <p className={styles.rangeText}>{rangeLabel}</p>
+        </div>
+
+        <button type="button" className={styles.clearButton} onClick={clearRange}>
+          Bersihkan
+        </button>
+      </div>
+
       <DateRange
-        className="w-full"
-        editableDateInputs
+        className={styles.dateRange}
+        showDateDisplay={false}
+        editableDateInputs={false}
         onChange={handleChange}
         moveRangeOnFirstSelection={false}
-        ranges={state}
+        ranges={[selection]}
         months={1}
         direction="vertical"
-        rangeColors={["#2563eb"]}
+        rangeColors={[accentColor]}
+        locale={id}
       />
     </div>
   );
 }
+
+DatePickerRange.propTypes = {
+  className: PropTypes.string,
+  input: PropTypes.shape({
+    onChange: PropTypes.func.isRequired,
+    value: PropTypes.shape({
+      endDate: PropTypes.instanceOf(Date),
+      formattedEnd: PropTypes.string,
+      formattedStart: PropTypes.string,
+      startDate: PropTypes.instanceOf(Date),
+    }),
+  }).isRequired,
+};

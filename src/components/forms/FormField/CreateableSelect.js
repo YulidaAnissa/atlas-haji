@@ -1,16 +1,27 @@
 import React from "react";
 import PropTypes from "prop-types";
-import { Field } from "react-final-form";
 import CreatableSelect from "react-select/creatable";
-import FormField from "./FormField"; // komponen wrapper label+error
-import { useForm } from 'react-final-form';
+import { useForm } from "react-final-form";
 
-// Komponen SelectField
+import FormField from "./FormField";
+
 function SelectField({ input, options, meta, onChange, ...rest }) {
   const form = useForm();
+
+  const getValue = (value) => {
+    if (!value) return null;
+    return typeof value === "object" ? value.value : value;
+  };
+
+  const selectedValue = getValue(input.value);
+
+  const selectedOption =
+    options.find((opt) => String(opt.value) === String(selectedValue)) ||
+    (input.value && typeof input.value === "object" ? input.value : null);
+
   const handleClearFieldState = () => {
     form.resetFieldState(input?.name);
-    input?.onChange('');
+    input?.onChange(null);
   };
 
   const hasError =
@@ -25,8 +36,8 @@ function SelectField({ input, options, meta, onChange, ...rest }) {
       borderColor: hasError
         ? "#ef4444"
         : state.isFocused
-        ? "#2563eb"
-        : "#d1d5db",
+          ? "#2563eb"
+          : "#d1d5db",
       backgroundColor: state.isDisabled ? "#f3f4f6" : "#ffffff",
       boxShadow: state.isFocused
         ? "0 0 0 4px rgba(37, 99, 235, 0.12)"
@@ -37,32 +48,27 @@ function SelectField({ input, options, meta, onChange, ...rest }) {
         borderColor: hasError ? "#ef4444" : "#2563eb",
       },
     }),
-
     valueContainer: (base) => ({
       ...base,
       paddingInline: 14,
     }),
-
     input: (base) => ({
       ...base,
       color: "#111827",
       margin: 0,
       padding: 0,
     }),
-
     placeholder: (base) => ({
       ...base,
       color: "#9ca3af",
       fontSize: 14,
     }),
-
     singleValue: (base, state) => ({
       ...base,
       color: state.isDisabled ? "#9ca3af" : "#111827",
       fontSize: 14,
       fontWeight: 500,
     }),
-
     dropdownIndicator: (base, state) => ({
       ...base,
       color: state.isFocused ? "#2563eb" : "#9ca3af",
@@ -72,7 +78,6 @@ function SelectField({ input, options, meta, onChange, ...rest }) {
         color: "#2563eb",
       },
     }),
-
     clearIndicator: (base) => ({
       ...base,
       color: "#9ca3af",
@@ -81,11 +86,9 @@ function SelectField({ input, options, meta, onChange, ...rest }) {
         color: "#ef4444",
       },
     }),
-
     indicatorSeparator: () => ({
       display: "none",
     }),
-
     menu: (base) => ({
       ...base,
       zIndex: 30,
@@ -94,12 +97,10 @@ function SelectField({ input, options, meta, onChange, ...rest }) {
       border: "1px solid #e5e7eb",
       boxShadow: "0 16px 40px rgba(15, 23, 42, 0.12)",
     }),
-
     menuList: (base) => ({
       ...base,
       padding: 6,
     }),
-
     option: (base, state) => ({
       ...base,
       borderRadius: 10,
@@ -108,8 +109,8 @@ function SelectField({ input, options, meta, onChange, ...rest }) {
       backgroundColor: state.isSelected
         ? "#2563eb"
         : state.isFocused
-        ? "#eff6ff"
-        : "#ffffff",
+          ? "#eff6ff"
+          : "#ffffff",
       fontSize: 14,
       fontWeight: state.isSelected ? 600 : 500,
       cursor: "pointer",
@@ -117,7 +118,6 @@ function SelectField({ input, options, meta, onChange, ...rest }) {
         backgroundColor: state.isSelected ? "#2563eb" : "#dbeafe",
       },
     }),
-
     noOptionsMessage: (base) => ({
       ...base,
       color: "#6b7280",
@@ -133,14 +133,10 @@ function SelectField({ input, options, meta, onChange, ...rest }) {
         styles={customSelectStyles}
         options={options}
         size="small"
-        value={options.find(opt => opt.value === input.value) || null}
+        value={selectedOption}
         onChange={(opt) => {
-          // update ke react-final-form
-          input.onChange(opt ? opt.value : null);
-          // panggil handler custom dari props kalau ada
-          if (onChange) {
-            onChange(opt);
-          }
+          input.onChange(opt || null);
+          onChange?.(opt || null);
         }}
         onBlur={() => input.onBlur(input.value)}
         isClearable
@@ -155,6 +151,7 @@ SelectField.propTypes = {
   meta: PropTypes.object.isRequired,
   options: PropTypes.array.isRequired,
   label: PropTypes.string,
+  onChange: PropTypes.func,
 };
 
 export default SelectField;

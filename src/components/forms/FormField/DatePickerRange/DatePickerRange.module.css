@@ -1,0 +1,207 @@
+.shell {
+  width: 100%;
+  overflow: hidden;
+  border: 1px solid #dbe4df;
+  border-radius: 16px;
+  background:
+    linear-gradient(135deg, rgba(15, 139, 117, 0.08), transparent 44%),
+    #ffffff;
+  box-shadow: 0 20px 54px rgba(24, 41, 37, 0.12);
+}
+
+.topbar {
+  display: grid;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 16px 18px 12px;
+  border-bottom: 1px solid #edf2ef;
+}
+
+.eyebrow {
+  margin: 0 0 4px;
+  color: #c9a961;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.rangeText {
+  margin: 0;
+  color: #17211f;
+  font-size: 15px;
+  font-weight: 800;
+}
+
+.clearButton {
+  min-height: 34px;
+  padding: 0 12px;
+  border: 1px solid #dbe4df;
+  border-radius: 10px;
+  background: #ffffff;
+  color: #66736f;
+  font-size: 12px;
+  font-weight: 800;
+  transition:
+    border-color 160ms ease,
+    background 160ms ease,
+    color 160ms ease;
+}
+
+.clearButton:hover {
+  border-color: rgba(223, 109, 88, 0.45);
+  background: #fff1ee;
+  color: #b94d39;
+}
+
+.quickActions {
+  display: flex;
+  gap: 8px;
+  padding: 12px 18px 0;
+}
+
+.quickActions button {
+  min-height: 34px;
+  padding: 0 12px;
+  border: 1px solid rgba(15, 139, 117, 0.18);
+  border-radius: 999px;
+  background: #f3faf7;
+  color: #075c4c;
+  font-size: 12px;
+  font-weight: 800;
+  transition:
+    background 160ms ease,
+    border-color 160ms ease,
+    transform 160ms ease;
+}
+
+.quickActions button:hover {
+  border-color: rgba(15, 139, 117, 0.42);
+  background: #dff5ee;
+  transform: translateY(-1px);
+}
+
+.dateRange {
+  width: 100%;
+}
+
+.dateRange :global(.rdrCalendarWrapper) {
+  width: 100%;
+  background: transparent;
+  color: #17211f;
+  font-family: inherit;
+}
+
+.dateRange :global(.rdrDateDisplayWrapper) {
+  background: transparent;
+}
+
+.dateRange :global(.rdrDateDisplay) {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin: 12px 18px;
+}
+
+.dateRange :global(.rdrDateDisplayItem) {
+  overflow: hidden;
+  border: 1px solid #dbe4df;
+  border-radius: 12px;
+  box-shadow: none;
+}
+
+.dateRange :global(.rdrDateDisplayItemActive) {
+  border-color: #c9a961;
+}
+
+.dateRange :global(.rdrDateDisplayItem input) {
+  height: 42px;
+  color: #17211f;
+  font-size: 13px;
+  font-weight: 750;
+}
+
+.dateRange :global(.rdrMonthAndYearWrapper) {
+  height: auto;
+  padding: 10px 18px;
+}
+
+.dateRange :global(.rdrMonthAndYearPickers select) {
+  color: #17211f;
+  font-size: 14px;
+  font-weight: 800;
+}
+
+.dateRange :global(.rdrNextPrevButton) {
+  width: 34px;
+  height: 34px;
+  border-radius: 10px;
+  background: #f3f7f4;
+}
+
+.dateRange :global(.rdrNextPrevButton:hover) {
+  background: #dff5ee;
+}
+
+.dateRange :global(.rdrMonth) {
+  width: 100%;
+  padding: 0 18px 18px;
+}
+
+.dateRange :global(.rdrWeekDays) {
+  color: #7b8985;
+  font-size: 11px;
+  font-weight: 850;
+}
+
+.dateRange :global(.rdrDay) {
+  height: 42px;
+}
+
+.dateRange :global(.rdrDayNumber span) {
+  color: #17211f;
+  font-size: 13px;
+  font-weight: 750;
+}
+
+.dateRange :global(.rdrDayToday .rdrDayNumber span::after) {
+  background: #df6d58;
+}
+
+.dateRange :global(.rdrDayPassive .rdrDayNumber span) {
+  color: #b3bdb9;
+}
+
+.dateRange :global(.rdrStartEdge),
+.dateRange :global(.rdrEndEdge),
+.dateRange :global(.rdrInRange) {
+  color: #c9a961 !important;
+}
+
+.dateRange :global(.rdrStartEdge),
+.dateRange :global(.rdrEndEdge) {
+  border-radius: 12px;
+}
+
+.dateRange :global(.rdrSelected),
+.dateRange :global(.rdrStartEdge),
+.dateRange :global(.rdrEndEdge) {
+  box-shadow: 0 9px 20px rgba(15, 139, 117, 0.24);
+}
+
+@media (max-width: 520px) {
+  .topbar {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .quickActions {
+    overflow-x: auto;
+    padding-bottom: 2px;
+  }
+
+  .dateRange :global(.rdrDateDisplay) {
+    grid-template-columns: 1fr;
+  }
+}

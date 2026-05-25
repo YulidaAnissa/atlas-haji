@@ -1,0 +1,192 @@
+.inputWrap {
+  position: relative;
+  width: 100%;
+}
+
+.calendarIcon {
+  position: absolute;
+  left: 14px;
+  top: 50%;
+  z-index: 1;
+  width: 18px;
+  height: 18px;
+  border: 1.8px solid #c9a961;
+  border-radius: 5px;
+  transform: translateY(-50%);
+  pointer-events: none;
+}
+
+.calendarIcon::before,
+.calendarIcon::after {
+  content: "";
+  position: absolute;
+  background: #c9a961;
+}
+
+.calendarIcon::before {
+  left: 3px;
+  right: 3px;
+  top: 5px;
+  height: 1.8px;
+}
+
+.calendarIcon::after {
+  top: -4px;
+  left: 5px;
+  width: 6px;
+  height: 5px;
+  border-radius: 0 0 3px 3px;
+}
+
+.input {
+  padding-left: 44px !important;
+}
+
+.popper {
+  z-index: 9999;
+  filter: drop-shadow(0 24px 52px rgba(24, 41, 37, 0.18));
+}
+
+.calendar {
+  overflow: hidden;
+  border: 1px solid #dbe4df !important;
+  border-radius: 14px !important;
+  background: rgba(255, 255, 255, 0.98) !important;
+  color: #17211f;
+  font-family: inherit !important;
+}
+
+.header {
+  display: grid;
+  grid-template-columns: 38px 1fr 38px;
+  align-items: center;
+  gap: 10px;
+  padding: 14px 14px 10px;
+  background:
+    linear-gradient(135deg, rgba(15, 139, 117, 0.1), transparent 52%),
+    #ffffff;
+}
+
+.navButton {
+  display: grid;
+  place-items: center;
+  width: 38px;
+  height: 38px;
+  border: 1px solid #dbe4df;
+  border-radius: 10px;
+  background: #ffffff;
+  color: #17211f;
+  font-size: 24px;
+  line-height: 1;
+  transition:
+    border-color 160ms ease,
+    background 160ms ease,
+    color 160ms ease;
+}
+
+.navButton:hover:not(:disabled) {
+  border-color: rgba(15, 139, 117, 0.45);
+  background: #dff5ee;
+  color: #075c4c;
+}
+
+.navButton:disabled {
+  cursor: not-allowed;
+  opacity: 0.35;
+}
+
+.monthTitle {
+  display: grid;
+  gap: 2px;
+  text-align: center;
+}
+
+.monthTitle strong {
+  font-size: 15px;
+  font-weight: 800;
+  text-transform: capitalize;
+}
+
+.monthTitle span {
+  color: #66736f;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.weekend {
+  color: #df6d58 !important;
+}
+
+.calendar :global(.react-datepicker__month-container) {
+  float: none;
+}
+
+.calendar :global(.react-datepicker__header) {
+  border: 0;
+  background: transparent;
+  padding: 0 0 8px;
+}
+
+.calendar :global(.react-datepicker__day-names) {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  padding: 0 12px;
+  margin: 0 0 4px;
+}
+
+.calendar :global(.react-datepicker__day-name) {
+  width: 36px;
+  margin: 0 auto;
+  color: #7b8985;
+  font-size: 11px;
+  font-weight: 800;
+}
+
+.calendar :global(.react-datepicker__month) {
+  display: grid;
+  gap: 4px;
+  margin: 0;
+  padding: 0 12px 14px;
+}
+
+.calendar :global(.react-datepicker__week) {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 4px;
+}
+
+.calendar :global(.react-datepicker__day) {
+  display: grid;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  margin: 0 auto;
+  border-radius: 10px;
+  color: #17211f;
+  font-size: 13px;
+  font-weight: 750;
+  transition:
+    background 150ms ease,
+    color 150ms ease,
+    transform 150ms ease;
+}
+
+.calendar :global(.react-datepicker__day:hover) {
+  background: #f3f7f4;
+  transform: translateY(-1px);
+}
+
+.calendar :global(.react-datepicker__day--outside-month) {
+  color: #b3bdb9 !important;
+}
+
+.calendar :global(.react-datepicker__day--today) {
+  box-shadow: inset 0 0 0 1px rgba(15, 139, 117, 0.32);
+}
+
+.calendar :global(.react-datepicker__day--selected),
+.calendar :global(.react-datepicker__day--keyboard-selected) {
+  background: #c9a961 !important;
+  color: #ffffff !important;
+  box-shadow: 0 10px 22px rgba(15, 139, 117, 0.28);
+}

@@ -12,9 +12,9 @@ import PageBase from "@/components/pagebase";
 import { usePathname, useRouter } from "next/navigation";
 import { useState } from "react";
 import { useDeleteKabKota, useEditKabKota, useKabKota } from "@/hooks/useData";
-import AddKabKotaForm from "@/components/forms/AddKabKota";
+import AddKabKotaForm from "@/components/forms/KabKota";
 import { FaEdit } from "react-icons/fa";
-import { FiEdit2, FiMapPin, FiPlus, FiSearch, FiTrash2, FiX } from "react-icons/fi";
+import { FiEdit2, FiPlus, FiSearch, FiTrash2, FiX } from "react-icons/fi";
 import { formatRupiah } from "@/utils/currency";
 
 export default function DaftarKabupatenKota() {
@@ -199,6 +199,7 @@ export default function DaftarKabupatenKota() {
       </InfoModal>
 
       <FormModal
+        className="w-3xl"
         icon={<FaEdit className="h-6 w-6 text-white" />}
         show={showEdit?.show}
       >

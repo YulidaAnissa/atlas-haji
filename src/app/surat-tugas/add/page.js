@@ -2,26 +2,34 @@
 
 import PageBase from "@/components/pagebase";
 import { useRouter } from "next/navigation";
-import AddPegawaiForm from "@/components/forms/Pegawai";
-import { usePegawai, useAddPegawai } from "@/hooks/useData";
+import AddSuratTugasForm from "@/components/forms/SuratTugas";
+import { useSuratTugas, useAddSuratTugas } from "@/hooks/useData";
 import InfoModal from "@/components/elements/InfoModal";
 import { useState } from "react";
 import { FaCheck } from "react-icons/fa";
 import LoadingOverlay from "@/components/elements/LoadingOverlay";
 import Breadcrumb from "@/components/elements/Breadcrumb";
+import { formatDate } from "@/utils/date";
 
-export default function Pegawai() {
+export default function AddSuratTugas() {
   const [showModalSuccess, setShowModalSuccess] = useState(false);
 
-  const { fetch } = usePegawai();
-  const { addPegawai, loading } = useAddPegawai();
+  const { fetch } = useSuratTugas();
+  const { addSuratTugas, loading } = useAddSuratTugas();
   const router = useRouter();
 
   const handleSubmit = async (values, form) => {
     try {
-      const payload = { ...values, status: "pegawai" };
+      const formData = new FormData();
 
-      await addPegawai(payload);
+      if (values.noSurat) formData.append("noSurat", values.noSurat);
+      if (values.tglSurat) {
+        formData.append("tglSurat", formatDate(values.tglSurat, "YYYY-MM-DD"));
+      }
+      if (values.kegiatan) formData.append("kegiatan", values.kegiatan);
+      if (values.file) formData.append("file", values.file);
+
+      await addSuratTugas(formData);
       form.reset();
       fetch();
       setShowModalSuccess(true);
@@ -32,7 +40,7 @@ export default function Pegawai() {
 
   const breadcrumbItem = [
     { label: "Home", href: "/" },
-    { label: "Daftar Pegawai", href: "/pegawai" },
+    { label: "Daftar Surat Tugas", href: "/surat-tugas" },
     { label: "Tambah" },
   ];
 
@@ -45,22 +53,22 @@ export default function Pegawai() {
       <section className="mb-8 rounded-2xl border border-[#eadfbe] bg-white px-6 py-6 shadow-[0_18px_50px_rgba(201,169,97,0.12)]">
         <div>
           <p className="mb-2 text-xs font-bold uppercase tracking-[0.28em] text-brand">
-            Data Master
+            Dokumen Perjalanan
           </p>
 
           <h1 className="text-3xl font-black tracking-tight text-slate-950 sm:text-4xl">
-            Tambah Pegawai Baru
+            Tambah Surat Tugas Baru
           </h1>
 
           <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-500">
-            Lengkapi data pegawai, NIP, pangkat, golongan, dan jabatan untuk
-            kebutuhan perjalanan dinas.
+            Lengkapi nomor surat, tanggal surat, kegiatan, dan unggah dokumen
+            surat tugas untuk kebutuhan perjalanan dinas.
           </p>
         </div>
       </section>
 
       <section className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm sm:p-6">
-        <AddPegawaiForm onSubmit={handleSubmit} />
+        <AddSuratTugasForm onSubmit={handleSubmit} />
       </section>
 
       <InfoModal
@@ -69,15 +77,15 @@ export default function Pegawai() {
         title="Data berhasil disimpan"
         onCancel={() => {
           setShowModalSuccess(false);
-          router.push("/pegawai");
+          router.push("/surat-tugas");
         }}
         onConfirm={() => {
           setShowModalSuccess(false);
-          router.push("/pegawai");
+          router.push("/surat-tugas");
         }}
       >
         <p className="mt-2 text-gray-500">
-          Pegawai sudah tersimpan dengan aman.
+          Surat tugas sudah tersimpan dengan aman.
         </p>
       </InfoModal>
 

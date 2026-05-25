@@ -21,6 +21,22 @@ export function usePerjalanan({ dedupingInterval, urlParams = {}, params = {} } 
   };
 }
 
+export function usePerjalananPegawai({ dedupingInterval, urlParams = {}, params = {} } = defaultOptions) {
+  const token = accessTokenStorage.get().value;
+  const { data: { data } = [], error, mutate } = useSWR(
+    createSwrKey(SERVICES.PERJALANAN_PEGAWAI, { params }), 
+    fetcher({ headers: { Authorization: `Bearer ${token}` } }),
+    { dedupingInterval: getDedupingInterval(dedupingInterval) }
+  );
+
+  return {
+    data: data,
+    isLoading: !error && !data,
+    error,
+    fetch: mutate
+  };
+}
+
 export function useDeletePerjalananPegawai() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");

@@ -6,7 +6,7 @@ import { useMergeRefs } from "../../../../hooks";
 
 const sizeClass = {
   small: "min-h-24 text-sm",
-  medium: "min-h-32 text-base",
+  medium: "min-h-32 text-sm",
   big: "min-h-40 text-base",
 };
 
@@ -29,13 +29,14 @@ const Textarea = forwardRef(function Textarea(props, ref) {
     <div className="relative w-full">
       <textarea
         className={clsx(
-          "w-full resize-y rounded-xl border bg-white px-4 py-3 font-medium text-gray-900 shadow-sm outline-none transition placeholder:text-sm placeholder:font-normal placeholder:text-gray-400",
+          "w-full resize-y rounded-xl border px-4 py-3 font-medium text-slate-900 shadow-sm outline-none transition placeholder:text-sm placeholder:font-normal placeholder:text-slate-400",
+          "bg-white",
           sizeClass[size],
-          disabled &&
-            "cursor-not-allowed border-gray-200 bg-gray-100 text-gray-400",
-          error
-            ? "border-red-500 ring-1 ring-red-100"
-            : "border-gray-300 hover:border-gray-400 focus:border-blue-600 focus:ring-4 focus:ring-blue-100",
+          disabled
+            ? "cursor-not-allowed border-slate-200 bg-slate-100 text-slate-400"
+            : "border-slate-200 hover:border-[#d8c58b] focus:border-brand focus:bg-white focus:ring-4 focus:ring-brand/15",
+          error &&
+            "border-red-400 bg-red-50/40 text-slate-900 focus:border-red-500 focus:ring-red-100",
           endAdornment && "pr-12",
           inputClassName
         )}
@@ -49,7 +50,7 @@ const Textarea = forwardRef(function Textarea(props, ref) {
       />
 
       {React.isValidElement(endAdornment) && (
-        <div className="pointer-events-none absolute right-3 top-3 text-gray-400">
+        <div className="pointer-events-none absolute right-3 top-3 text-slate-400">
           {endAdornment}
         </div>
       )}

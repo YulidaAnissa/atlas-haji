@@ -24,7 +24,9 @@ export default function LoginPage({
   const [pegawaiOptions, setPegawaiOptions] = useState([]);
   const [pejabatOptions, setPejabatOptions] = useState([]);
   const [noSuratOptions, setSuratOptions] = useState([]);
+  const [isExistingSurat, setIsExistingSurat] = useState(false);
 
+  console.log(st, "st");
   useEffect(() => {
     if (Array.isArray(kabkota)) {
       setKabKotaOptions(
@@ -164,22 +166,32 @@ export default function LoginPage({
                       );
 
                       if (selected) {
+                        setIsExistingSurat(true);
+
                         form.change("idSurat", selected.idSurat);
                         form.change("noSurat", selected.noSurat);
                         form.change("tglSurat", selected.tglSurat);
                         form.change("kegiatan", selected.kegiatan);
+                        form.change("fileSurat", selected.fileSurat);
                       } else {
+                        setIsExistingSurat(false);
+
                         form.change("idSurat", uuidv4());
                         form.change("noSurat", newSurat.value);
                         form.change("tglSurat", "");
                         form.change("kegiatan", "");
+                        form.change("fileSurat", null);
+
                         setSuratOptions((current) => [...current, newSurat]);
                       }
                     } else {
+                      setIsExistingSurat(false);
+
                       form.change("idSurat", null);
                       form.change("noSurat", "");
                       form.change("tglSurat", "");
                       form.change("kegiatan", "");
+                      form.change("fileSurat", null);
                     }
                   }}
                 />
@@ -201,12 +213,13 @@ export default function LoginPage({
                     label="Tanggal Surat"
                     name="tglSurat"
                     type="text"
+                    disabled={isExistingSurat}
                   />
-
                   <Field
                     component={UploadFile}
                     label="File Surat Tugas"
                     name="fileSurat"
+                    disabled={isExistingSurat}
                   />
                 </div>
 
@@ -215,6 +228,7 @@ export default function LoginPage({
                   label="Kegiatan"
                   name="kegiatan"
                   placeholder="Masukkan kegiatan"
+                  disabled={isExistingSurat}
                 />
               </section>
             </div>
@@ -235,16 +249,23 @@ export default function LoginPage({
                 {({ fields }) => (
                   <div className="space-y-4">
                     <div className="space-y-3">
-                      {fields.map((name, index) => {
+                      {fields.map((name, index) => {                        
+                        const getValue = (item) =>
+                          typeof item === "object" && item !== null ? item.value : item;
+
                         const selectedNips = Array.isArray(values.pegawai)
-                          ? values.pegawai.filter(Boolean)
+                          ? values.pegawai.filter(Boolean).map(getValue)
                           : [];
 
+                        const currentValue = getValue(values.pegawai?.[index]);
+
                         const filteredOptions = pegawaiOptions.filter(
-                          (opt) =>
-                            !selectedNips.includes(opt.value) ||
-                            opt.value === values.pegawai?.[index]
+                          (opt) => !selectedNips.includes(opt.value) || opt.value === currentValue
                         );
+
+                        console.log('selectedNips', selectedNips);
+                        console.log('filteredOptions', filteredOptions);
+                        console.log('values.pegawai', values.pegawai);
 
                         return (
                           <div

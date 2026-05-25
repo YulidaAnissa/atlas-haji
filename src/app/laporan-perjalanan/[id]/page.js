@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useParams } from "next/navigation";
 import { FaEdit, FaPlusCircle } from "react-icons/fa";
+import { FiEye } from "react-icons/fi";
 
 import PageBase from "@/components/pagebase";
 import {
@@ -11,13 +12,17 @@ import {
   FormModal,
   PrintButton,
   Snackbar,
+  StatusBadge,
+  VerifBiayaPerjalanan
 } from "@/components/elements";
 import LoadingOverlay from "@/components/elements/LoadingOverlay";
 import LaporanPerjalanan from "@/components/forms/LaporanPerjalanan";
+import UpdateLaporanPerjalanan from "@/components/forms/UpdateLaporan";
 
-import { useUpdateLaporan, useLaporan, usePerjalanan } from "@/hooks/useData";
+import { useUpdateLaporan, useLaporan } from "@/hooks/useData";
 import { useLoading } from "@/hooks";
 import { formatDate, calculateTripDuration } from "@/utils/date";
+
 
 function DetailItem({ label, value }) {
   return (
@@ -37,12 +42,16 @@ export default function Component() {
   const { id } = params;
 
   const [showLaporan, setShowLaporan] = useState(false);
+  const [showAddLaporan, setShowAddLaporan] = useState(false);
+  const [showUpdateLaporan, setShowUpdateLaporan] = useState(false);
   const [laporan, setLaporan] = useState({});
   const [showSnackbar, setShowSnackbar] = useState({
     show: false,
     message: "",
     type: "",
   });
+
+  console.log('show update laporan', showUpdateLaporan);
 
   const [loading, startLoading, endLoading] = useLoading();
 
@@ -52,18 +61,8 @@ export default function Component() {
 
   const { updateLaporan } = useUpdateLaporan();
 
-  const { data: pegawai } = usePerjalanan({
-    urlParams: { id },
-  });
-
-  console.log("data perjalanan ", data);
-
   const handleLaporanPerjalanan = async (values) => {
     const idPerjalananPegawai = values?.pegawai?.value;
-
-    console.log('ini hasil laporan ', values);
-    console.log('id perjalanan pegawai ', idPerjalananPegawai);
-
     try {
       startLoading();
 
@@ -82,7 +81,7 @@ export default function Component() {
       // });
 
       await fetch();
-      setShowLaporan(false);
+      setShowAddLaporan(false);
       setShowSnackbar({
         show: true,
         message: "Laporan berhasil disimpan",
@@ -101,8 +100,45 @@ export default function Component() {
   };
 
   const handleFormLaporan = (type) => {
-    setShowLaporan(true);
+    setShowAddLaporan(true);
     setLaporan(type);
+
+    console.log(type, "type laporan");
+  };
+
+  const handleUpdateLaporan = async (values) => {
+    console.log('update laporan', values);
+    const idPerjalananPegawai = values?.idPerjalananPegawai;
+    try {
+      startLoading();
+
+      const formData = new FormData();
+      formData.append("biayaPeng", values?.biayaPeng);
+      formData.append("biayaTrans", values?.biayaTrans);
+      formData.append("buktiPeng", values?.buktiPeng); // file object
+      formData.append("buktiTrans", values?.buktiTrans); // file object
+      formData.append("spd", values?.spd); // file object
+      formData.append("status", "pengajuan");
+      formData.append("hasil", values?.hasil);
+      await updateLaporan(idPerjalananPegawai, formData);
+
+      await fetch();
+      setShowUpdateLaporan({ show: false, data: null });
+      setShowSnackbar({
+        show: true,
+        message: "Laporan berhasil diperbarui",
+        type: "success",
+      });
+    } catch (err) {
+      setShowSnackbar({
+        show: true,
+        message: "Gagal memperbarui laporan",
+        type: "error",
+      });
+      return err;
+    } finally {
+      endLoading();
+    }
   };
 
   const headCells = [
@@ -110,39 +146,69 @@ export default function Component() {
     { id: "nama", label: "Nama Pegawai", numeric: false },
     { id: "gol", label: "Gol", numeric: false },
     { id: "jabatan", label: "Jabatan", numeric: false },
+    { id: "status", label: "Status", numeric: false },
     { id: "aksi", label: "", numeric: false },
   ];
 
-  const formattedData = (data?.pegawai ?? []).map((item) => ({
-    ...item,
-    aksi: (
-      <div className="flex justify-end">
-        <PrintButton
-          data={{
-            nama: item?.nama,
-            nip: item?.nip,
-            tglBerangkat: formatDate(
-              data?.perjalanan?.tglBerangkat,
-              "DD MMMM YYYY"
-            ),
-            tglKembali: formatDate(
-              data?.perjalanan?.tglKembali,
-              "DD MMMM YYYY"
-            ),
-            kabkota: data?.perjalanan?.kabkota,
-            kegiatan: data?.perjalanan?.kegiatan,
-            hasil: item?.hasil,
-            lama: calculateTripDuration(
-              data?.perjalanan?.tglBerangkat,
-              data?.perjalanan?.tglKembali
-            ),
-          }}
-          format="/laporan-format.docx"
-          file={`laporan-${item.nip}`}
+  console.log(showLaporan, "show laporan");
+  const formattedData = (data?.pegawai ?? []).map((item) => {
+    return {
+      ...item,
+       status: (
+        <StatusBadge
+          className="justify-center"
+          status={item.status}
+          onClick={() =>
+            console.log("Status clicked for", item.nip)
+          }
         />
-      </div>
-    ),
-  }));
+      ),
+      aksi: (
+        <div className="flex items-center justify-end gap-2">
+          <PrintButton
+            data={{
+              nama: item?.nama,
+              nip: item?.nip,
+              tglBerangkat: formatDate(data?.perjalanan?.tglBerangkat, "DD MMMM YYYY"),
+              tglKembali: formatDate(data?.perjalanan?.tglKembali, "DD MMMM YYYY"),
+              kabkota: data?.perjalanan?.kabkota,
+              kegiatan: data?.perjalanan?.kegiatan,
+              hasil: item?.hasil,
+              lama: calculateTripDuration(
+                data?.perjalanan?.tglBerangkat,
+                data?.perjalanan?.tglKembali
+              ),
+            }}
+            format="/laporan-format.docx"
+            file={`laporan-${item.nip}`}
+          />
+
+          <button
+            type="button"
+            onClick={() =>
+              item.status === "tolak"
+                ? setShowUpdateLaporan({
+                    show: true,
+                    data: item,
+                  })
+                : setShowLaporan({
+                    show: true,
+                    data: item,
+                  })
+            }
+            className={`inline-flex items-center gap-2 rounded-lg border px-3 py-2 text-sm font-semibold shadow-sm transition focus:outline-none focus:ring-2 ${
+              item.status === "tolak"
+                ? "border-red-200 bg-red-50 text-red-700 hover:border-red-300 hover:bg-red-100 focus:ring-red-200"
+                : "border-gray-200 bg-white text-gray-700 hover:border-brand/30 hover:bg-[#fbf7ec] hover:text-brand focus:ring-brand/30"
+            }`}
+          >
+            <FiEye className="h-4 w-4" />
+            {item.status === "tolak" ? "Perbaiki" : "Lihat"}
+          </button>
+        </div>
+      ),
+    };
+  });
 
   const breadcrumbItem = [
     { label: "Home", href: "/" },
@@ -229,16 +295,43 @@ export default function Component() {
       </section>
 
       <FormModal
-        className="w-xl"
+        className="w-3xl"
         icon={<FaEdit className="h-6 w-6 text-white" />}
-        show={showLaporan}
+        show={showAddLaporan}
       >
         <LaporanPerjalanan
           data={data?.perjalanan}
-          pegawai={pegawai?.pegawai}
+          pegawai={data?.pegawai}
           onSubmit={handleLaporanPerjalanan}
-          onClose={() => setShowLaporan(false)}
+          onClose={() => setShowAddLaporan(false)}
           type={laporan}
+        />
+      </FormModal>
+
+      <FormModal
+        className="w-3xl"
+        icon={<FaEdit className="h-6 w-6 text-white" />}
+        show={showUpdateLaporan.show}
+      >
+        <UpdateLaporanPerjalanan
+          data={showUpdateLaporan.data}
+          onSubmit={handleUpdateLaporan}
+          onClose={() => setShowUpdateLaporan({ show: false, data: null })}
+        />
+      </FormModal>
+
+      <FormModal
+        className="w-3xl"
+        icon={<FaEdit className="h-6 w-6 text-white" />}
+        show={showLaporan?.show}
+      >
+        <VerifBiayaPerjalanan
+          data={showLaporan?.data}
+          // onSubmit={handleConfirmBiaya}
+          onClose={() =>
+            setShowLaporan({ show: false, data: null })
+          }
+          type="laporan"
         />
       </FormModal>
 

@@ -23,6 +23,7 @@ import {
   useDashboardFilter,
   useDashboardSummary,
   useNotifPegawai,
+  usePerjalananPegawai,
 } from "@/hooks/useData";
 
 const months = [
@@ -72,6 +73,12 @@ export default function PerjalananDinasPage() {
     params: { status: "tolak" },
   });
 
+  const { data: perjalananData, isLoading: isPerjalananLoading } = usePerjalananPegawai({
+    params: { status: "tolak" },
+  });
+
+  console.log("Perjalanan Data:", perjalananData);
+
   return (
     <DashboardPage className="mx-auto max-w-7xl px-6 py-10 lg:px-12">
       <header className="mb-8 overflow-hidden rounded-3xl border border-gray-200 bg-white shadow-sm">
@@ -111,20 +118,45 @@ export default function PerjalananDinasPage() {
         </div>
       </header>
 
-      {notifications?.length > 0 && (
-        <section className="mb-8 space-y-3">
-          {notifications.map((notif) => (
-            <NotificationDashboard
-              key={notif.idSurat}
-              message="Pembiayaan perjalanan dinas anda ditolak."
-              note={notif.catatan}
-              type="danger"
-              onDetail={() => router.push(`/daftar-nominatif/${notif.idSurat}`)}
-            />
-          ))}
+      {perjalananData?.length > 0 && (
+        <section className="mb-8">
+          <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+            <div>
+              <div className="flex items-center gap-2">
+                <span className="h-2 w-2 rounded-full bg-red-500" />
+                <h2 className="text-base font-semibold text-gray-900">
+                  Pengajuan Ditolak
+                </h2>
+              </div>
+
+              <p className="mt-1 text-sm text-gray-500">
+                {perjalananData.length} perjalanan perlu ditinjau
+              </p>
+            </div>
+
+            <button
+              type="button"
+              onClick={() => router.push("/daftar-nominatif?status=tolak")}
+              className="text-sm font-medium text-gray-500 transition hover:text-red-600"
+            >
+              Lihat Semua
+            </button>
+          </div>
+
+          <div className="space-y-3">
+            {perjalananData.map((item) => (
+              <NotificationDashboard
+                key={item.idPerjalananPegawai ?? item.idPerjalanan}
+                data={item}
+                type="danger"
+                onDetail={() =>
+                  router.push(`/laporan-perjalanan/${item.idPerjalanan}`)
+                }
+              />
+            ))}
+          </div>
         </section>
       )}
-
       <section className="mb-10">
         {isSummaryLoading ? (
           <LoadingState label="Memuat ringkasan dashboard..." />

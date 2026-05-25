@@ -5,7 +5,14 @@ import PropTypes from "prop-types";
 import clsx from "clsx";
 import { FaRegTrashAlt, FaCloudUploadAlt, FaFileAlt } from "react-icons/fa";
 
-export default function FileField({ input, meta, label, className = "", ...rest }) {
+export default function FileField({
+  input,
+  meta,
+  label,
+  className = "",
+  disabled = false,
+  ...rest
+}) {
   const fileInputRef = useRef(null);
   const [isDragging, setIsDragging] = useState(false);
 
@@ -16,12 +23,17 @@ export default function FileField({ input, meta, label, className = "", ...rest 
     : meta?.error;
 
   const handleChange = (event) => {
+    if (disabled) return;
+
     const selectedFile = event.target.files?.[0];
     input.onChange(selectedFile || null);
   };
 
   const handleDrop = (event) => {
     event.preventDefault();
+
+    if (disabled) return;
+
     setIsDragging(false);
 
     const droppedFile = event.dataTransfer.files?.[0];
@@ -29,11 +41,16 @@ export default function FileField({ input, meta, label, className = "", ...rest 
   };
 
   const handleBrowseClick = () => {
+    if (disabled) return;
+
     fileInputRef.current?.click();
   };
 
   const handleRemove = (event) => {
     event.stopPropagation();
+
+    if (disabled) return;
+
     input.onChange(null);
 
     if (fileInputRef.current) {
@@ -46,7 +63,10 @@ export default function FileField({ input, meta, label, className = "", ...rest 
       {label && (
         <label
           htmlFor={input.name}
-          className="text-sm font-semibold tracking-wide text-gray-800"
+          className={clsx(
+            "text-sm font-semibold tracking-wide",
+            disabled ? "text-gray-400" : "text-gray-800"
+          )}
         >
           {label}
         </label>
@@ -54,44 +74,58 @@ export default function FileField({ input, meta, label, className = "", ...rest 
 
       <button
         type="button"
+        disabled={disabled}
         onClick={handleBrowseClick}
         onDrop={handleDrop}
         onDragOver={(event) => {
           event.preventDefault();
-          setIsDragging(true);
+          if (!disabled) setIsDragging(true);
         }}
         onDragLeave={() => setIsDragging(false)}
         className={clsx(
-          "flex w-full flex-col items-center justify-center rounded-2xl border-2 border-dashed bg-white px-6 py-8 text-center shadow-sm transition",
-          haveError
-            ? "border-red-300 bg-red-50/50"
-            : isDragging
-            ? "border-blue-500 bg-blue-50"
-            : "border-gray-300 hover:border-blue-400 hover:bg-gray-50"
+          "flex w-full flex-col items-center justify-center rounded-2xl border-2 border-dashed px-6 py-8 text-center shadow-sm transition",
+          disabled
+            ? "cursor-not-allowed border-gray-200 bg-gray-50 opacity-80"
+            : haveError
+              ? "border-red-300 bg-red-50/50"
+              : isDragging
+                ? "border-blue-500 bg-blue-50"
+                : "border-gray-300 bg-white hover:border-blue-400 hover:bg-gray-50"
         )}
       >
         <span
           className={clsx(
             "mb-3 flex h-12 w-12 items-center justify-center rounded-2xl text-xl",
-            haveError
-              ? "bg-red-100 text-red-500"
-              : "bg-blue-50 text-blue-600"
+            disabled
+              ? "bg-gray-100 text-gray-400"
+              : haveError
+                ? "bg-red-100 text-red-500"
+                : "bg-blue-50 text-blue-600"
           )}
         >
           <FaCloudUploadAlt />
         </span>
 
-        <span className="text-sm font-semibold text-gray-800">
-          Pilih file atau tarik ke sini
+        <span
+          className={clsx(
+            "text-sm font-semibold",
+            disabled ? "text-gray-400" : "text-gray-800"
+          )}
+        >
+          {disabled ? "File surat terkunci" : "Pilih file atau tarik ke sini"}
         </span>
 
         <span className="mt-1 text-xs text-gray-500">
-          Mendukung PDF, PNG, JPG, DOC, dan DOCX
+          {disabled
+            ? "File mengikuti surat tugas yang sudah dipilih"
+            : "Mendukung PDF, PNG, JPG, DOC, dan DOCX"}
         </span>
 
-        <span className="mt-4 inline-flex rounded-xl border border-gray-200 bg-white px-4 py-2 text-sm font-semibold text-gray-700 shadow-sm transition hover:border-blue-300 hover:text-blue-600">
-          Browse File
-        </span>
+        {!disabled && (
+          <span className="mt-4 inline-flex rounded-xl border border-gray-200 bg-white px-4 py-2 text-sm font-semibold text-gray-700 shadow-sm transition hover:border-blue-300 hover:text-blue-600">
+            Browse File
+          </span>
+        )}
       </button>
 
       <input
@@ -100,6 +134,7 @@ export default function FileField({ input, meta, label, className = "", ...rest 
         name={input.name}
         ref={fileInputRef}
         onChange={handleChange}
+        disabled={disabled}
         className="hidden"
         {...rest}
       />
@@ -132,22 +167,22 @@ export default function FileField({ input, meta, label, className = "", ...rest 
             )}
           </div>
 
-          <button
-            type="button"
-            onClick={handleRemove}
-            className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-xl text-gray-400 transition hover:bg-red-50 hover:text-red-600"
-            aria-label="Hapus file"
-          >
-            <FaRegTrashAlt className="h-4 w-4" />
-          </button>
+          {!disabled && (
+            <button
+              type="button"
+              onClick={handleRemove}
+              className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-xl text-gray-400 transition hover:bg-red-50 hover:text-red-600"
+              aria-label="Hapus file"
+            >
+              <FaRegTrashAlt className="h-4 w-4" />
+            </button>
+          )}
         </div>
       )}
 
       <div className="min-h-4">
         {haveError && (
-          <p className="text-xs leading-5 text-red-500">
-            {errorMessage}
-          </p>
+          <p className="text-xs leading-5 text-red-500">{errorMessage}</p>
         )}
       </div>
     </div>
@@ -156,6 +191,7 @@ export default function FileField({ input, meta, label, className = "", ...rest 
 
 FileField.propTypes = {
   className: PropTypes.string,
+  disabled: PropTypes.bool,
   input: PropTypes.object.isRequired,
   label: PropTypes.string,
   meta: PropTypes.object.isRequired,

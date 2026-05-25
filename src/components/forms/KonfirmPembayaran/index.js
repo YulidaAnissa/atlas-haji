@@ -21,17 +21,19 @@ function DetailItem({ label, value }) {
 export default function ComponentForm({
   onSubmit = () => {},
   data = {},
+  canVerify = false,
 }) {
 
+  console.log("data form konfirmasi pembayaran", data);
   return (
     <Form
       onSubmit={onSubmit}
       initialValues={{
-        tglPengajuanKppn: data?.tglPengajuanKppn
-          ? new Date(data.tglPengajuanKppn)
+        tglPengajuanKppn: data?.surat?.tglKPPN
+          ? new Date(data.surat.tglKPPN)
           : null,
-        tglPembayaran: data?.tglPembayaran
-          ? new Date(data.tglPembayaran)
+        tglPembayaran: data?.surat?.tglPembayaran
+          ? new Date(data.surat.tglPembayaran)
           : null,
       }}
     >
@@ -66,20 +68,22 @@ export default function ComponentForm({
               />
 
               <DetailItem label="Kegiatan" value={data?.surat?.kegiatan} />
-
-              <Field
-                component={DatePicker}
-                label="Tanggal Pengajuan KPPN"
-                name="tglPengajuanKppn"
-                type="text"
-              />
-
-              <Field
-                component={DatePicker}
-                label="Tanggal Pembayaran"
-                name="tglPembayaran"
-                type="text"
-              />
+              {canVerify && (
+                <>
+                  <Field
+                    component={DatePicker}
+                    label="Tanggal Pengajuan KPPN"
+                    name="tglPengajuanKppn"
+                    type="text"
+                  />
+                  <Field
+                    component={DatePicker}
+                    label="Tanggal Pembayaran"
+                    name="tglPembayaran"
+                    type="text"
+                  />
+                </>
+              )}
             </div>
           </section>
         </form>

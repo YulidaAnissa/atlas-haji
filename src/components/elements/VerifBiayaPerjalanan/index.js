@@ -64,7 +64,7 @@ function FilePreview({ file, title }) {
           <iframe
             src={`${file}#toolbar=0&navpanes=0&scrollbar=0`}
             title={title}
-            className="block h-[520px] w-full max-w-full border-0"
+            className="block h-130 w-full max-w-full border-0"
           />
         </div>
       )}
@@ -110,7 +110,7 @@ function DocumentCard({ title, file }) {
   );
 }
 
-export default function ComponentForm({ data = {}, onSubmit, onClose = false }) {
+export default function ComponentForm({ data = {}, onSubmit, onClose = false, type = "verifikasi" }) {
   const [showAlasan, setShowAlasan] = useState(false);
   const [catatan, setCatatan] = useState("");
 
@@ -118,7 +118,7 @@ export default function ComponentForm({ data = {}, onSubmit, onClose = false }) 
     <div className="max-h-[80vh] min-w-0 overflow-y-auto overflow-x-hidden">
       <div className="mb-5">
         <h2 className="text-xl font-bold text-gray-900">
-          Verifikasi Pembiayaan
+          {type === "verifikasi" ? "Verifikasi Pembiayaan" : "Laporan Perjalanan"}
         </h2>
         <p className="mt-1 text-sm text-gray-500">
           Periksa bukti pendukung sebelum melakukan verifikasi.
@@ -149,17 +149,19 @@ export default function ComponentForm({ data = {}, onSubmit, onClose = false }) 
         <DocumentCard title="Surat Perjalanan Dinas" file={data?.spd} />
 
         <section className="min-w-0 space-y-3 rounded-2xl border border-gray-200 bg-white p-5 shadow-sm">
-          <div>
-            <p className="text-sm font-semibold text-gray-500">
-              Laporan Perjalanan
-            </p>
-            <p className="mt-1 text-sm text-gray-700">
-              Hasil laporan perjalanan dinas
-            </p>
+          <div className="flex items-start justify-between gap-3">
+            <div>
+              <p className="text-sm font-semibold text-gray-500">
+                Laporan Perjalanan
+              </p>
+              <p className="mt-1 text-sm text-gray-700">
+                Hasil laporan perjalanan dinas
+              </p>
+            </div>
           </div>
 
           <div className="min-w-0 rounded-xl border border-gray-200 bg-gray-50 px-4 py-3">
-            <p className="whitespace-pre-line break-words text-sm leading-6 text-gray-700">
+            <p className="whitespace-pre-line wrap-break-word text-sm leading-6 text-gray-700">
               {data?.laporan || data?.hasil || "Laporan belum tersedia"}
             </p>
           </div>
@@ -202,11 +204,12 @@ export default function ComponentForm({ data = {}, onSubmit, onClose = false }) 
       )}
 
       <div className="sticky bottom-0 mt-6 flex flex-col gap-3 border-t border-gray-200 bg-white py-4 sm:flex-row sm:items-center sm:justify-between">
-        <div className="flex gap-3">
-          <button
-            type="button"
-            onClick={() => onSubmit("verifikasi")}
-            className="inline-flex items-center gap-2 rounded-xl bg-green-600 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-green-700"
+        {type === "verifikasi" && (
+          <div className="flex gap-3">
+            <button
+              type="button"
+              onClick={() => onSubmit("verifikasi")}
+              className="inline-flex items-center gap-2 rounded-xl bg-green-600 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-green-700"
           >
             <FaCheckCircle className="h-4 w-4" />
             Verifikasi
@@ -221,6 +224,7 @@ export default function ComponentForm({ data = {}, onSubmit, onClose = false }) 
             Tolak
           </button>
         </div>
+        )}
 
         <button
           type="button"

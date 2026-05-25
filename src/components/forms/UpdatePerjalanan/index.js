@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useMemo, useState } from "react";
 import { Form, Field } from "react-final-form";
 import { v4 as uuidv4 } from "uuid";
 
@@ -14,7 +14,7 @@ import {
   UploadFile,
 } from "@/components/forms/FormField";
 
-export default function ComponentForm({
+export default function ComponentFormc({
   data = {},
   onSubmit,
   onClose = false,
@@ -22,53 +22,122 @@ export default function ComponentForm({
   pejabat = [],
   st = [],
 }) {
-  const [kabkotaOptions, setKabKotaOptions] = useState([]);
-  const [noSuratOptions, setSuratOptions] = useState([]);
-  const [pejabatOptions, setPejabatOptions] = useState([]);
+  const [customSuratOptions, setCustomSuratOptions] = useState([]);
+  const [isExistingSurat, setIsExistingSurat] = useState(Boolean(data?.idSurat));
 
-  useEffect(() => {
-    if (Array.isArray(kabkota)) {
-      setKabKotaOptions(
-        kabkota.map((item) => ({
+  const kabkotaOptions = useMemo(() => {
+    return Array.isArray(kabkota)
+      ? kabkota.map((item) => ({
           value: item.idKabKota,
           label: item.kabkota,
         }))
-      );
-    }
+      : [];
+  }, [kabkota]);
 
-    if (Array.isArray(pejabat)) {
-      setPejabatOptions(
-        pejabat.map((item) => ({
+  const pejabatOptions = useMemo(() => {
+    return Array.isArray(pejabat)
+      ? pejabat.map((item) => ({
           value: item.nip,
           label: item.jabatan,
         }))
-      );
-    }
+      : [];
+  }, [pejabat]);
 
-    if (Array.isArray(st)) {
-      setSuratOptions(
-        st.map((item) => ({
-          value: item.noSurat,
-          label: item.noSurat,
-        }))
-      );
-    }
-  }, [kabkota, pejabat, st]);
+  const baseNoSuratOptions = useMemo(() => {
+    return Array.isArray(st)
+      ? st
+          .filter((item) => item?.idSurat && item?.noSurat)
+          .map((item) => ({
+            value: item.idSurat,
+            label: item.noSurat,
+          }))
+      : [];
+  }, [st]);
+
+  const noSuratOptions = useMemo(() => {
+    return [...baseNoSuratOptions, ...customSuratOptions];
+  }, [baseNoSuratOptions, customSuratOptions]);
+
+  const selectedSurat = useMemo(() => {
+    if (!data?.idSurat || !Array.isArray(st)) return null;
+
+    return (
+      st.find(
+        (item) =>
+          item?.idSurat &&
+          String(item.idSurat) === String(data.idSurat)
+      ) || null
+    );
+  }, [st, data?.idSurat]);
+
+  const initialValues = useMemo(
+    () => ({
+      ...data,
+
+      nip: data?.nip
+        ? pejabatOptions.find(
+            (item) => String(item.value) === String(data.nip)
+          ) || {
+            value: data.nip,
+            label: data.jabatan || data.nip,
+          }
+        : null,
+
+      tujuan: data?.idKabKota
+        ? kabkotaOptions.find(
+            (item) => String(item.value) === String(data.idKabKota)
+          ) || {
+            value: data.idKabKota,
+            label: data.kabkota || data.idKabKota,
+          }
+        : null,
+
+      idSurat: selectedSurat
+        ? {
+            value: selectedSurat.idSurat,
+            label: selectedSurat.noSurat,
+          }
+        : data?.idSurat
+          ? {
+              value: data.idSurat,
+              label: data.noSurat || data.idSurat,
+            }
+          : null,
+
+      noSurat: data?.noSurat || selectedSurat?.noSurat || "",
+
+      tglSurat: data?.tglSurat ? new Date(data.tglSurat) : null,
+
+      kegiatan: data?.kegiatan || "",
+
+      dateRange: {
+        startDate: data?.tglBerangkat
+          ? new Date(data.tglBerangkat)
+          : new Date(),
+        endDate: data?.tglKembali ? new Date(data.tglKembali) : new Date(),
+        formattedStart: data?.tglBerangkat || null,
+        formattedEnd: data?.tglKembali || null,
+      },
+
+      file: data?.file || null,
+    }),
+    [data, pejabatOptions, kabkotaOptions, selectedSurat]
+  );
+
+  const formKey = [
+    data?.idPerjalanan,
+    data?.idSurat,
+    data?.noSurat,
+    st.length,
+    kabkotaOptions.length,
+    pejabatOptions.length,
+  ].join("-");
 
   return (
     <Form
+      key={formKey}
       onSubmit={onSubmit}
-      initialValues={{
-        ...data,
-        tujuan: data?.idKabKota || "",
-        dateRange: {
-          startDate: data?.tglBerangkat
-            ? new Date(data.tglBerangkat)
-            : new Date(),
-          endDate: data?.tglKembali ? new Date(data.tglKembali) : new Date(),
-        },
-        file: data?.file || null,
-      }}
+      initialValues={initialValues}
       validate={validation}
     >
       {({ handleSubmit, form, submitting }) => (
@@ -145,7 +214,7 @@ export default function ComponentForm({
                   />
 
                   <Field
-                    name="noSurat"
+                    name="idSurat"
                     component={CreateableSelect}
                     label="Nomor Surat"
                     options={noSuratOptions}
@@ -153,50 +222,60 @@ export default function ComponentForm({
                       if (newSurat) {
                         const selected = st.find(
                           (item) =>
-                            item.idSurat === newSurat.value ||
-                            item.noSurat === newSurat.value
+                            item?.idSurat &&
+                            String(item.idSurat) === String(newSurat.value)
                         );
 
                         if (selected) {
-                          form.change("idSurat", selected.idSurat);
+                          setIsExistingSurat(true);
+
+                          form.change("idSurat", {
+                            value: selected.idSurat,
+                            label: selected.noSurat,
+                          });
                           form.change("noSurat", selected.noSurat);
-                          form.change("tglSurat", selected.tglSurat);
-                          form.change("kegiatan", selected.kegiatan);
+                          form.change(
+                            "tglSurat",
+                            selected.tglSurat ? new Date(selected.tglSurat) : null
+                          );
+                          form.change("kegiatan", selected.kegiatan || "");
+                          form.change("file", selected.file || null);
                         } else {
-                          form.change("idSurat", uuidv4());
-                          form.change("noSurat", newSurat.value);
-                          form.change("tglSurat", "");
+                          setIsExistingSurat(false);
+
+                          const newIdSurat = uuidv4();
+
+                          const createdOption = {
+                            value: newIdSurat,
+                            label: newSurat.label || newSurat.value,
+                          };
+
+                          form.change("idSurat", createdOption);
+                          form.change("noSurat", createdOption.label);
+                          form.change("tglSurat", null);
                           form.change("kegiatan", "");
-                          setSuratOptions((current) => [
-                            ...current,
-                            newSurat,
-                          ]);
+                          form.change("file", null);
+
+                          setCustomSuratOptions((current) => [...current, createdOption]);
                         }
                       } else {
+                        setIsExistingSurat(false);
+
                         form.change("idSurat", null);
                         form.change("noSurat", "");
-                        form.change("tglSurat", "");
+                        form.change("tglSurat", null);
                         form.change("kegiatan", "");
+                        form.change("file", null);
                       }
                     }}
                   />
-
-                  <div className="hidden">
-                    <Field
-                      component={InputField}
-                      label="No Surat Tugas"
-                      disabled
-                      name="idSurat"
-                      placeholder="Masukkan Nomor Surat Tugas"
-                      type="text"
-                    />
-                  </div>
 
                   <Field
                     component={DatePicker}
                     label="Tanggal Surat"
                     name="tglSurat"
                     type="text"
+                    disabled={isExistingSurat}
                   />
 
                   <Field
@@ -204,12 +283,14 @@ export default function ComponentForm({
                     label="Kegiatan"
                     name="kegiatan"
                     placeholder="Masukkan kegiatan"
+                    disabled={isExistingSurat}
                   />
 
                   <Field
                     component={UploadFile}
                     label="File Surat Tugas"
                     name="file"
+                    disabled={isExistingSurat}
                   />
                 </div>
               </section>

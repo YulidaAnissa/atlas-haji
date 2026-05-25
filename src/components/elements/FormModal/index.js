@@ -13,7 +13,7 @@ export default function FormModal({
 
   return (
     <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
-      <div className={clsx("bg-white rounded-lg shadow-lg p-6 text-center relative", className)}>
+      <div className={clsx("bg-white rounded-lg shadow-lg p-6 relative", className)}>
         {/* Icon */}
         <div className="flex justify-center mb-4">
           <div className="w-14 h-14 flex items-center justify-center rounded-full bg-brand -mt-11">

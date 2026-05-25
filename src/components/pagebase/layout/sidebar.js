@@ -10,7 +10,8 @@ import {
   FiFileText,
   FiMapPin,
   FiUsers,
-  FiDollarSign
+  FiDollarSign,
+  FiClipboard 
 } from "react-icons/fi";
 
 export default function Sidebar({ sidebarOpen, setSidebarOpen }) {
@@ -41,6 +42,7 @@ export default function Sidebar({ sidebarOpen, setSidebarOpen }) {
       children: [
         { name: "Pegawai", icon: <FiUsers />, path: "/pegawai" },
         { name: "Kabupaten / Kota", icon: <FiMapPin />, path: "/kabupaten-kota" },
+        { name: "Surat Tugas", icon: <FiClipboard  />, path: "/surat-tugas" },
       ],
     },
   ];

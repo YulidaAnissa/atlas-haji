@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
-import { FaEdit, FaMoneyBillWave } from "react-icons/fa";
+import { FaEdit } from "react-icons/fa";
 
 import PageBase from "@/components/pagebase";
 import {
@@ -12,58 +12,23 @@ import {
   PrintButton,
   Snackbar,
   VerifBiayaPerjalanan,
+  StatusBadge,
 } from "@/components/elements";
 import FormModal from "@/components/elements/FormModal";
 import LoadingOverlay from "@/components/elements/LoadingOverlay";
-import AddBiayaPerjalanan from "@/components/forms/AddBiayaPerjalanan";
 import ConfirmPembayaran from "@/components/forms/KonfirmPembayaran";
 import { IoDocumentTextOutline } from "react-icons/io5";
-import { useSuratTugas, useUpdateLaporan } from "@/hooks/useData";
+import { useSuratTugas, useUpdateLaporan, useEditSuratTugas } from "@/hooks/useData";
 import { useLoading } from "@/hooks";
 import { calculateTripDuration, formatDate } from "@/utils/date";
 import { profileStorage } from "@/utils/storage";
-import { DatePicker } from "@/components/forms/FormField";
-import { Field } from "react-final-form";
-
-
-function StatusBadge({ status, canVerify, onClick }) {
-  const variants = {
-    verifikasi: {
-      label: "Verified",
-      className: "border-green-200 bg-green-50 text-green-700",
-    },
-    tolak: {
-      label: "Rejected",
-      className: "border-red-200 bg-red-50 text-red-700",
-    },
-    default: {
-      label: "Pending",
-      className: "border-gray-200 bg-gray-50 text-gray-700",
-    },
-  };
-
-  const current = variants[status] || variants.default;
-
-  return (
-    <button
-      type="button"
-      onClick={canVerify ? onClick : undefined}
-      className={`inline-flex items-center rounded-full border px-3 py-1 text-xs font-semibold transition ${
-        current.className
-      } ${canVerify ? "cursor-pointer hover:shadow-sm" : "cursor-default"}`}
-    >
-      {current.label}
-    </button>
-  );
-}
+import { FiEye } from "react-icons/fi";
 
 export default function Component() {
   const { id } = useParams();
 
-  const [showBiayaPerjalanan, setShowBiayaPerjalanan] = useState({
-    show: false,
-    data: null,
-  });
+  console.log('id ', id);
+
   const [showVerifBiayaPerjalanan, setShowVerifBiayaPerjalanan] = useState({
     show: false,
     data: null,
@@ -82,6 +47,7 @@ export default function Component() {
   });
 
   const { updateLaporan } = useUpdateLaporan();
+  const { editSuratTugas, loading: loadingEdit } = useEditSuratTugas();
 
   useEffect(() => {
     setProfil(profileStorage.get());
@@ -129,40 +95,6 @@ export default function Component() {
     peng: Number(item.biayaPeng || 0) === 0 ? "" : "- Penginapan",
   }));
 
-  const handleBiayaPerjalanan = async (values) => {
-    const idPerjalananPegawai = showBiayaPerjalanan?.data;
-
-    try {
-      startLoading();
-
-      const formData = new FormData();
-      formData.append("biayaPeng", values?.biayaPeng || "");
-      formData.append("biayaTrans", values?.biayaTrans || "");
-      if (values?.buktiPeng) formData.append("buktiPeng", values.buktiPeng);
-      if (values?.buktiTrans) formData.append("buktiTrans", values.buktiTrans);
-      formData.append("status", "pengajuan");
-
-      await updateLaporan(idPerjalananPegawai, formData);
-      await fetch();
-
-      setShowBiayaPerjalanan({ show: false, data: null });
-      setShowSnackbar({
-        show: true,
-        message: "Biaya perjalanan berhasil disimpan",
-        type: "success",
-      });
-    } catch (err) {
-      setShowSnackbar({
-        show: true,
-        message: "Gagal menyimpan biaya perjalanan",
-        type: "error",
-      });
-      return err;
-    } finally {
-      endLoading();
-    }
-  };
-
   const handleConfirmBiaya = async (aksi, catatan = null) => {
     const idPerjalananPegawai = showVerifBiayaPerjalanan?.data;
 
@@ -207,12 +139,6 @@ export default function Component() {
         <StatusBadge
           status={item.status}
           canVerify={canVerify}
-          onClick={() =>
-            setShowVerifBiayaPerjalanan({
-              show: true,
-              data: item.idPerjalananPegawai,
-            })
-          }
         />
       ),
       aksi: (
@@ -221,15 +147,15 @@ export default function Component() {
             <button
               type="button"
               onClick={() =>
-                setShowBiayaPerjalanan({
+                setShowVerifBiayaPerjalanan({
                   show: true,
                   data: item.idPerjalananPegawai,
                 })
               }
-              className="inline-flex items-center gap-2 rounded-xl bg-primary px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:brightness-95 focus:outline-none focus:ring-4 focus:ring-blue-100"
+              className="inline-flex items-center gap-2 rounded-lg bg-[#fbf7ec] px-3 py-2 text-sm font-semibold text-brand transition hover:bg-brand hover:text-white"
             >
-              <FaMoneyBillWave className="h-4 w-4" />
-              Biaya
+              <FiEye className="h-4 w-4" />
+              Lihat
             </button>
           ) : (
             <PrintButton
@@ -249,33 +175,41 @@ export default function Component() {
     { label: data?.surat?.noSurat || "Detail" },
   ];
 
-  const handleConfirmPembayaran = async (values) => {
+  const handleTglPembayaran = async (values) => {
     console.log('values ', values);
-    // try {
-    //   startLoading();
+    try {
+      startLoading();
 
-    //   const formData = new FormData();
-    //   formData.append("tglPengajuanKppn", values.tglPengajuanKppn);
+      const formData = new FormData();
+      if(values.tglPengajuanKppn) formData.append("tglKPPN", formatDate(values.tglPengajuanKppn, "YYYY-MM-DD"));
+      if(values.tglPembayaran) formData.append("tglPembayaran", formatDate(values.tglPembayaran, "YYYY-MM-DD"));
 
-    //   await updateLaporan(id, formData);
-    //   await fetch();
+      await editSuratTugas({
+        idSurat: id,
+        values: formData
+      });
+      await fetch();
 
-    //   setShowSnackbar({
-    //     show: true,
-    //     message: "Tanggal pengajuan ke KPPN berhasil disimpan",
-    //     type: "success",
-    //   });
-    // } catch (err) {
-    //   setShowSnackbar({
-    //     show: true,
-    //     message: "Gagal menyimpan tanggal pengajuan ke KPPN",
-    //     type: "error",
-    //   });
-    //   return err;
-    // } finally {
-    //   endLoading();
-    // }
+      setShowSnackbar({
+        show: true,
+        message: "Tanggal pembayaran berhasil disimpan",
+        type: "success",
+      });
+    } catch (err) {
+      setShowSnackbar({
+        show: true,
+        message: "Gagal menyimpan tanggal pembayaran",
+        type: "error",
+      });
+      return err;
+    } finally {
+      endLoading();
+    }
   };
+
+  const pegawaiVerifikasi =
+    (data?.pegawai?.length ?? 0) > 0 &&
+    data.pegawai.every((item) => item.status === "verifikasi");
 
   return (
     <PageBase className="mx-auto max-w-7xl px-6 py-10 lg:px-12">
@@ -312,7 +246,7 @@ export default function Component() {
         </div>
       </header>
 
-      <ConfirmPembayaran data={data} onSubmit={handleConfirmPembayaran} />
+      <ConfirmPembayaran data={data} canVerify={pegawaiVerifikasi} onSubmit={handleTglPembayaran} />
 
       <section className="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
         <div className="mb-5">
@@ -333,25 +267,7 @@ export default function Component() {
       </section>
 
       <FormModal
-        className="w-xl"
-        icon={<FaEdit className="h-6 w-6 text-white" />}
-        show={showBiayaPerjalanan?.show}
-      >
-        <AddBiayaPerjalanan
-          data={
-            showBiayaPerjalanan?.data
-              ? data?.pegawai?.find(
-                  (p) => p.idPerjalananPegawai === showBiayaPerjalanan.data
-                )
-              : {}
-          }
-          onSubmit={handleBiayaPerjalanan}
-          onClose={() => setShowBiayaPerjalanan({ show: false, data: null })}
-        />
-      </FormModal>
-
-      <FormModal
-        className="w-xl"
+        className="w-3xl"
         icon={<FaEdit className="h-6 w-6 text-white" />}
         show={showVerifBiayaPerjalanan?.show}
       >

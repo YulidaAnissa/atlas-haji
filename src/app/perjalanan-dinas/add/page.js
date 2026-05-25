@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { FaCheck } from "react-icons/fa";
+import { FaCheck, FaInfoCircle } from "react-icons/fa";
 import { IoAlert } from "react-icons/io5";
 
 import PageBase from "@/components/pagebase";
@@ -22,16 +22,21 @@ const breadcrumbItems = [
   { label: "Tambah" },
 ];
 
-function buildPerjalananFormData(values) {
+function buildPerjalananFormData(values, type) {
   const formData = new FormData();
-  const pegawai = Array.isArray(values.pegawai) ? values.pegawai : [];
+
+  const pegawai = Array.isArray(values.pegawai)
+    ? values.pegawai.map((item) => item.value)
+    : [];
 
   formData.append("pegawai", JSON.stringify(pegawai));
-  formData.append("nip", values.nip);
+  formData.append("nip", values.nip?.value);
   formData.append("tglBerangkat", values.dateRange.formattedStart);
   formData.append("tglKembali", values.dateRange.formattedEnd);
-  formData.append("idKabKota", values.tujuan);
+  formData.append("idKabKota", values.tujuan?.value);
   formData.append("status", "perjalanan");
+
+  if (type) formData.append("type", type);
 
   if (values.idSurat) formData.append("idSurat", values.idSurat);
   if (values.noSurat) formData.append("noSurat", values.noSurat);
@@ -51,6 +56,8 @@ export default function AddPerjalananDinas() {
   const [showErrorModal, setShowErrorModal] = useState(false);
   const [savedPerjalananId, setSavedPerjalananId] = useState(null);
   const [conflictData, setConflictData] = useState(null);
+  const [confirmSpecial, setConfirmSpecial] = useState(false);
+  const [pendingSubmit, setPendingSubmit] = useState(null);
 
   const { data: kabkota } = useKabKota();
   const { data: pegawai } = usePegawai();
@@ -59,26 +66,38 @@ export default function AddPerjalananDinas() {
 
   const [loading, startLoading, endLoading] = useLoading();
 
-  const handleSubmit = async (values, form) => {
+  const handleSubmit = async (values, form, type) => {
     try {
       startLoading();
 
-      const formData = buildPerjalananFormData(values);
+      const formData = buildPerjalananFormData(values, type);
       const res = await postPerjalanan(formData);
 
       form.reset();
       setSavedPerjalananId(res.idPerjalanan);
       setShowSuccessModal(true);
+      setShowErrorModal(false);
+      setConfirmSpecial(false);
+      setPendingSubmit(null);
     } catch (err) {
+      setPendingSubmit({ values, form });
+
       setConflictData({
         data: err?.konflik ?? [],
         tglBerangkat: values.dateRange.formattedStart,
         tglKembali: values.dateRange.formattedEnd,
       });
+
       setShowErrorModal(true);
     } finally {
       endLoading();
     }
+  };
+
+  const handleConfirmSpecial = () => {
+    if (!pendingSubmit) return;
+
+    handleSubmit(pendingSubmit.values, pendingSubmit.form, "khusus");
   };
 
   return (
@@ -122,10 +141,27 @@ export default function AddPerjalananDinas() {
       </InfoModal>
 
       <InfoModal
+        show={confirmSpecial}
+        icon={<FaInfoCircle className="h-6 w-6 text-white" />}
+        title="Perjalanan Khusus"
+        onCancel={() => setConfirmSpecial(false)}
+        onConfirm={handleConfirmSpecial}
+      >
+        <p className="mt-2 text-gray-500">
+          Pegawai sudah memiliki perjalanan dinas pada periode tersebut. Tetap
+          lanjutkan dan buat perjalanan ini sebagai perjalanan khusus?
+        </p>
+      </InfoModal>
+
+      <InfoModal
         show={showErrorModal}
         icon={<IoAlert className="h-6 w-6 text-white" />}
         title="Data gagal disimpan"
         onCancel={() => setShowErrorModal(false)}
+        onConfirm={() => {
+          setConfirmSpecial(true);
+          setShowErrorModal(false);
+        }}
       >
         <div className="text-left">
           <p className="my-2 text-sm leading-6 text-gray-500">

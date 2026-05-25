@@ -78,18 +78,20 @@ export default function Component() {
   const handleUpdatePerjalanan = async (values) => {
     try {
       startLoading();
+      console.log('update values', values);
 
       const formData = new FormData();
 
-      if (values.nip) formData.append("nip", values.nip);
+      if (values.nip) formData.append("nip", values.nip?.value);
       if (values.dateRange?.formattedStart) {
-        formData.append("tglBerangkat", values.dateRange.formattedStart);
+        formData.append("tglBerangkat", formatDate(values.dateRange.formattedStart, "YYYY-MM-DD"));
+
       }
       if (values.dateRange?.formattedEnd) {
-        formData.append("tglKembali", values.dateRange.formattedEnd);
+        formData.append("tglKembali", formatDate(values.dateRange.formattedEnd, "YYYY-MM-DD"));
       }
-      if (values.tujuan) formData.append("idKabKota", values.tujuan);
-      if (values.idSurat) formData.append("idSurat", values.idSurat);
+      if (values.tujuan) formData.append("idKabKota", values.tujuan?.value);
+      if (values.idSurat) formData.append("idSurat", values.idSurat?.value);
       if (values.noSurat) formData.append("noSurat", values.noSurat);
       if (values.tglSurat) {
         formData.append("tglSurat", formatDate(values.tglSurat, "YYYY-MM-DD"));
@@ -231,6 +233,8 @@ export default function Component() {
     { label: perjalanan?.kegiatan || "Detail" },
   ];
 
+  console.log('perjalanan', perjalanan);
+
   return (
     <PageBase className="mx-auto max-w-7xl px-6 py-10 lg:px-12">
       <Breadcrumb items={breadcrumbItem} />
@@ -284,12 +288,23 @@ export default function Component() {
 
       <section className="mb-8 overflow-hidden rounded-2xl border border-gray-200 bg-gray-50 shadow-sm">
         <div className="border-b border-gray-200 bg-white px-6 py-5">
-          <h2 className="text-lg font-semibold text-gray-900">
-            Informasi Perjalanan
-          </h2>
-          <p className="mt-1 text-sm text-gray-500">
-            Ringkasan tanggal, tujuan, kegiatan, dan surat tugas.
-          </p>
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+            <div>
+              <h2 className="text-lg font-semibold text-gray-900">
+                Informasi Perjalanan
+              </h2>
+              <p className="mt-1 text-sm text-gray-500">
+                Ringkasan tanggal, tujuan, kegiatan, dan surat tugas.
+              </p>
+            </div>
+
+            {perjalanan?.type === "khusus" && (
+              <div className="inline-flex items-center gap-2 rounded-full border border-amber-200 bg-amber-50 px-4 py-2 text-sm font-semibold text-amber-700 shadow-sm">
+                <span className="h-2 w-2 rounded-full bg-amber-500" />
+                Perjalanan Khusus
+              </div>
+            )}
+          </div>
         </div>
 
         <div className="grid gap-4 p-6 md:grid-cols-2 xl:grid-cols-3">
