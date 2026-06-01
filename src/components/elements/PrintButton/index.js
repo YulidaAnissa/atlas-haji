@@ -70,7 +70,7 @@ export default function SuratTugas({
       type="button"
       onClick={handleGenerate}
       disabled={loading}
-      className="group inline-flex h-10 w-full items-center justify-center gap-2 rounded-xl border border-[#eadfbe] bg-white px-4 text-sm font-bold text-brand shadow-sm transition hover:border-brand hover:bg-brand hover:text-white focus:outline-none focus:ring-4 focus:ring-[#c9a961]/20 disabled:cursor-not-allowed disabled:opacity-70"
+      className="group inline-flex h-10 w-full items-center justify-center gap-2 rounded-xl border border-[#eadfbe] bg-white px-4 text-sm font-bold text-brand shadow-sm transition hover:border-brand hover:bg-brand hover:text-white focus:outline-none focus:ring-4 focus:ring-brand/20 disabled:cursor-not-allowed disabled:opacity-70"
     >
       <FiPrinter className="h-4 w-4 transition group-hover:-translate-y-0.5" />
       <span>{loading ? "Memproses..." : text || "Cetak"}</span>

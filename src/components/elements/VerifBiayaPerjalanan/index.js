@@ -114,6 +114,7 @@ export default function ComponentForm({ data = {}, onSubmit, onClose = false, ty
   const [showAlasan, setShowAlasan] = useState(false);
   const [catatan, setCatatan] = useState("");
 
+  console.log('form data:', data);
   return (
     <div className="max-h-[80vh] min-w-0 overflow-y-auto overflow-x-hidden">
       <div className="mb-5">
@@ -204,7 +205,7 @@ export default function ComponentForm({ data = {}, onSubmit, onClose = false, ty
       )}
 
       <div className="sticky bottom-0 mt-6 flex flex-col gap-3 border-t border-gray-200 bg-white py-4 sm:flex-row sm:items-center sm:justify-between">
-        {type === "verifikasi" && (
+        {type === "verifikasi" && data?.status === "pengajuan" && (
           <div className="flex gap-3">
             <button
               type="button"

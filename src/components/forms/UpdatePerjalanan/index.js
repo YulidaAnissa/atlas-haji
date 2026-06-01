@@ -301,7 +301,7 @@ export default function ComponentFormc({
             <button
               type="submit"
               disabled={submitting}
-              className="inline-flex h-11 w-full items-center justify-center rounded-xl bg-brand px-5 text-sm font-bold text-white shadow-lg shadow-[#c9a961]/25 transition hover:bg-[#b5964f] focus:outline-none focus:ring-4 focus:ring-[#c9a961]/25 disabled:cursor-not-allowed disabled:opacity-70"
+              className="inline-flex h-11 w-full items-center justify-center rounded-xl bg-brand px-5 text-sm font-bold text-white shadow-lg shadow-brand/25 transition hover:bg-[#b5964f] focus:outline-none focus:ring-4 focus:ring-brand/25 disabled:cursor-not-allowed disabled:opacity-70"
             >
               {submitting ? "Menyimpan..." : "Simpan"}
             </button>

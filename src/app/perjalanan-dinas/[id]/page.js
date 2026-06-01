@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { IoDocumentTextOutline } from "react-icons/io5";
 import { FaEdit, FaPlusCircle } from "react-icons/fa";
@@ -30,6 +30,7 @@ import {
 } from "@/hooks/useData";
 import { useLoading } from "@/hooks";
 import { calculateTripDuration, formatDate } from "@/utils/date";
+import { profileStorage } from "@/utils/storage";
 
 function DetailItem({ label, value }) {
   return (
@@ -68,6 +69,14 @@ export default function Component() {
   const { postPegawai } = useAddPegawaiPerjalanan();
   const { deletePerjalananPegawai } = useDeletePerjalananPegawai();
   const { updatePerjalanan } = useUpdatePerjalanan();
+  const [profil, setProfil] = useState(null);
+  
+  useEffect(() => {
+    setProfil(profileStorage.get());
+  }, []);
+
+  const isAdmin =
+    String(profil?.role || "").trim().toLowerCase() === "admin";
 
   const perjalanan = data?.perjalanan;
 
@@ -193,7 +202,7 @@ export default function Component() {
     ...item,
     aksi: (
       <div className="flex w-max gap-2">
-        {item.status === "perjalanan" && (
+        {isAdmin && item.status === "perjalanan" && (
           <button
             type="button"
             className="inline-flex items-center justify-center rounded-xl border border-red-200 bg-red-50 px-3 py-2 text-sm font-semibold text-red-700 transition hover:bg-red-100"
@@ -233,8 +242,6 @@ export default function Component() {
     { label: perjalanan?.kegiatan || "Detail" },
   ];
 
-  console.log('perjalanan', perjalanan);
-
   return (
     <PageBase className="mx-auto max-w-7xl px-6 py-10 lg:px-12">
       <Breadcrumb items={breadcrumbItem} />
@@ -265,24 +272,27 @@ export default function Component() {
               Lihat Surat Tugas
             </a>
           )}
+          {isAdmin && (
+            <>
+              <button
+                type="button"
+                className="inline-flex items-center justify-center gap-2 rounded-xl bg-primary px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:brightness-95 focus:outline-none focus:ring-4 focus:ring-blue-100"
+                onClick={() => setShowUpdatePerjalanan(true)}
+              >
+                <FaEdit className="h-4 w-4" />
+                Ubah Perjalanan
+              </button>
 
-          <button
-            type="button"
-            className="inline-flex items-center justify-center gap-2 rounded-xl bg-primary px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:brightness-95 focus:outline-none focus:ring-4 focus:ring-blue-100"
-            onClick={() => setShowUpdatePerjalanan(true)}
-          >
-            <FaEdit className="h-4 w-4" />
-            Ubah Perjalanan
-          </button>
-
-          <button
-            type="button"
-            className="inline-flex items-center justify-center gap-2 rounded-xl border border-gray-800 bg-gray-900 px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-black"
-            onClick={() => setShowAddPegawai(true)}
-          >
-            <FaPlusCircle className="h-4 w-4" />
-            Tambah Pegawai
-          </button>
+              <button
+                type="button"
+                className="inline-flex items-center justify-center gap-2 rounded-xl border border-gray-800 bg-gray-900 px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-black"
+                onClick={() => setShowAddPegawai(true)}
+              >
+                <FaPlusCircle className="h-4 w-4" />
+                Tambah Pegawai
+              </button>
+            </>
+          )}
         </div>
       </header>
 

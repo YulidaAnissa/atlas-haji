@@ -3,7 +3,7 @@
 import React, { useEffect, useState } from "react";
 import { Form, Field } from "react-final-form";
 import { formatDate } from "@/utils/date";
-import { DatePicker } from "../FormField";
+import { DatePicker, UploadFile } from "../FormField";
 
 function DetailItem({ label, value }) {
   return (
@@ -24,7 +24,9 @@ export default function ComponentForm({
   canVerify = false,
 }) {
 
-  console.log("data form konfirmasi pembayaran", data);
+  console.log("can verify ", canVerify);
+  console.log("data form ", data);
+  
   return (
     <Form
       onSubmit={onSubmit}
@@ -35,6 +37,7 @@ export default function ComponentForm({
         tglPembayaran: data?.surat?.tglPembayaran
           ? new Date(data.surat.tglPembayaran)
           : null,
+        buktiPembayaran: data?.surat?.buktiPembayaran || null,
       }}
     >
       {({ handleSubmit, submitting }) => (
@@ -49,14 +52,15 @@ export default function ComponentForm({
                   Ringkasan surat tugas yang menjadi dasar biaya perjalanan.
                 </p>
               </div>
-
-              <button
-                type="submit"
-                disabled={submitting}
-                className="inline-flex h-10 items-center justify-center rounded-xl bg-brand px-5 text-sm font-bold text-white shadow-lg shadow-[#c9a961]/25 transition hover:bg-[#b5964f] disabled:cursor-not-allowed disabled:opacity-70"
-              >
-                {submitting ? "Menyimpan..." : "Simpan Tanggal"}
-              </button>
+              {canVerify && (
+                <button
+                  type="submit"
+                  disabled={submitting}
+                  className="inline-flex h-10 items-center justify-center rounded-xl bg-brand px-5 text-sm font-bold text-white shadow-lg shadow-brand/25 transition hover:bg-[#b5964f] disabled:cursor-not-allowed disabled:opacity-70"
+                >
+                  {submitting ? "Menyimpan..." : "Simpan"}
+                </button>
+              )}
             </div>
 
             <div className="grid gap-4 p-6 md:grid-cols-2 xl:grid-cols-3">
@@ -68,7 +72,7 @@ export default function ComponentForm({
               />
 
               <DetailItem label="Kegiatan" value={data?.surat?.kegiatan} />
-              {canVerify && (
+              {canVerify ? (
                 <>
                   <Field
                     component={DatePicker}
@@ -81,6 +85,42 @@ export default function ComponentForm({
                     label="Tanggal Pembayaran"
                     name="tglPembayaran"
                     type="text"
+                  />
+                  <Field
+                    component={UploadFile}
+                    label="Bukti Pembayaran"
+                    name="buktiPembayaran"
+                    accept="image/*,.pdf"
+                  />
+                </>
+              ) : (
+                <>
+                  <DetailItem
+                    label="Tanggal Pengajuan KPPN"
+                    value={data?.surat?.tglKPPN ? formatDate(data?.surat?.tglKPPN) : "-"}
+                  />
+
+                  <DetailItem
+                    label="Tanggal Pembayaran"
+                    value={data?.surat?.tglPembayaran ? formatDate(data?.surat?.tglPembayaran) : "-"}
+                  />
+
+                  <DetailItem
+                    label="Bukti Pembayaran"
+                    value={
+                      data?.surat?.buktiPembayaran ? (
+                        <a
+                          href={data.surat.buktiPembayaran}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-brand underline underline-offset-4 hover:text-[#b5964f]"
+                        >
+                          Lihat File
+                        </a>
+                      ) : (
+                        "Belum Diunggah"
+                      )
+                    }
                   />
                 </>
               )}

@@ -16,14 +16,18 @@ export default function ComponentForm({
   pegawai = [],
 }) {
   const [pegawaiOptions, setPegawaiOptions] = useState([]);
+  // console.log('data form ', data);
+  console.log('pegawai ', pegawai);
 
   useEffect(() => {
     if (type === "add" && Array.isArray(pegawai)) {
       setPegawaiOptions(
-        pegawai.map((item) => ({
-          value: item.idPerjalananPegawai,
-          label: `${item.nip} | ${item.nama}`,
-        }))
+        pegawai
+          .filter((item) => item.status === "perjalanan")
+          .map((item) => ({
+            value: item.idPerjalananPegawai,
+            label: `${item.nip} | ${item.nama}`,
+          }))
       );
     }
   }, [pegawai, type]);

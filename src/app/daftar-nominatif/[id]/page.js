@@ -143,7 +143,7 @@ export default function Component() {
       ),
       aksi: (
         <div className="flex justify-end gap-2">
-          {item?.status !== "verifikasi" ? (
+          {item?.status !== "verifikasi" ? canVerify && (
             <button
               type="button"
               onClick={() =>
@@ -176,29 +176,47 @@ export default function Component() {
   ];
 
   const handleTglPembayaran = async (values) => {
-    console.log('values ', values);
+    console.log("values ", values);
+
     try {
       startLoading();
 
       const formData = new FormData();
-      if(values.tglPengajuanKppn) formData.append("tglKPPN", formatDate(values.tglPengajuanKppn, "YYYY-MM-DD"));
-      if(values.tglPembayaran) formData.append("tglPembayaran", formatDate(values.tglPembayaran, "YYYY-MM-DD"));
+
+      if (values.tglPengajuanKppn) {
+        formData.append(
+          "tglKPPN",
+          formatDate(values.tglPengajuanKppn, "YYYY-MM-DD")
+        );
+      }
+
+      if (values.tglPembayaran) {
+        formData.append(
+          "tglPembayaran",
+          formatDate(values.tglPembayaran, "YYYY-MM-DD")
+        );
+      }
+
+      if (values.buktiPembayaran) {
+        formData.append("buktiPembayaran", values.buktiPembayaran);
+      }
 
       await editSuratTugas({
         idSurat: id,
-        values: formData
+        values: formData,
       });
+
       await fetch();
 
       setShowSnackbar({
         show: true,
-        message: "Tanggal pembayaran berhasil disimpan",
+        message: "Berhasil disimpan",
         type: "success",
       });
     } catch (err) {
       setShowSnackbar({
         show: true,
-        message: "Gagal menyimpan tanggal pembayaran",
+        message: "Gagal menyimpan",
         type: "error",
       });
       return err;
@@ -208,8 +226,11 @@ export default function Component() {
   };
 
   const pegawaiVerifikasi =
+    String(profil?.role || "").trim().toLowerCase() === "finance" &&
     (data?.pegawai?.length ?? 0) > 0 &&
-    data.pegawai.every((item) => item.status === "verifikasi");
+    data?.pegawai?.every((item) => item.status === "verifikasi");
+
+  console.log('data ', data);
 
   return (
     <PageBase className="mx-auto max-w-7xl px-6 py-10 lg:px-12">
@@ -228,22 +249,19 @@ export default function Component() {
             nominatif perjalanan dinas.
           </p>
         </div>
+        {(data?.pegawai?.length ?? 0) > 0 &&
+          data?.pegawai?.every((item) => item.status === "verifikasi") && (
+            <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap">
+              <button
+                type="button"
+                className="inline-flex items-center gap-2 justify-center rounded-xl border border-gray-200 bg-white px-5 py-2.5 text-sm font-semibold text-gray-700 shadow-sm transition hover:bg-gray-50"
+              >
+                <IoDocumentTextOutline className="h-4 w-4" />
+                <DaftarNominatif data={data} />
+              </button>
+            </div>
+          )}
 
-        <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap">
-          <button
-            type="button"
-            className="inline-flex items-center gap-2 justify-center rounded-xl border border-gray-200 bg-white px-5 py-2.5 text-sm font-semibold text-gray-700 shadow-sm transition hover:bg-gray-50"
-          >
-            <IoDocumentTextOutline className="h-4 w-4" />
-            <DaftarNominatif data={data} />
-          </button>
-          <button
-            type="button"
-            className="inline-flex items-center justify-center gap-2 rounded-xl bg-primary px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:brightness-95 focus:outline-none focus:ring-4 focus:ring-blue-100"
-          >
-            Bukti Pembayaran
-          </button>
-        </div>
       </header>
 
       <ConfirmPembayaran data={data} canVerify={pegawaiVerifikasi} onSubmit={handleTglPembayaran} />

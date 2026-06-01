@@ -4,25 +4,20 @@ export default function StatusBadge({ status, canVerify = false, onClick }) {
   const normalizedStatus = String(status ?? "").toLowerCase();
 
   const variants = {
+    perjalanan: {
+      label: "Perjalanan",
+      dot: "bg-blue-500",
+      className: "border-blue-200 bg-blue-50 text-blue-700",
+    },
     pengajuan: {
       label: "Pengajuan",
-      dot: "bg-amber-500",
-      className: "border-amber-200 bg-amber-50 text-amber-700",
-    },
-    pending: {
-      label: "Pengajuan",
-      dot: "bg-amber-500",
-      className: "border-amber-200 bg-amber-50 text-amber-700",
+      dot: "bg-orange-500",
+      className: "border-orange-200 bg-orange-50 text-orange-700",
     },
     verifikasi: {
       label: "Diverifikasi",
-      dot: "bg-emerald-500",
-      className: "border-emerald-200 bg-emerald-50 text-emerald-700",
-    },
-    diverifikasi: {
-      label: "Diverifikasi",
-      dot: "bg-emerald-500",
-      className: "border-emerald-200 bg-emerald-50 text-emerald-700",
+      dot: "bg-amber-500",
+      className: "border-amber-200 bg-amber-50 text-amber-700",
     },
     tolak: {
       label: "Ditolak",
@@ -34,8 +29,13 @@ export default function StatusBadge({ status, canVerify = false, onClick }) {
       dot: "bg-red-500",
       className: "border-red-200 bg-red-50 text-red-700",
     },
+    selesai: {
+      label: "Selesai",
+      dot: "bg-emerald-500",
+      className: "border-emerald-200 bg-emerald-50 text-emerald-700",
+    },
     default: {
-      label: "Pengajuan",
+      label: "Tidak diketahui",
       dot: "bg-slate-400",
       className: "border-slate-200 bg-slate-50 text-slate-700",
     },

@@ -165,24 +165,25 @@ export default function Component() {
       ),
       aksi: (
         <div className="flex items-center justify-end gap-2">
-          <PrintButton
-            data={{
-              nama: item?.nama,
-              nip: item?.nip,
-              tglBerangkat: formatDate(data?.perjalanan?.tglBerangkat, "DD MMMM YYYY"),
-              tglKembali: formatDate(data?.perjalanan?.tglKembali, "DD MMMM YYYY"),
-              kabkota: data?.perjalanan?.kabkota,
-              kegiatan: data?.perjalanan?.kegiatan,
-              hasil: item?.hasil,
-              lama: calculateTripDuration(
-                data?.perjalanan?.tglBerangkat,
-                data?.perjalanan?.tglKembali
-              ),
-            }}
-            format="/laporan-format.docx"
-            file={`laporan-${item.nip}`}
-          />
-
+          {item?.hasil && (
+            <PrintButton
+              data={{
+                nama: item?.nama,
+                nip: item?.nip,
+                tglBerangkat: formatDate(data?.perjalanan?.tglBerangkat, "DD MMMM YYYY"),
+                tglKembali: formatDate(data?.perjalanan?.tglKembali, "DD MMMM YYYY"),
+                kabkota: data?.perjalanan?.kabkota,
+                kegiatan: data?.perjalanan?.kegiatan,
+                hasil: item?.hasil,
+                lama: calculateTripDuration(
+                  data?.perjalanan?.tglBerangkat,
+                  data?.perjalanan?.tglKembali
+                ),
+              }}
+              format="/laporan-format.docx"
+              file={`laporan-${item.nip}`}
+            />
+          )}
           <button
             type="button"
             onClick={() =>
@@ -215,6 +216,8 @@ export default function Component() {
     { label: "Daftar Laporan Perjalanan Dinas", href: "/laporan-perjalanan" },
     { label: data?.perjalanan?.kegiatan || "Detail" },
   ];
+
+  console.log("data laporan perjalanan", data);
 
   return (
     <PageBase className="mx-auto max-w-7xl px-6 py-10 lg:px-12">
