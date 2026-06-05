@@ -23,6 +23,7 @@ const breadcrumbItems = [
 ];
 
 function buildPerjalananFormData(values, type) {
+  console.log('values form perjalanan dinas ', type);
   const formData = new FormData();
 
   const pegawai = Array.isArray(values.pegawai)
@@ -36,7 +37,7 @@ function buildPerjalananFormData(values, type) {
   formData.append("idKabKota", values.tujuan?.value);
   formData.append("status", "perjalanan");
 
-  if (type) formData.append("type", type);
+  if (type) formData.append("type", type === "khusus" ? "khusus" : "reguler");
 
   if (values.idSurat) formData.append("idSurat", values.idSurat);
   if (values.noSurat) formData.append("noSurat", values.noSurat);
