@@ -2,34 +2,28 @@
 
 import { DataTables, Breadcrumb } from "@/components/elements";
 import PageBase from "@/components/pagebase";
-import { usePathname, useRouter, useSearchParams  } from "next/navigation";
+import { useRouter  } from "next/navigation";
 import { useState, useEffect } from "react";
 import { usePerjalananPegawai } from "@/hooks/useData";
 import { formatDate } from "@/utils/date";
 import { FiPlus, FiSearch, FiX, FiEye } from "react-icons/fi";
 import { profileStorage } from "@/utils/storage";
 
-export default function DaftarPerjalananDinas() {
+export default function DaftarPerjalananDinas({ searchParams }) {
   const router = useRouter();
-  const pathname = usePathname();
   const [search, setSearch] = useState("");
-  const searchParams = useSearchParams();
 
-  const status = searchParams.get("status");
+  const status = searchParams?.status;
 
   const { data, isLoading } = usePerjalananPegawai({
     params: { search, status },
   });
 
-  console.log('data perjalanan pegawai ', data);
   const [profil, setProfil] = useState(null);
 
   useEffect(() => {
     setProfil(profileStorage.get());
   }, []);
-
-  const isAdmin =
-    String(profil?.role || "").trim().toLowerCase() === "admin";
 
   const headCells = [
     { id: "nama", label: "Nama", numeric: false },
