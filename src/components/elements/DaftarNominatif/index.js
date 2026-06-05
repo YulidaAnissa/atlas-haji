@@ -49,7 +49,9 @@ export default function SuratTugas({
   useEffect(() => {
     if (data) {
       const pegawaiData = data.pegawai.map((item, index) => {
-        const uhVal = uhCount(item.uh, item.tglBerangkat, item.tglKembali);
+        const isKhusus = item.type === "khusus";
+        const uhType = isKhusus ? 0 : item.uh;
+        const uhVal = uhCount(uhType, item.tglBerangkat, item.tglKembali);
         return {
           idx: index + 1,
           nama: item.nama,

@@ -1,7 +1,8 @@
-export default function StatusCard({ title, count, subtitle, color, icon }) {
+export default function StatusCard({ onClick,title, count, subtitle, color, icon }) {
   return (
     <div
-      className={`group relative overflow-hidden rounded-2xl ${color} p-5 text-white shadow-sm transition hover:-translate-y-0.5 hover:shadow-lg`}
+      className={`group relative overflow-hidden rounded-2xl ${color} p-5 text-white shadow-sm transition hover:-translate-y-0.5 hover:shadow-lg cursor-pointer`}
+      onClick={onClick}
     >
       <div className="absolute -right-6 -top-6 h-24 w-24 rounded-full bg-white/10" />
       <div className="absolute -bottom-10 right-8 h-28 w-28 rounded-full bg-black/10" />

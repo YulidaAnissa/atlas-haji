@@ -77,7 +77,9 @@ export default function PerjalananDinasPage() {
     params: { status: "tolak" },
   });
 
-  console.log("Perjalanan Data:", perjalananData);
+  const handlePerjalananClick = (status) => {
+    router.push(`/perjalanan-dinas/filter?status=${status}`);
+  };
 
   return (
     <DashboardPage className="mx-auto max-w-7xl px-6 py-10 lg:px-12">
@@ -136,7 +138,7 @@ export default function PerjalananDinasPage() {
 
             <button
               type="button"
-              onClick={() => router.push("/daftar-nominatif?status=tolak")}
+              onClick={() => router.push("/perjalanan-dinas/filter?status=tolak")}
               className="text-sm font-medium text-gray-500 transition hover:text-red-600"
             >
               Lihat Semua
@@ -168,6 +170,7 @@ export default function PerjalananDinasPage() {
               subtitle="Sedang berlangsung atau dijadwalkan"
               color="bg-gradient-to-br from-blue-500 to-blue-700"
               icon={<FaCar />}
+              onClick={() => handlePerjalananClick("perjalanan")}
             />
             <StatCard
               title="Pengajuan"
@@ -175,6 +178,7 @@ export default function PerjalananDinasPage() {
               subtitle="Menunggu verifikasi pembayaran"
               color="bg-gradient-to-br from-orange-400 to-orange-600"
               icon={<FaCreditCard />}
+              onClick={() => handlePerjalananClick("pengajuan")}
             />
             <StatCard
               title="Verifikasi"
@@ -182,6 +186,7 @@ export default function PerjalananDinasPage() {
               subtitle="Terverifikasi, menunggu pembayaran"
               color="bg-gradient-to-br from-yellow-400 to-amber-600"
               icon={<FaCreditCard />}
+              onClick={() => handlePerjalananClick("verifikasi")}
             />
             <StatCard
               title="Selesai"
@@ -189,6 +194,7 @@ export default function PerjalananDinasPage() {
               subtitle="Telah dibayarkan dan selesai"
               color="bg-gradient-to-br from-green-500 to-emerald-700"
               icon={<FaCheckCircle />}
+              onClick={() => handlePerjalananClick("selesai")}
             />
           </div>
         )}

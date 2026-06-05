@@ -249,14 +249,24 @@ export default function Component() {
 
       <section className="mb-8 overflow-hidden rounded-2xl border border-gray-200 bg-gray-50 shadow-sm">
         <div className="border-b border-gray-200 bg-white px-6 py-5">
-          <h2 className="text-lg font-semibold text-gray-900">
-            Informasi Perjalanan
-          </h2>
-          <p className="mt-1 text-sm text-gray-500">
-            Ringkasan tanggal, tujuan, kegiatan, dan surat tugas.
-          </p>
-        </div>
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+            <div>
+              <h2 className="text-lg font-semibold text-gray-900">
+                Informasi Perjalanan
+              </h2>
+              <p className="mt-1 text-sm text-gray-500">
+                Ringkasan tanggal, tujuan, kegiatan, dan surat tugas.
+              </p>
+            </div>
 
+            {data?.perjalanan?.type === "khusus" && (
+              <div className="inline-flex items-center gap-2 rounded-full border border-amber-200 bg-amber-50 px-4 py-2 text-sm font-semibold text-amber-700 shadow-sm">
+                <span className="h-2 w-2 rounded-full bg-amber-500" />
+                Perjalanan Khusus
+              </div>
+            )}
+          </div>
+        </div>
         <div className="grid gap-4 p-6 md:grid-cols-2 xl:grid-cols-3">
           <DetailItem
             label="Tanggal Berangkat"

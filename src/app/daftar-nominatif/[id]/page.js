@@ -67,33 +67,40 @@ export default function Component() {
     return (Number(uh) || 0) + (Number(biayaTrans) || 0) + (Number(biayaPeng) || 0);
   };
 
-  const dataFilePegawai = data?.pegawai?.map((item, index) => ({
-    idx: index + 1,
-    nama: item.nama,
-    nip: item.nip,
-    kegiatan: data?.surat?.kegiatan,
-    tujuan: item.kabkota,
-    tglBerangkat: formatDate(item.tglBerangkat, "DD MMMM YYYY"),
-    lama: calculateTripDuration(item.tglBerangkat, item.tglKembali),
-    uh: formatRupiah(item.uh),
-    uhTotal: formatRupiah(uhCount(item.uh, item.tglBerangkat, item.tglKembali)),
-    biayaTrans: formatRupiah(item.biayaTrans),
-    biayaPeng: formatRupiah(item.biayaPeng),
-    jumlahTotal: formatRupiah(
-      totalCount(
-        uhCount(item.uh, item.tglBerangkat, item.tglKembali),
-        item.biayaTrans,
-        item.biayaPeng
-      )
-    ),
-    image: item.buktiTrans,
-    buktiPeng: item.buktiPeng,
-    nipPPK: item?.nipPPK,
-    namaPPK: item?.namaPPK,
-    unitPPK: item?.unitPPK,
-    trans: Number(item.biayaTrans || 0) === 0 ? "" : "- Transportasi",
-    peng: Number(item.biayaPeng || 0) === 0 ? "" : "- Penginapan",
-  }));
+  const dataFilePegawai = data?.pegawai?.map((item, index) => {
+    const isKhusus = item.type === "khusus";
+    const uhValue = isKhusus ? 0 : item.uh;
+
+    return {
+      idx: index + 1,
+      nama: item.nama,
+      nip: item.nip,
+      kegiatan: data?.surat?.kegiatan,
+      tujuan: item.kabkota,
+      tglBerangkat: formatDate(item.tglBerangkat, "DD MMMM YYYY"),
+      lama: calculateTripDuration(item.tglBerangkat, item.tglKembali),
+      uh: formatRupiah(uhValue),
+      uhTotal: formatRupiah(
+        uhCount(uhValue, item.tglBerangkat, item.tglKembali)
+      ),
+      biayaTrans: formatRupiah(item.biayaTrans),
+      biayaPeng: formatRupiah(item.biayaPeng),
+      jumlahTotal: formatRupiah(
+        totalCount(
+          uhCount(uhValue, item.tglBerangkat, item.tglKembali),
+          item.biayaTrans,
+          item.biayaPeng
+        )
+      ),
+      image: item.buktiTrans,
+      buktiPeng: item.buktiPeng,
+      nipPPK: item?.nipPPK,
+      namaPPK: item?.namaPPK,
+      unitPPK: item?.unitPPK,
+      trans: Number(item.biayaTrans || 0) === 0 ? "" : "- Transportasi",
+      peng: Number(item.biayaPeng || 0) === 0 ? "" : "- Penginapan",
+    };
+  });
 
   const handleConfirmBiaya = async (aksi, catatan = null) => {
     const idPerjalananPegawai = showVerifBiayaPerjalanan?.data;
@@ -250,7 +257,7 @@ export default function Component() {
           </p>
         </div>
         {(data?.pegawai?.length ?? 0) > 0 &&
-          data?.pegawai?.every((item) => item.status === "verifikasi") && (
+          data?.pegawai?.every((item) => item.status === "verifikasi" || item.status === "selesai") && (
             <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap">
               <button
                 type="button"
