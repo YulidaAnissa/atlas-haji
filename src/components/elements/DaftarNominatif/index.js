@@ -119,7 +119,12 @@ export default function SuratTugas({
 
     doc.render(dataFile);
 
-    const docxBlob = doc.getZip().generate({ type: "blob" });
+    // 3. Generate DOCX Blob
+    const docxBlob = doc.getZip().generate({
+      type: "blob",
+      mimeType:
+        "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+    });
 
     // 3. kirim ke backend
     const formData = new FormData();
@@ -134,12 +139,15 @@ export default function SuratTugas({
 
     // 4. tampilkan PDF
     const pdfBlob = await res.blob();
-    const url = URL.createObjectURL(pdfBlob);
+    const url = URL.createObjectURL(
+      new Blob([pdfBlob], { type: "application/pdf" })
+    );
 
     window.open(url, "_blank");
 
   } catch (err) {
     console.error("Error:", err);
+    alert("Gagal membuat PDF");
   } finally {
     endLoading();
   }
