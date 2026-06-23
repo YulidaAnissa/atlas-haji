@@ -2,30 +2,37 @@ import clsx from "clsx";
 import React from "react";
 import { IoClose } from "react-icons/io5";
 
-export default function FormModal({ 
-  show = false, 
-  icon = <IoClose className="text-white w-6 h-6"/>,
+export default function FormModal({
+  show = false,
+  icon = <IoClose className="h-6 w-6 text-white" />,
   title,
-  children ,
-  className = "w-xl"
+  children,
+  className = "w-full max-w-xl",
 }) {
   if (!show) return null;
 
   return (
-    <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
-      <div className={clsx("bg-white rounded-lg shadow-lg p-6 relative", className)}>
-        {/* Icon */}
-        <div className="flex justify-center mb-4">
-          <div className="w-14 h-14 flex items-center justify-center rounded-full bg-brand -mt-11">
-            {icon}
-          </div>
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4 backdrop-blur-sm">
+      <div
+        className={clsx(
+          "relative flex max-h-[90vh] flex-col rounded-2xl bg-white shadow-2xl",
+          className
+        )}
+      >
+        <div className="absolute left-1/2 top-0 z-10 flex h-14 w-14 -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full bg-brand shadow-lg shadow-brand/25">
+          {icon}
         </div>
 
-        {/* Title & Message */}
-        <h2 className="text-lg font-semibold text-gray-800">{title}</h2>
-        {children}
+        <div className="overflow-y-auto p-6 pt-10">
+          {title && (
+            <h2 className="mb-4 text-center text-lg font-semibold text-gray-800">
+              {title}
+            </h2>
+          )}
+
+          {children}
+        </div>
       </div>
     </div>
-
   );
 }

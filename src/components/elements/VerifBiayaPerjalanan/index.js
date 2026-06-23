@@ -6,6 +6,8 @@ import {
   FaTimesCircle,
   FaExternalLinkAlt,
 } from "react-icons/fa";
+import { formatDate, calculateTripDuration } from "@/utils/date";
+import { PreviewPDF } from "@/components/elements";
 
 function formatRupiah(value) {
   return Number(value || 0).toLocaleString("id-ID");
@@ -114,6 +116,20 @@ export default function ComponentForm({ data = {}, onSubmit, onClose = false, ty
   const [showAlasan, setShowAlasan] = useState(false);
   const [catatan, setCatatan] = useState("");
 
+  const dataFilePreview = {
+    nama: data?.nama,
+    nip: data?.nip,
+    tglBerangkat: formatDate(data?.tglBerangkat, "DD MMMM YYYY"),
+    tglKembali: formatDate(data?.tglKembali, "DD MMMM YYYY"),
+    kabkota: data?.tujuan,
+    kegiatan: data?.kegiatan,
+    hasil: data?.hasil,
+    lama: calculateTripDuration(
+      data?.tglBerangkat,
+      data?.tglKembali
+    ),
+  };
+
   console.log('form data:', data);
   return (
     <div className="max-h-[80vh] min-w-0 overflow-y-auto overflow-x-hidden">
@@ -161,11 +177,24 @@ export default function ComponentForm({ data = {}, onSubmit, onClose = false, ty
             </div>
           </div>
 
-          <div className="min-w-0 rounded-xl border border-gray-200 bg-gray-50 px-4 py-3">
-            <p className="whitespace-pre-line wrap-break-word text-sm leading-6 text-gray-700">
-              {data?.laporan || data?.hasil || "Laporan belum tersedia"}
-            </p>
-          </div>
+          {/* <div className="min-w-0 rounded-xl border border-gray-200 bg-gray-50 px-4 py-3">
+            <p className="whitespace-pre-line wrap-break-word text-sm leading-6 text-gray-700"> */}
+              {data?.hasil ? (
+                <PreviewPDF 
+                  title="Laporan Perjalanan"
+                  text="Hasil laporan perjalanan dinas"
+                  data={dataFilePreview}
+                  format="/laporan-format.docx"
+                  file={`laporan-${data?.nip}`}
+                />
+              ) : (
+                <div className="rounded-xl border border-dashed border-gray-300 bg-gray-50 px-4 py-8 text-center">
+                  <p className="text-sm text-gray-500">Laporan belum tersedia</p>
+                </div>
+              )}
+              
+            {/* </p>
+          </div> */}
         </section>
 
         <CostCard

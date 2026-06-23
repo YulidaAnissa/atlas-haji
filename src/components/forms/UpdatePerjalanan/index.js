@@ -1,319 +1,174 @@
 "use client";
 
-import React, { useMemo, useState } from "react";
-import { Form, Field } from "react-final-form";
-import { v4 as uuidv4 } from "uuid";
+import React, { useMemo } from "react";
+import { Field, Form } from "react-final-form";
 
-import InputField from "../FormField/InputField";
 import SelectField from "../FormField/SelectField";
-import CreateableSelect from "../FormField/CreateableSelect";
-import validation from "./validate";
-import {
-  DatePickerRange,
-  DatePicker,
-  UploadFile,
-} from "@/components/forms/FormField";
 
-export default function ComponentFormc({
+function getOptionValue(option) {
+  return typeof option === "object" && option !== null
+    ? option.value
+    : option;
+}
+
+function validate(values) {
+  const errors = {};
+
+  if (!values.nip) {
+    errors.nip = "Pejabat pemberi tugas wajib dipilih";
+  }
+
+  if (!values.idSurat) {
+    errors.idSurat = "Surat tugas wajib dipilih";
+  }
+
+  return errors;
+}
+
+export default function EditPerjalananForm({
   data = {},
-  onSubmit,
-  onClose = false,
-  kabkota = [],
   pejabat = [],
   st = [],
+  onSubmit = () => {},
+  onClose = () => {},
 }) {
-  const [customSuratOptions, setCustomSuratOptions] = useState([]);
-  const [isExistingSurat, setIsExistingSurat] = useState(Boolean(data?.idSurat));
-
-  const kabkotaOptions = useMemo(() => {
-    return Array.isArray(kabkota)
-      ? kabkota.map((item) => ({
-          value: item.idKabKota,
-          label: item.kabkota,
-        }))
-      : [];
-  }, [kabkota]);
-
-  const pejabatOptions = useMemo(() => {
-    return Array.isArray(pejabat)
-      ? pejabat.map((item) => ({
-          value: item.nip,
-          label: item.jabatan,
-        }))
-      : [];
-  }, [pejabat]);
-
-  const baseNoSuratOptions = useMemo(() => {
-    return Array.isArray(st)
-      ? st
-          .filter((item) => item?.idSurat && item?.noSurat)
-          .map((item) => ({
-            value: item.idSurat,
-            label: item.noSurat,
+  const pejabatOptions = useMemo(
+    () =>
+      Array.isArray(pejabat)
+        ? pejabat.map((item) => ({
+            value: item.nip,
+            label: item.jabatan,
           }))
-      : [];
-  }, [st]);
+        : [],
+    [pejabat]
+  );
 
-  const noSuratOptions = useMemo(() => {
-    return [...baseNoSuratOptions, ...customSuratOptions];
-  }, [baseNoSuratOptions, customSuratOptions]);
-
-  const selectedSurat = useMemo(() => {
-    if (!data?.idSurat || !Array.isArray(st)) return null;
-
-    return (
-      st.find(
-        (item) =>
-          item?.idSurat &&
-          String(item.idSurat) === String(data.idSurat)
-      ) || null
-    );
-  }, [st, data?.idSurat]);
+  const suratOptions = useMemo(
+    () =>
+      Array.isArray(st)
+        ? st
+            .filter((item) => item?.idSurat)
+            .map((item) => ({
+              value: item.idSurat,
+              label: item.noSurat,
+            }))
+        : [],
+    [st]
+  );
 
   const initialValues = useMemo(
     () => ({
-      ...data,
-
       nip: data?.nip
         ? pejabatOptions.find(
-            (item) => String(item.value) === String(data.nip)
+            (option) =>
+              String(option.value) === String(data.nip)
           ) || {
             value: data.nip,
             label: data.jabatan || data.nip,
           }
         : null,
 
-      tujuan: data?.idKabKota
-        ? kabkotaOptions.find(
-            (item) => String(item.value) === String(data.idKabKota)
+      idSurat: data?.idSurat
+        ? suratOptions.find(
+            (option) =>
+              String(option.value) ===
+              String(data.idSurat)
           ) || {
-            value: data.idKabKota,
-            label: data.kabkota || data.idKabKota,
+            value: data.idSurat,
+            label: data.noSurat || data.idSurat,
           }
         : null,
-
-      idSurat: selectedSurat
-        ? {
-            value: selectedSurat.idSurat,
-            label: selectedSurat.noSurat,
-          }
-        : data?.idSurat
-          ? {
-              value: data.idSurat,
-              label: data.noSurat || data.idSurat,
-            }
-          : null,
-
-      noSurat: data?.noSurat || selectedSurat?.noSurat || "",
-
-      tglSurat: data?.tglSurat ? new Date(data.tglSurat) : null,
-
-      kegiatan: data?.kegiatan || "",
-
-      dateRange: {
-        startDate: data?.tglBerangkat
-          ? new Date(data.tglBerangkat)
-          : new Date(),
-        endDate: data?.tglKembali ? new Date(data.tglKembali) : new Date(),
-        formattedStart: data?.tglBerangkat || null,
-        formattedEnd: data?.tglKembali || null,
-      },
-
-      file: data?.file || null,
     }),
-    [data, pejabatOptions, kabkotaOptions, selectedSurat]
+    [data, pejabatOptions, suratOptions]
   );
 
-  const formKey = [
-    data?.idPerjalanan,
-    data?.idSurat,
-    data?.noSurat,
-    st.length,
-    kabkotaOptions.length,
-    pejabatOptions.length,
-  ].join("-");
+  const handleFormSubmit = (values, form) => {
+    const selectedSurat = st.find(
+      (item) =>
+        String(item.idSurat) ===
+        String(getOptionValue(values.idSurat))
+    );
+
+    const payload = {
+      ...data,
+      nip: getOptionValue(values.nip),
+      idSurat: getOptionValue(values.idSurat),
+      noSurat: selectedSurat?.noSurat || data?.noSurat,
+    };
+
+    return onSubmit(payload, form);
+  };
 
   return (
     <Form
-      key={formKey}
-      onSubmit={onSubmit}
+      key={`${data?.idPerjalanan}-${data?.idSurat}-${data?.nip}`}
+      onSubmit={handleFormSubmit}
       initialValues={initialValues}
-      validate={validation}
+      validate={validate}
     >
-      {({ handleSubmit, form, submitting }) => (
+      {({ handleSubmit, submitting }) => (
         <form
-          className="flex max-h-[80vh] w-full flex-col overflow-hidden rounded-2xl bg-white"
           noValidate
           onSubmit={handleSubmit}
+          className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm"
         >
-          <div className="overflow-y-auto px-1 pb-4">
-            <div className="mb-6 rounded-2xl border border-[#eadfbe] bg-[#fbf7ec] px-5 py-4">
-              <p className="text-xs font-bold uppercase tracking-[0.24em] text-brand">
-                Form Perjalanan Dinas
-              </p>
-              <h2 className="mt-2 text-xl font-black text-slate-950">
-                Data Surat dan Tujuan
-              </h2>
-              <p className="mt-1 text-sm leading-6 text-slate-500">
-                Lengkapi periode perjalanan, pejabat PPK, tujuan, dan dokumen
-                surat tugas.
-              </p>
-            </div>
+          <header className="border-b border-slate-100 px-5 py-6 sm:px-7">
+            <p className="text-xs font-semibold uppercase tracking-[0.18em] text-brand">
+              Edit Perjalanan Dinas
+            </p>
 
-            <div className="grid gap-6 lg:grid-cols-[0.95fr_1.05fr]">
-              <section className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
-                <div className="mb-4">
-                  <p className="text-sm font-bold text-slate-800">
-                    Periode Perjalanan
-                  </p>
-                  <p className="mt-1 text-xs text-slate-400">
-                    Pilih tanggal berangkat dan kembali.
-                  </p>
-                </div>
+            <h2 className="mt-2 text-xl font-bold text-slate-900">
+              Pejabat dan Surat Tugas
+            </h2>
 
-                <Field name="dateRange">
-                  {({ input, meta }) => (
-                    <>
-                      <DatePickerRange input={input} />
+            <p className="mt-1 text-sm leading-6 text-slate-500">
+              Ubah pejabat pemberi tugas atau surat tugas
+              perjalanan.
+            </p>
+          </header>
 
-                      <div className="min-h-5">
-                        {meta.error && meta.touched && (
-                          <p className="mt-2 text-xs leading-5 text-red-500">
-                            {meta.error}
-                          </p>
-                        )}
-                      </div>
-                    </>
-                  )}
-                </Field>
-              </section>
+          <div className="space-y-5 px-5 py-6 sm:px-7">
+            <Field
+              primary
+              name="nip"
+              component={SelectField}
+              label="Pejabat Pemberi Tugas"
+              options={pejabatOptions}
+              placeholder="Pilih pejabat"
+              className="w-full"
+            />
 
-              <section className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
-                <div className="mb-5">
-                  <p className="text-sm font-bold text-slate-800">
-                    Informasi Surat Tugas
-                  </p>
-                  <p className="mt-1 text-xs text-slate-400">
-                    Pilih surat yang sudah ada atau buat nomor surat baru.
-                  </p>
-                </div>
-
-                <div className="space-y-4">
-                  <Field
-                    name="nip"
-                    component={SelectField}
-                    label="Pejabat Pembuat Komitmen (PPK)"
-                    options={pejabatOptions}
-                  />
-
-                  <Field
-                    name="tujuan"
-                    component={SelectField}
-                    label="Tujuan Kabupaten/Kota"
-                    options={kabkotaOptions}
-                  />
-
-                  <Field
-                    name="idSurat"
-                    component={CreateableSelect}
-                    label="Nomor Surat"
-                    options={noSuratOptions}
-                    onChange={(newSurat) => {
-                      if (newSurat) {
-                        const selected = st.find(
-                          (item) =>
-                            item?.idSurat &&
-                            String(item.idSurat) === String(newSurat.value)
-                        );
-
-                        if (selected) {
-                          setIsExistingSurat(true);
-
-                          form.change("idSurat", {
-                            value: selected.idSurat,
-                            label: selected.noSurat,
-                          });
-                          form.change("noSurat", selected.noSurat);
-                          form.change(
-                            "tglSurat",
-                            selected.tglSurat ? new Date(selected.tglSurat) : null
-                          );
-                          form.change("kegiatan", selected.kegiatan || "");
-                          form.change("file", selected.file || null);
-                        } else {
-                          setIsExistingSurat(false);
-
-                          const newIdSurat = uuidv4();
-
-                          const createdOption = {
-                            value: newIdSurat,
-                            label: newSurat.label || newSurat.value,
-                          };
-
-                          form.change("idSurat", createdOption);
-                          form.change("noSurat", createdOption.label);
-                          form.change("tglSurat", null);
-                          form.change("kegiatan", "");
-                          form.change("file", null);
-
-                          setCustomSuratOptions((current) => [...current, createdOption]);
-                        }
-                      } else {
-                        setIsExistingSurat(false);
-
-                        form.change("idSurat", null);
-                        form.change("noSurat", "");
-                        form.change("tglSurat", null);
-                        form.change("kegiatan", "");
-                        form.change("file", null);
-                      }
-                    }}
-                  />
-
-                  <Field
-                    component={DatePicker}
-                    label="Tanggal Surat"
-                    name="tglSurat"
-                    type="text"
-                    disabled={isExistingSurat}
-                  />
-
-                  <Field
-                    component={InputField}
-                    label="Kegiatan"
-                    name="kegiatan"
-                    placeholder="Masukkan kegiatan"
-                    disabled={isExistingSurat}
-                  />
-
-                  <Field
-                    component={UploadFile}
-                    label="File Surat Tugas"
-                    name="file"
-                    disabled={isExistingSurat}
-                  />
-                </div>
-              </section>
-            </div>
+            <Field
+              primary
+              name="idSurat"
+              component={SelectField}
+              label="Surat Tugas"
+              options={suratOptions}
+              placeholder="Pilih surat tugas"
+              className="w-full"
+            />
           </div>
 
-          <div className="sticky bottom-0 mt-6 flex gap-3 border-t border-slate-200 bg-white px-1 py-4">
+          <footer className="flex flex-col-reverse gap-3 border-t border-slate-100 bg-slate-50/70 px-5 py-4 sm:flex-row sm:justify-end sm:px-7">
+            <button
+              type="button"
+              onClick={onClose}
+              disabled={submitting}
+              className="inline-flex h-11 items-center justify-center rounded-lg border border-slate-200 bg-white px-6 text-sm font-semibold text-slate-700 transition hover:bg-slate-50 disabled:opacity-60"
+            >
+              Batal
+            </button>
+
             <button
               type="submit"
               disabled={submitting}
-              className="inline-flex h-11 w-full items-center justify-center rounded-xl bg-brand px-5 text-sm font-bold text-white shadow-lg shadow-brand/25 transition hover:bg-[#b5964f] focus:outline-none focus:ring-4 focus:ring-brand/25 disabled:cursor-not-allowed disabled:opacity-70"
+              className="inline-flex h-11 items-center justify-center rounded-lg bg-brand px-6 text-sm font-semibold text-white transition hover:bg-[#b5964f] focus:outline-none focus:ring-2 focus:ring-brand/30 focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-60"
             >
-              {submitting ? "Menyimpan..." : "Simpan"}
+              {submitting
+                ? "Menyimpan..."
+                : "Simpan Perubahan"}
             </button>
-
-            <button
-              type="button"
-              className="inline-flex h-11 w-full items-center justify-center rounded-xl border border-red-200 bg-red-50 px-5 text-sm font-bold text-red-700 transition hover:bg-red-100 focus:outline-none focus:ring-4 focus:ring-red-100"
-              onClick={onClose}
-            >
-              Tutup
-            </button>
-          </div>
+          </footer>
         </form>
       )}
     </Form>

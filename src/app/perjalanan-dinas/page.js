@@ -4,17 +4,18 @@ import { DataTables, Breadcrumb } from "@/components/elements";
 import PageBase from "@/components/pagebase";
 import { usePathname, useRouter } from "next/navigation";
 import { useState, useEffect } from "react";
-import { usePerjalanan } from "@/hooks/useData";
+import { useSuratTugas } from "@/hooks/useData";
 import { formatDate } from "@/utils/date";
 import { FiPlus, FiSearch, FiX, FiEye } from "react-icons/fi";
 import { profileStorage } from "@/utils/storage";
+import { HEAD_CELL } from "@/constants";
 
 export default function DaftarPerjalananDinas() {
   const router = useRouter();
   const pathname = usePathname();
   const [search, setSearch] = useState("");
 
-  const { data, isLoading } = usePerjalanan({
+  const { data, isLoading } = useSuratTugas({
     params: { search },
   });
   const [profil, setProfil] = useState(null);
@@ -26,24 +27,14 @@ export default function DaftarPerjalananDinas() {
   const isAdmin =
     String(profil?.role || "").trim().toLowerCase() === "admin";
 
-  const headCells = [
-    { id: "tglBerangkat", label: "Tanggal Berangkat", numeric: false },
-    { id: "tglKembali", label: "Tanggal Kembali", numeric: false },
-    { id: "kabkota", label: "Tujuan", numeric: false },
-    { id: "kegiatan", label: "Kegiatan", numeric: false },
-    { id: "noSurat", label: "Nomor Surat Tugas", numeric: false },
-    { id: "aksi", label: "", numeric: false },
-  ];
-
   const formattedData = (data ?? []).map((item) => ({
     ...item,
-    tglBerangkat: item.tglBerangkat ? formatDate(item.tglBerangkat) : "",
-    tglKembali: item.tglKembali ? formatDate(item.tglKembali) : "",
+    tglSurat: item.tglSurat ? formatDate(item.tglSurat, "DD MMMM YYYY") : "",
     aksi: (
       <button
         type="button"
         className="inline-flex items-center gap-2 rounded-lg bg-[#fbf7ec] px-3 py-2 text-sm font-semibold text-brand transition hover:bg-brand hover:text-white"
-        onClick={() => router.push(`/perjalanan-dinas/${item.idPerjalanan}`)}
+        onClick={() => router.push(`/perjalanan-dinas/${item.idSurat}`)}
       >
         <FiEye className="h-4 w-4" />
         Lihat
@@ -121,7 +112,7 @@ export default function DaftarPerjalananDinas() {
         </div>
 
         <DataTables
-          headCells={headCells}
+          headCells={HEAD_CELL}
           data={formattedData}
           loading={isLoading}
         />

@@ -13,37 +13,28 @@ import {
   PrintButton,
   Snackbar,
   StatusBadge,
-  VerifBiayaPerjalanan
+  VerifBiayaPerjalanan,
+  InfoPerjalanan,
 } from "@/components/elements";
 import LoadingOverlay from "@/components/elements/LoadingOverlay";
 import LaporanPerjalanan from "@/components/forms/LaporanPerjalanan";
 import UpdateLaporanPerjalanan from "@/components/forms/UpdateLaporan";
 
-import { useUpdateLaporan, useLaporan } from "@/hooks/useData";
+import { useUpdateLaporan, useLaporan, useSuratTugas } from "@/hooks/useData";
 import { useLoading } from "@/hooks";
-import { formatDate, calculateTripDuration } from "@/utils/date";
+import { formatDate, calculateTripDuration, formatRangeDate } from "@/utils/date";
 
-
-function DetailItem({ label, value }) {
-  return (
-    <div className="rounded-xl border border-gray-200 bg-white px-4 py-3 shadow-sm">
-      <p className="text-xs font-semibold uppercase tracking-wide text-gray-400">
-        {label}
-      </p>
-      <p className="mt-1 text-sm font-semibold leading-6 text-gray-800">
-        {value || "-"}
-      </p>
-    </div>
-  );
-}
 
 export default function Component() {
   const params = useParams();
   const { id } = params;
-
-  const [showLaporan, setShowLaporan] = useState(false);
+  const EMPTY_MODAL = {
+    show: false,
+    data: null,
+  };
+  const [showLaporan, setShowLaporan] = useState(EMPTY_MODAL);
   const [showAddLaporan, setShowAddLaporan] = useState(false);
-  const [showUpdateLaporan, setShowUpdateLaporan] = useState(false);
+  const [showUpdateLaporan, setShowUpdateLaporan] = useState(EMPTY_MODAL);
   const [laporan, setLaporan] = useState({});
   const [showSnackbar, setShowSnackbar] = useState({
     show: false,
@@ -55,7 +46,7 @@ export default function Component() {
 
   const [loading, startLoading, endLoading] = useLoading();
 
-  const { data, isLoading, fetch } = useLaporan({
+  const { data, isLoading, fetch } = useSuratTugas({
     urlParams: { id },
   });
 
@@ -75,11 +66,6 @@ export default function Component() {
       formData.append("status", "pengajuan");
       formData.append("hasil", values?.hasil);
       await updateLaporan(idPerjalananPegawai, formData);
-      // await updateLaporan(idPerjalananPegawai, {
-      //   hasil: values?.hasil,
-      //   status: "pengajuan",
-      // });
-
       await fetch();
       setShowAddLaporan(false);
       setShowSnackbar({
@@ -123,7 +109,7 @@ export default function Component() {
       await updateLaporan(idPerjalananPegawai, formData);
 
       await fetch();
-      setShowUpdateLaporan({ show: false, data: null });
+      setShowUpdateLaporan(EMPTY_MODAL);
       setShowSnackbar({
         show: true,
         message: "Laporan berhasil diperbarui",
@@ -142,10 +128,9 @@ export default function Component() {
   };
 
   const headCells = [
-    { id: "nip", label: "NIP", numeric: false },
     { id: "nama", label: "Nama Pegawai", numeric: false },
-    { id: "gol", label: "Gol", numeric: false },
-    { id: "jabatan", label: "Jabatan", numeric: false },
+    { id: "tujuan", label: "Tujuan", numeric: false },
+    { id: "tanggal", label: "Tanggal", numeric: false },
     { id: "status", label: "Status", numeric: false },
     { id: "aksi", label: "", numeric: false },
   ];
@@ -154,36 +139,19 @@ export default function Component() {
   const formattedData = (data?.pegawai ?? []).map((item) => {
     return {
       ...item,
-       status: (
+      tanggal: formatRangeDate(
+        item.tglBerangkat,
+        item.tglKembali,
+        "DD MMM YYYY",
+      ),
+      status: (
         <StatusBadge
           className="justify-center"
           status={item.status}
-          onClick={() =>
-            console.log("Status clicked for", item.nip)
-          }
         />
       ),
       aksi: (
         <div className="flex items-center justify-end gap-2">
-          {item?.hasil && (
-            <PrintButton
-              data={{
-                nama: item?.nama,
-                nip: item?.nip,
-                tglBerangkat: formatDate(data?.perjalanan?.tglBerangkat, "DD MMMM YYYY"),
-                tglKembali: formatDate(data?.perjalanan?.tglKembali, "DD MMMM YYYY"),
-                kabkota: data?.perjalanan?.kabkota,
-                kegiatan: data?.perjalanan?.kegiatan,
-                hasil: item?.hasil,
-                lama: calculateTripDuration(
-                  data?.perjalanan?.tglBerangkat,
-                  data?.perjalanan?.tglKembali
-                ),
-              }}
-              format="/laporan-format.docx"
-              file={`laporan-${item.nip}`}
-            />
-          )}
           <button
             type="button"
             onClick={() =>
@@ -214,10 +182,8 @@ export default function Component() {
   const breadcrumbItem = [
     { label: "Home", href: "/" },
     { label: "Daftar Laporan Perjalanan Dinas", href: "/laporan-perjalanan" },
-    { label: data?.perjalanan?.kegiatan || "Detail" },
+    { label: data?.surat?.kegiatan || "Detail" },
   ];
-
-  console.log("data laporan perjalanan", data);
 
   return (
     <PageBase className="mx-auto max-w-7xl px-6 py-10 lg:px-12">
@@ -247,48 +213,7 @@ export default function Component() {
         </button>
       </header>
 
-      <section className="mb-8 overflow-hidden rounded-2xl border border-gray-200 bg-gray-50 shadow-sm">
-        <div className="border-b border-gray-200 bg-white px-6 py-5">
-          <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-            <div>
-              <h2 className="text-lg font-semibold text-gray-900">
-                Informasi Perjalanan
-              </h2>
-              <p className="mt-1 text-sm text-gray-500">
-                Ringkasan tanggal, tujuan, kegiatan, dan surat tugas.
-              </p>
-            </div>
-
-            {data?.perjalanan?.type === "khusus" && (
-              <div className="inline-flex items-center gap-2 rounded-full border border-amber-200 bg-amber-50 px-4 py-2 text-sm font-semibold text-amber-700 shadow-sm">
-                <span className="h-2 w-2 rounded-full bg-amber-500" />
-                Perjalanan Khusus
-              </div>
-            )}
-          </div>
-        </div>
-        <div className="grid gap-4 p-6 md:grid-cols-2 xl:grid-cols-3">
-          <DetailItem
-            label="Tanggal Berangkat"
-            value={formatDate(data?.perjalanan?.tglBerangkat)}
-          />
-          <DetailItem
-            label="Tanggal Kembali"
-            value={formatDate(data?.perjalanan?.tglKembali)}
-          />
-          <DetailItem label="Tujuan" value={data?.perjalanan?.kabkota} />
-          <DetailItem label="Kegiatan" value={data?.perjalanan?.kegiatan} />
-          <DetailItem label="No Surat" value={data?.perjalanan?.noSurat} />
-          <DetailItem
-            label="Tanggal Surat"
-            value={
-              data?.perjalanan?.tglSurat
-                ? formatDate(data?.perjalanan?.tglSurat)
-                : "-"
-            }
-          />
-        </div>
-      </section>
+      <InfoPerjalanan data={data?.surat} className="mb-8" />
 
       <section className="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
         <div className="mb-5">
@@ -313,7 +238,7 @@ export default function Component() {
         show={showAddLaporan}
       >
         <LaporanPerjalanan
-          data={data?.perjalanan}
+          data={data?.pegawai}
           pegawai={data?.pegawai}
           onSubmit={handleLaporanPerjalanan}
           onClose={() => setShowAddLaporan(false)}
@@ -329,7 +254,7 @@ export default function Component() {
         <UpdateLaporanPerjalanan
           data={showUpdateLaporan.data}
           onSubmit={handleUpdateLaporan}
-          onClose={() => setShowUpdateLaporan({ show: false, data: null })}
+          onClose={() => setShowUpdateLaporan(EMPTY_MODAL)}
         />
       </FormModal>
 
@@ -342,7 +267,7 @@ export default function Component() {
           data={showLaporan?.data}
           // onSubmit={handleConfirmBiaya}
           onClose={() =>
-            setShowLaporan({ show: false, data: null })
+            setShowLaporan(EMPTY_MODAL)
           }
           type="laporan"
         />

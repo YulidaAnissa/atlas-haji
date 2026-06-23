@@ -20,9 +20,11 @@ import ConfirmPembayaran from "@/components/forms/KonfirmPembayaran";
 import { IoDocumentTextOutline } from "react-icons/io5";
 import { useSuratTugas, useUpdateLaporan, useEditSuratTugas } from "@/hooks/useData";
 import { useLoading } from "@/hooks";
-import { calculateTripDuration, formatDate } from "@/utils/date";
+import { calculateTripDuration, formatDate, formatRangeDate } from "@/utils/date";
 import { profileStorage } from "@/utils/storage";
 import { FiEye } from "react-icons/fi";
+import { terbilang } from "@/utils/currency";
+import { capitalize } from "@/utils/string";
 
 export default function Component() {
   const { id } = useParams();
@@ -68,15 +70,21 @@ export default function Component() {
   };
 
   const dataFilePegawai = data?.pegawai?.map((item, index) => {
+    const uh = item?.jenisPegawai === "ASN" ? 430000 : 250000;
     const isKhusus = item.type === "khusus";
-    const uhValue = isKhusus ? 0 : item.uh;
+    const uhValue = isKhusus ? 0 : uh;
+    const jumlahTotal = totalCount(
+      uhCount(uhValue, item.tglBerangkat, item.tglKembali),
+      item.biayaTrans,
+      item.biayaPeng
+    );
 
     return {
       idx: index + 1,
       nama: item.nama,
       nip: item.nip,
       kegiatan: data?.surat?.kegiatan,
-      tujuan: item.kabkota,
+      tujuan: item.tujuan,
       tglBerangkat: formatDate(item.tglBerangkat, "DD MMMM YYYY"),
       lama: calculateTripDuration(item.tglBerangkat, item.tglKembali),
       uh: formatRupiah(uhValue),
@@ -85,13 +93,7 @@ export default function Component() {
       ),
       biayaTrans: formatRupiah(item.biayaTrans),
       biayaPeng: formatRupiah(item.biayaPeng),
-      jumlahTotal: formatRupiah(
-        totalCount(
-          uhCount(uhValue, item.tglBerangkat, item.tglKembali),
-          item.biayaTrans,
-          item.biayaPeng
-        )
-      ),
+      jumlahTotal: formatRupiah(jumlahTotal),
       image: item.buktiTrans,
       buktiPeng: item.buktiPeng,
       nipPPK: item?.nipPPK,
@@ -99,6 +101,7 @@ export default function Component() {
       unitPPK: item?.unitPPK,
       trans: Number(item.biayaTrans || 0) === 0 ? "" : "- Transportasi",
       peng: Number(item.biayaPeng || 0) === 0 ? "" : "- Penginapan",
+      terbilang: `${capitalize(terbilang(jumlahTotal))} Rupiah`
     };
   });
 
@@ -114,7 +117,7 @@ export default function Component() {
       setShowVerifBiayaPerjalanan({ show: false, data: null });
       setShowSnackbar({
         show: true,
-        message: "Biaya perjalanan berhasil diverifikasi",
+        message: `Biaya perjalanan berhasil ${aksi === "verifikasi" ? "diverifikasi" : "ditolak"}`,
         type: "success",
       });
     } catch (err) {
@@ -130,9 +133,9 @@ export default function Component() {
   };
 
   const headCells = [
-    { id: "nip", label: "NIP", numeric: false },
     { id: "nama", label: "Nama Pegawai", numeric: false },
-    { id: "kabkota", label: "Tujuan", numeric: false },
+    { id: "tujuan", label: "Tujuan", numeric: false },
+    { id: "tanggal", label: "Tanggal", numeric: false },
     { id: "status", label: "Status", numeric: false },
     { id: "aksi", label: "", numeric: false, align: "right" },
   ];
@@ -142,6 +145,11 @@ export default function Component() {
 
     return {
       ...item,
+      tanggal: formatRangeDate(
+        item.tglBerangkat,
+        item.tglKembali,
+        "DD MMM YYYY",
+      ),
       status: (
         <StatusBadge
           status={item.status}
@@ -189,6 +197,10 @@ export default function Component() {
       startLoading();
 
       const formData = new FormData();
+
+      if (values.anggaran.value) {
+        formData.append("anggaran", values.anggaran.value);
+      }
 
       if (values.tglPengajuanKppn) {
         formData.append(

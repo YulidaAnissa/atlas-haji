@@ -21,12 +21,42 @@ function toPayload(startDate, endDate) {
   };
 }
 
-export default function DatePickerRange({ input, className = "" }) {
-  const today = useMemo(() => new Date(), []);
+export default function DatePickerRange({ input, className = "", minDate }) {
+
+  console.log('minDate ', minDate);
+  const today = useMemo(() => {
+    const date = new Date();
+    date.setHours(0, 0, 0, 0);
+
+    return date;
+  }, []);
+
+  const minimumDate = useMemo(() => {
+    if (!minDate) return today;
+
+    const date = new Date(minDate);
+    date.setHours(0, 0, 0, 0);
+
+    return Number.isNaN(date.getTime())
+      ? today
+      : date > today
+        ? date
+        : today;
+  }, [minDate, today]);
 
   const selection = {
-    startDate: input.value?.startDate || today,
-    endDate: input.value?.endDate || input.value?.startDate || today,
+    startDate:
+      input.value?.startDate &&
+      new Date(input.value.startDate) >= minimumDate
+        ? new Date(input.value.startDate)
+        : minimumDate,
+
+    endDate:
+      input.value?.endDate &&
+      new Date(input.value.endDate) >= minimumDate
+        ? new Date(input.value.endDate)
+        : minimumDate,
+
     key: "selection",
   };
 
@@ -66,6 +96,7 @@ export default function DatePickerRange({ input, className = "" }) {
         showDateDisplay={false}
         editableDateInputs={false}
         onChange={handleChange}
+        minDate={minimumDate}
         moveRangeOnFirstSelection={false}
         ranges={[selection]}
         months={1}
@@ -88,4 +119,5 @@ DatePickerRange.propTypes = {
       startDate: PropTypes.instanceOf(Date),
     }),
   }).isRequired,
+  minDate: PropTypes.instanceOf(Date),
 };

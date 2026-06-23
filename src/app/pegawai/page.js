@@ -32,6 +32,8 @@ export default function DaftarPegawai() {
   const { data, isLoading, fetch } = usePegawai({
     params: { search },
   });
+
+  console.log('ini pegawai ', data);
   const { deletePegawai, loading } = useDeletePegawai();
   const { editPegawai, loading: loadingEdit } = useEditPegawai();
 
@@ -94,7 +96,9 @@ export default function DaftarPegawai() {
 
   const formattedData = (data ?? []).map((item) => ({
     ...item,
-    pangkatGol: `${item.pangkat} / ${item.gol}`,
+    pangkatGol: item.pangkat?.trim()
+      ? `${item.pangkat.trim()} / ${item.gol || "-"}`
+      : item.gol || "-",
     aksi: (
       <div className="flex gap-2">
         <button

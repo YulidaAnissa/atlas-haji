@@ -4,36 +4,35 @@ import { DataTables, Breadcrumb } from "@/components/elements";
 import PageBase from "@/components/pagebase";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
-import { usePerjalanan } from "@/hooks/useData";
+import { useSuratTugas } from "@/hooks/useData";
 import { formatDate } from "@/utils/date";
 import { FiEye, FiSearch, FiX } from "react-icons/fi";
+import { HEAD_CELL } from "../../constants";
 
 export default function DaftarLaporanPerjalananDinas() {
   const router = useRouter();
   const [search, setSearch] = useState("");
 
-  const { data, isLoading } = usePerjalanan({
-    params: { search, noSurat: true },
+  const { data, isLoading } = useSuratTugas({
+    params: { search },
   });
 
-  const headCells = [
-    { id: "tglBerangkat", label: "Tanggal Berangkat", numeric: false },
-    { id: "tglKembali", label: "Tanggal Kembali", numeric: false },
-    { id: "kabkota", label: "Tujuan", numeric: false },
-    { id: "kegiatan", label: "Kegiatan", numeric: false },
-    { id: "noSurat", label: "Nomor Surat Tugas", numeric: false },
-    { id: "aksi", label: "", numeric: false },
-  ];
+  // const headCells = [
+  //   { id: "noSurat", label: "Nomor Surat Tugas", numeric: false, width: 100 },
+  //   { id: "tglSurat", label: "Tanggal Surat Tugas", numeric: false },
+  //   { id: "kegiatan", label: "Kegiatan", numeric: false },
+  //   { id: "jabatan", label: "Pejabat Pemberi Tugas", numeric: false },
+  //   { id: "aksi", label: "", numeric: false },
+  // ];
 
   const formattedData = (data ?? []).map((item) => ({
     ...item,
-    tglBerangkat: item.tglBerangkat ? formatDate(item.tglBerangkat) : "",
-    tglKembali: item.tglKembali ? formatDate(item.tglKembali) : "",
+    tglSurat: item.tglSurat ? formatDate(item.tglSurat, "DD MMMM YYYY") : "",
     aksi: (
       <button
         type="button"
         className="inline-flex items-center gap-2 rounded-lg bg-[#fbf7ec] px-3 py-2 text-sm font-semibold text-brand transition hover:bg-brand hover:text-white"
-        onClick={() => router.push(`/laporan-perjalanan/${item.idPerjalanan}`)}
+        onClick={() => router.push(`/laporan-perjalanan/${item.idSurat}`)}
       >
         <FiEye className="h-4 w-4" />
         Lihat
@@ -98,7 +97,7 @@ export default function DaftarLaporanPerjalananDinas() {
         </div>
 
         <DataTables
-          headCells={headCells}
+          headCells={HEAD_CELL}
           data={formattedData}
           loading={isLoading}
         />

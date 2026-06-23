@@ -6,5 +6,11 @@ export default function validation(values) {
     pegawai: validate(values.pegawai, [
       { rule: 'required' },
     ]),
+    dateRange: validate(values.dateRange, [
+      { rule: 'required' },
+    ]),
+    tujuan: validate(values.tujuan, [
+      { rule: 'required' },
+    ]),
   };
 };

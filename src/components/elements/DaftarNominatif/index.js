@@ -49,15 +49,16 @@ export default function SuratTugas({
   useEffect(() => {
     if (data) {
       const pegawaiData = data.pegawai.map((item, index) => {
+        const uh = item?.jenisPegawai === "ASN" ? 430000 : 250000;
         const isKhusus = item.type === "khusus";
-        const uhType = isKhusus ? 0 : item.uh;
+        const uhType = isKhusus ? 0 : uh;
         const uhVal = uhCount(uhType, item.tglBerangkat, item.tglKembali);
         return {
           idx: index + 1,
           nama: item.nama,
           gol: item.gol,
           jabatan: item.jabatan,
-          tujuan: formatTujuan(item.kabkota),
+          tujuan: formatTujuan(item.tujuan),
           tglBerangkat: formatDate(item.tglBerangkat, "DD MMMM YYYY"),
           tglKembali: formatDate(item.tglKembali, "DD MMMM YYYY"),
           uh: uhVal,
@@ -98,6 +99,7 @@ export default function SuratTugas({
         nipPPK: data.surat?.nip || "",
         namaPPK: data.surat?.nama || "",
         unitPPK: toUpperCase(data.surat?.unit) || "",
+        tglKPPN: formatDate(data.surat?.tglKPPN, "DD MMMM YYYY") || ""
       });
     }
   }, [data]);

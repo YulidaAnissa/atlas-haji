@@ -17,3 +17,5 @@ export const MonthlySchedule = dynamic(() => import("./MonthlySchedule"), { ssr:
 export const VerifBiayaPerjalanan = dynamic(() => import("./VerifBiayaPerjalanan"), { ssr: false });
 export const NotificationDashboard = dynamic(() => import("./NotificationDashboard"), { ssr: false });
 export const StatusBadge = dynamic(() => import("./StatusBadge"), { ssr: false });
+export const InfoPerjalanan = dynamic(() => import("./InfoPerjalanan"), { ssr: false });
+export const PreviewPDF = dynamic(() => import("./PreviewPDF"), { ssr: false });

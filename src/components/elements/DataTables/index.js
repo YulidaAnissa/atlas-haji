@@ -153,7 +153,7 @@ export default function EnhancedTable({ data = [], headCells = [], loading }) {
   const rows = Array.isArray(data) ? data : [];
 
   const [order, setOrder] = React.useState("asc");
-  const [orderBy, setOrderBy] = React.useState(headCells?.[0]?.id || "");
+  const [orderBy, setOrderBy] = React.useState("");
   const [page, setPage] = React.useState(0);
   const [rowsPerPage, setRowsPerPage] = React.useState(5);
 
@@ -174,9 +174,14 @@ export default function EnhancedTable({ data = [], headCells = [], loading }) {
   };
 
   const visibleRows = React.useMemo(() => {
-    return [...rows]
-      .sort(getComparator(order, orderBy))
-      .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage);
+    const orderedRows = orderBy
+      ? [...rows].sort(getComparator(order, orderBy))
+      : rows;
+
+    return orderedRows.slice(
+      page * rowsPerPage,
+      page * rowsPerPage + rowsPerPage
+    );
   }, [order, orderBy, page, rows, rowsPerPage]);
 
   return (

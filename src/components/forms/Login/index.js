@@ -20,9 +20,9 @@ export default function LoginPage({ onSubmit, helperText }) {
             clearOnError
             component={InputField}
             helperText={helperText}
-            label="Nomor Induk Pegawai"
+            label="Username"
             name="username"
-            placeholder="Masukkan Nomor Induk Pegawai"
+            placeholder="Masukkan Username"
             type="text"
           />
 

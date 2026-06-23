@@ -7,6 +7,7 @@ import { useState } from "react";
 import { useSuratTugas } from "@/hooks/useData";
 import { formatDate } from "@/utils/date";
 import { FiEye, FiSearch, FiX } from "react-icons/fi";
+import { HEAD_CELL } from "@/constants";
 
 export default function DaftarBiayaPerjalanan() {
   const router = useRouter();
@@ -16,16 +17,9 @@ export default function DaftarBiayaPerjalanan() {
     params: { search },
   });
 
-  const headCells = [
-    { id: "noSurat", label: "Nomor Surat", numeric: false },
-    { id: "tglSurat", label: "Tanggal Surat", numeric: false },
-    { id: "kegiatan", label: "Kegiatan/Perihal", numeric: false },
-    { id: "aksi", label: "", numeric: false },
-  ];
-
   const formattedData = (data ?? []).map((item) => ({
     ...item,
-    tglSurat: item.tglSurat ? formatDate(item.tglSurat) : "",
+    tglSurat: item.tglSurat ? formatDate(item.tglSurat, "DD MMMM YYYY") : "",
     aksi: (
       <button
         type="button"
@@ -68,7 +62,7 @@ export default function DaftarBiayaPerjalanan() {
 
       <section className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
         <div className="mb-5 flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-          <div className="flex h-11 w-full items-center rounded-xl border border-slate-200 bg-slate-50 px-3 transition focus-within:border-brand focus-within:bg-white focus-within:ring-4 focus-within:ring-[#c9a961]/15 md:max-w-sm">
+          <div className="flex h-11 w-full items-center rounded-xl border border-slate-200 bg-slate-50 px-3 transition focus-within:border-brand focus-within:bg-white focus-within:ring-4 focus-within:ring-brand/15 md:max-w-sm">
             <FiSearch className="mr-3 h-4 w-4 shrink-0 text-slate-400" />
 
             <input
@@ -95,7 +89,7 @@ export default function DaftarBiayaPerjalanan() {
         </div>
 
         <DataTables
-          headCells={headCells}
+          headCells={HEAD_CELL}
           data={formattedData}
           loading={isLoading}
         />

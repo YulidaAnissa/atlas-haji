@@ -60,6 +60,10 @@ export default function DateField({
   label,
   className = "",
   disabled = false,
+  maxDate = null,
+  minDate = null,
+  disableWeekend = false,
+  primary = false,
   ...rest
 }) {
   const hasError = Boolean(meta?.touched && meta?.error);
@@ -89,6 +93,7 @@ export default function DateField({
           }`}
         >
           {label}
+          {primary && <span className="ml-1 text-red-600">*</span>}
         </label>
       )}
 
@@ -106,6 +111,13 @@ export default function DateField({
         popperClassName={styles.popper}
         calendarClassName={styles.calendar}
         showPopperArrow={false}
+        maxDate={maxDate}
+        minDate={minDate}
+        filterDate={(date) => {
+          if (!disableWeekend) return true;
+
+          return ![0, 6].includes(date.getDay());
+        }}
         renderCustomHeader={({
           date,
           decreaseMonth,
@@ -169,4 +181,8 @@ DateField.propTypes = {
   input: PropTypes.object.isRequired,
   label: PropTypes.string,
   meta: PropTypes.object.isRequired,
+  maxDate: PropTypes.instanceOf(Date),
+  minDate: PropTypes.instanceOf(Date),
+  disableWeekend: PropTypes.bool,
+  primary: PropTypes.bool,
 };

@@ -134,9 +134,9 @@ function SelectField({ input, options, meta, onChange, ...rest }) {
         options={options}
         size="small"
         value={selectedOption}
-        onChange={(opt) => {
-          input.onChange(opt || null);
-          onChange?.(opt || null);
+        onChange={(option, actionMeta) => {
+          input.onChange(option);
+          onChange?.(option, actionMeta);
         }}
         onBlur={() => input.onBlur(input.value)}
         isClearable

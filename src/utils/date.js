@@ -52,7 +52,7 @@ export const formatRangeDate = (start, end) => {
     startDateFormated = formatDate(startDate, 'DD MMMM YYYY');
   }
 
-  return `${startDateFormated} - ${endDateFormated}`;
+  return `${startDateFormated} s.d. ${endDateFormated}`;
 
 };
 export const dateIsToday = (date) => dayjsModule(new Date(date)).isToday();

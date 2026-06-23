@@ -37,11 +37,11 @@ export function usePerjalananPegawai({ dedupingInterval, urlParams = {}, params 
   };
 }
 
-export function useDeletePerjalananPegawai() {
+export function useDeletePegawaiPerjalanan() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
-  const deletePerjalananPegawai = async ({ idPerjalanan, nip }) => {
+  const deletePegawaiPerjalanan = async ({ idSurat, nip }) => {
     setLoading(true);
     setError("");
 
@@ -54,7 +54,7 @@ export function useDeletePerjalananPegawai() {
       }
 
       const res = await fetch(
-        `${SERVICES.PERJALANAN_PEGAWAI}?idPerjalanan=${idPerjalanan}&nip=${nip}`,
+        `${SERVICES.PERJALANAN_PEGAWAI}?idSurat=${idSurat}&nip=${nip}`,
         {
           method: "DELETE",
           headers: {
@@ -77,7 +77,7 @@ export function useDeletePerjalananPegawai() {
     }
   };
 
-  return { deletePerjalananPegawai, loading, error };
+  return { deletePegawaiPerjalanan, loading, error };
 }
 
 export function useAddPegawaiPerjalanan() {
@@ -85,7 +85,7 @@ export function useAddPegawaiPerjalanan() {
   const [error, setError] = useState("");
 
   const postPegawai = async (values) => {
-    const { pegawai, idPerjalanan } = values;
+    // const { pegawai, idPerjalanan } = values;
     setLoading(true);
     setError("");
 
@@ -105,7 +105,7 @@ export function useAddPegawaiPerjalanan() {
             Authorization: `Bearer ${token}`,
             "Content-Type": "application/json"
           },
-          body: JSON.stringify({ pegawai, idPerjalanan }),
+          body: JSON.stringify(values),
         }
       );
 

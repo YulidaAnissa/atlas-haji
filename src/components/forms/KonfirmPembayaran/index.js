@@ -1,9 +1,10 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
-import { Form, Field } from "react-final-form";
+import React, { useMemo } from "react";
+import { Field, Form } from "react-final-form";
 import { formatDate } from "@/utils/date";
 import { DatePicker, UploadFile } from "../FormField";
+import SelectField from "../FormField/SelectField";
 
 function DetailItem({ label, value }) {
   return (
@@ -24,13 +25,25 @@ export default function ComponentForm({
   canVerify = false,
 }) {
 
-  console.log("can verify ", canVerify);
-  console.log("data form ", data);
-  
+  const anggaranOptions = [
+    {
+      value: "DIPA",
+      label: "DIPA"
+    },
+    {
+      value: "PKOH",
+      label: "PKOH"
+    }
+  ]
+  const selectedAnggaran =
+    anggaranOptions.find((option) => option.value === data?.surat?.anggaran) ??
+    null;
+
   return (
     <Form
       onSubmit={onSubmit}
       initialValues={{
+        anggaran: selectedAnggaran,
         tglPengajuanKppn: data?.surat?.tglKPPN
           ? new Date(data.surat.tglKPPN)
           : null,
@@ -52,6 +65,7 @@ export default function ComponentForm({
                   Ringkasan surat tugas yang menjadi dasar biaya perjalanan.
                 </p>
               </div>
+
               {canVerify && (
                 <button
                   type="submit"
@@ -72,20 +86,33 @@ export default function ComponentForm({
               />
 
               <DetailItem label="Kegiatan" value={data?.surat?.kegiatan} />
+
               {canVerify ? (
                 <>
+                  <Field
+                    label="Anggaran"
+                    name="anggaran"
+                    component={SelectField}
+                    options={anggaranOptions}
+                  />
+
                   <Field
                     component={DatePicker}
                     label="Tanggal Pengajuan KPPN"
                     name="tglPengajuanKppn"
                     type="text"
+                    minDate={data?.surat?.tglSurat}
+                    disableWeekend
                   />
+
                   <Field
                     component={DatePicker}
                     label="Tanggal Pembayaran"
                     name="tglPembayaran"
                     type="text"
+                    disableWeekend
                   />
+
                   <Field
                     component={UploadFile}
                     label="Bukti Pembayaran"
@@ -96,13 +123,26 @@ export default function ComponentForm({
               ) : (
                 <>
                   <DetailItem
+                    label="Anggaran"
+                    value={data?.surat?.anggaran}
+                  />
+
+                  <DetailItem
                     label="Tanggal Pengajuan KPPN"
-                    value={data?.surat?.tglKPPN ? formatDate(data?.surat?.tglKPPN) : "-"}
+                    value={
+                      data?.surat?.tglKPPN
+                        ? formatDate(data.surat.tglKPPN)
+                        : "-"
+                    }
                   />
 
                   <DetailItem
                     label="Tanggal Pembayaran"
-                    value={data?.surat?.tglPembayaran ? formatDate(data?.surat?.tglPembayaran) : "-"}
+                    value={
+                      data?.surat?.tglPembayaran
+                        ? formatDate(data.surat.tglPembayaran)
+                        : "-"
+                    }
                   />
 
                   <DetailItem

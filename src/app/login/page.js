@@ -54,8 +54,7 @@ export default function Components() {
   </div>
 
   <p className="mx-auto mt-6 max-w-lg text-lg font-medium leading-8 text-white/85">
-    Menghadirkan tata kelola perjalanan dinas yang lebih rapi, cepat, dan
-    akuntabel.
+    Menghadirkan tata kelola perjalanan dinas yang lebih terstruktur, terukur, akuntabel dan sistematis
   </p>
 </div>
           </div>
