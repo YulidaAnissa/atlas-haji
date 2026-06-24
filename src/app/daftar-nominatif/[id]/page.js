@@ -71,7 +71,7 @@ export default function Component() {
 
   const dataFilePegawai = data?.pegawai?.map((item, index) => {
     const uh = item?.jenisPegawai === "ASN" ? 430000 : 250000;
-    const isKhusus = item.type === "khusus";
+    const isKhusus = item.typePerjalanan === "khusus";
     const uhValue = isKhusus ? 0 : uh;
     const jumlahTotal = totalCount(
       uhCount(uhValue, item.tglBerangkat, item.tglKembali),

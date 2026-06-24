@@ -2,7 +2,7 @@ const SERVICE_BASE =
   process.env.NEXT_PUBLIC_SERVICE_BASE ||
   (process.env.NODE_ENV === 'development'
     ? 'http://localhost:4321'
-    : '/api/proxy');
+    : 'https://www.atlas-haji-service.cloud');
 
 const services = {
   SERVICE_BASE,

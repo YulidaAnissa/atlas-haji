@@ -103,7 +103,7 @@ export default function ComponentForm({
           className="flex w-full flex-col"
         >
           {/* Header */}
-          <header className="mb-6 overflow-hidden rounded-2xl border border-[#eadfbe] bg-gradient-to-r from-[#fbf7ec] via-white to-white">
+          <header className="mb-6 overflow-hidden rounded-2xl border border-[#eadfbe] bg-linear-to-r from-[#fbf7ec] via-white to-white">
             <div className="flex flex-col gap-4 px-5 py-5 sm:flex-row sm:items-center sm:justify-between">
               <div>
                 <div className="mb-2 flex items-center gap-2">
