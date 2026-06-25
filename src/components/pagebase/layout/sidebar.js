@@ -1,51 +1,74 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { RxDashboard } from "react-icons/rx";
 import {
   FiBriefcase,
   FiChevronDown,
+  FiClipboard,
   FiDatabase,
+  FiDollarSign,
   FiFileText,
   FiMapPin,
   FiUsers,
-  FiDollarSign,
-  FiClipboard 
 } from "react-icons/fi";
+
+import { profileStorage } from "@/utils/storage";
+
+const ADMIN_MENU_NAMES = ["Pegawai", "Kabupaten / Kota", "Surat Tugas"];
 
 export default function Sidebar({ sidebarOpen, setSidebarOpen }) {
   const router = useRouter();
+
   const [activeMenu, setActiveMenu] = useState(null);
   const [openDropdown, setOpenDropdown] = useState(null);
+  const [profil, setProfil] = useState(null);
 
-  const menuItems = [
-    { name: "Dashboard", icon: <RxDashboard />, path: "/dashboard" },
-    {
-      name: "Perjalanan Dinas",
-      icon: <FiBriefcase />,
-      path: "/perjalanan-dinas",
-    },
-    {
-      name: "Laporan Perjalanan Dinas",
-      icon: <FiFileText />,
-      path: "/laporan-perjalanan",
-    },
-    {
-      name: "Biaya Perjalanan",
-      icon: <FiDollarSign />,
-      path: "/daftar-nominatif",
-    },
-    {
-      name: "Data Master",
-      icon: <FiDatabase />,
-      children: [
-        { name: "Pegawai", icon: <FiUsers />, path: "/pegawai" },
-        { name: "Kabupaten / Kota", icon: <FiMapPin />, path: "/kabupaten-kota" },
-        { name: "Surat Tugas", icon: <FiClipboard  />, path: "/surat-tugas" },
-      ],
-    },
-  ];
+  const isAdmin = String(profil?.role ?? "").trim().toLowerCase() === "admin";
+
+  const menuItems = useMemo(
+    () => [
+      { name: "Dashboard", icon: <RxDashboard />, path: "/dashboard" },
+      {
+        name: "Perjalanan Dinas",
+        icon: <FiBriefcase />,
+        path: "/perjalanan-dinas",
+      },
+      {
+        name: "Laporan Perjalanan Dinas",
+        icon: <FiFileText />,
+        path: "/laporan-perjalanan",
+      },
+      {
+        name: "Biaya Perjalanan",
+        icon: <FiDollarSign />,
+        path: "/daftar-nominatif",
+      },
+      ...(isAdmin
+        ? [
+            {
+              name: "Data Master",
+              icon: <FiDatabase />,
+              children: [
+                { name: "Pegawai", icon: <FiUsers />, path: "/pegawai" },
+                {
+                  name: "Kabupaten / Kota",
+                  icon: <FiMapPin />,
+                  path: "/kabupaten-kota",
+                },
+                {
+                  name: "Surat Tugas",
+                  icon: <FiClipboard />,
+                  path: "/surat-tugas",
+                },
+              ],
+            },
+          ]
+        : []),
+    ],
+    [isAdmin],
+  );
 
   const closeSidebarOnMobile = () => {
     if (window.innerWidth < 1024) {
@@ -65,25 +88,35 @@ export default function Sidebar({ sidebarOpen, setSidebarOpen }) {
   };
 
   useEffect(() => {
+    setProfil(profileStorage.get());
+  }, []);
+
+  useEffect(() => {
     const savedMenu = localStorage.getItem("activeMenu");
 
-    if (savedMenu) {
-      setActiveMenu(savedMenu);
+    if (!savedMenu) return;
 
-      const parentMenu = menuItems.find((item) =>
-        item.children?.some((child) => child.name === savedMenu)
-      );
-
-      if (parentMenu) {
-        setOpenDropdown(parentMenu.name);
-      }
+    if (!isAdmin && ADMIN_MENU_NAMES.includes(savedMenu)) {
+      localStorage.removeItem("activeMenu");
+      setActiveMenu(null);
+      setOpenDropdown(null);
+      return;
     }
-  }, []);
+
+    setActiveMenu(savedMenu);
+
+    const parentMenu = menuItems.find((item) =>
+      item.children?.some((child) => child.name === savedMenu),
+    );
+
+    if (parentMenu) {
+      setOpenDropdown(parentMenu.name);
+    }
+  }, [isAdmin, menuItems]);
 
   return (
     <aside
-      className={`fixed left-0 top-18 z-40 h-[calc(100vh-4.5rem)] w-[min(18rem,calc(100vw-2rem))] border-r border-[#e7d9af] bg-white shadow-xl shadow-slate-950/10 transition-all duration-300 ease-out lg:w-64 lg:shadow-sm
-      ${
+      className={`fixed left-0 top-18 z-40 h-[calc(100vh-4.5rem)] w-[min(18rem,calc(100vw-2rem))] border-r border-[#e7d9af] bg-white shadow-xl shadow-slate-950/10 transition-all duration-300 ease-out lg:w-64 lg:shadow-sm ${
         sidebarOpen
           ? "translate-x-0 opacity-100"
           : "-translate-x-full opacity-0"
@@ -99,7 +132,7 @@ export default function Sidebar({ sidebarOpen, setSidebarOpen }) {
         <div className="flex-1 space-y-1 overflow-y-auto pr-1">
           {menuItems.map((item) => {
             const isParentActive = item.children?.some(
-              (child) => child.name === activeMenu
+              (child) => child.name === activeMenu,
             );
             const isOpen = openDropdown === item.name;
 
@@ -109,12 +142,11 @@ export default function Sidebar({ sidebarOpen, setSidebarOpen }) {
                   <button
                     type="button"
                     onClick={() => handleDropdownClick(item.name)}
-                    className={`flex min-h-11 w-full items-center justify-between rounded-xl px-3 py-3 text-sm font-semibold transition
-                      ${
-                        isParentActive || isOpen
-                          ? "bg-[#fbf7ec] text-brand"
-                          : "text-slate-600 hover:bg-slate-50 hover:text-slate-950"
-                      }`}
+                    className={`flex min-h-11 w-full items-center justify-between rounded-xl px-3 py-3 text-sm font-semibold transition ${
+                      isParentActive || isOpen
+                        ? "bg-[#fbf7ec] text-brand"
+                        : "text-slate-600 hover:bg-slate-50 hover:text-slate-950"
+                    }`}
                   >
                     <span className="flex min-w-0 items-center gap-3">
                       <span className="text-lg">{item.icon}</span>
@@ -135,12 +167,11 @@ export default function Sidebar({ sidebarOpen, setSidebarOpen }) {
                           type="button"
                           key={child.name}
                           onClick={() => handleMenuClick(child.name, child.path)}
-                          className={`flex min-h-10 w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left text-sm font-medium transition
-                            ${
-                              activeMenu === child.name
-                                ? "bg-brand text-white shadow-sm shadow-[#c9a961]/25"
-                                : "text-slate-500 hover:bg-[#fbf7ec] hover:text-brand"
-                            }`}
+                          className={`flex min-h-10 w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left text-sm font-medium transition ${
+                            activeMenu === child.name
+                              ? "bg-brand text-white shadow-sm shadow-brand/25"
+                              : "text-slate-500 hover:bg-[#fbf7ec] hover:text-brand"
+                          }`}
                         >
                           <span className="text-base">{child.icon}</span>
                           <span className="truncate">{child.name}</span>
@@ -157,12 +188,11 @@ export default function Sidebar({ sidebarOpen, setSidebarOpen }) {
                 type="button"
                 key={item.name}
                 onClick={() => handleMenuClick(item.name, item.path)}
-                className={`flex min-h-11 w-full items-center gap-3 rounded-xl px-3 py-3 text-left text-sm font-semibold transition
-                  ${
-                    activeMenu === item.name
-                      ? "bg-brand text-white shadow-sm shadow-[#c9a961]/25"
-                      : "text-slate-600 hover:bg-[#fbf7ec] hover:text-brand"
-                  }`}
+                className={`flex min-h-11 w-full items-center gap-3 rounded-xl px-3 py-3 text-left text-sm font-semibold transition ${
+                  activeMenu === item.name
+                    ? "bg-brand text-white shadow-sm shadow-brand/25"
+                    : "text-slate-600 hover:bg-[#fbf7ec] hover:text-brand"
+                }`}
               >
                 <span className="text-lg">{item.icon}</span>
                 <span className="truncate">{item.name}</span>

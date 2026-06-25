@@ -35,7 +35,7 @@ export default function HeaderPage({ sidebarOpen, setSidebarOpen }) {
           type="button"
           aria-label={sidebarOpen ? "Tutup sidebar" : "Buka sidebar"}
           onClick={() => setSidebarOpen((value) => !value)}
-          className="grid h-10 w-10 shrink-0 place-items-center rounded-xl text-slate-600 transition hover:bg-[#f8f1df] hover:text-brand focus:outline-none focus:ring-4 focus:ring-[#c9a961]/20"
+          className="grid h-10 w-10 shrink-0 place-items-center rounded-xl text-slate-600 transition hover:bg-[#f8f1df] hover:text-brand focus:outline-none focus:ring-4 focus:ring-brand/20"
         >
           <GiHamburgerMenu className="h-5 w-5" />
         </button>
@@ -67,7 +67,7 @@ export default function HeaderPage({ sidebarOpen, setSidebarOpen }) {
         <button
           type="button"
           onClick={() => setOpenMenu((value) => !value)}
-          className="flex items-center gap-2 rounded-2xl border border-transparent px-2 py-2 text-slate-700 transition hover:border-[#eadfbe] hover:bg-[#fbf7ec] focus:outline-none focus:ring-4 focus:ring-[#c9a961]/20 sm:gap-3 sm:px-3"
+          className="flex items-center gap-2 rounded-2xl border border-transparent px-2 py-2 text-slate-700 transition hover:border-[#eadfbe] hover:bg-[#fbf7ec] focus:outline-none focus:ring-4 focus:ring-brand/20 sm:gap-3 sm:px-3"
         >
           <div className="grid h-9 w-9 place-items-center rounded-full bg-brand text-white shadow-sm">
             <FiUser className="h-4 w-4" />
