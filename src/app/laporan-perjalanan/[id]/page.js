@@ -88,12 +88,9 @@ export default function Component() {
   const handleFormLaporan = (type) => {
     setShowAddLaporan(true);
     setLaporan(type);
-
-    console.log(type, "type laporan");
   };
 
   const handleUpdateLaporan = async (values) => {
-    console.log('update laporan', values);
     const idPerjalananPegawai = values?.idPerjalananPegawai;
     try {
       startLoading();
@@ -135,10 +132,25 @@ export default function Component() {
     { id: "aksi", label: "", numeric: false },
   ];
 
-  console.log(showLaporan, "show laporan");
   const formattedData = (data?.pegawai ?? []).map((item) => {
+    const isPerjalananKhusus =
+      String(item?.typePerjalanan ?? "").trim().toLowerCase() === "khusus";
+
     return {
       ...item,
+      nama: (
+        <div className="flex flex-col gap-1">
+          <span className="font-medium text-gray-900">{item.nama}</span>
+          {item.nip && (
+            <span className="text-xs text-gray-500">{item.nip}</span>
+          )}
+          {isPerjalananKhusus && (
+            <span className="inline-flex w-fit items-center rounded-full border border-amber-200 bg-amber-50 px-2.5 py-0.5 text-xs font-semibold text-amber-700">
+              Perjalanan Khusus
+            </span>
+          )}
+        </div>
+      ),
       tanggal: formatRangeDate(
         item.tglBerangkat,
         item.tglKembali,

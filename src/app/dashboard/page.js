@@ -69,11 +69,7 @@ export default function PerjalananDinasPage() {
 
   const { data: summary, isLoading: isSummaryLoading } = useDashboardSummary();
 
-  const { data: notifications } = useNotifPegawai({
-    params: { status: "tolak" },
-  });
-
-  const { data: perjalananData, isLoading: isPerjalananLoading } = usePerjalananPegawai({
+  const { data: perjalananData } = usePerjalananPegawai({
     params: { status: "tolak" },
   });
 
@@ -146,13 +142,13 @@ export default function PerjalananDinasPage() {
           </div>
 
           <div className="space-y-3">
-            {perjalananData.map((item) => (
+            {perjalananData.map((item, index) => (
               <NotificationDashboard
-                key={item.idPerjalananPegawai ?? item.idPerjalanan}
+                key={index}
                 data={item}
                 type="danger"
                 onDetail={() =>
-                  router.push(`/laporan-perjalanan/${item.idPerjalanan}`)
+                  router.push(`/laporan-perjalanan/${item.idSurat}`)
                 }
               />
             ))}

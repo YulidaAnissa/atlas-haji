@@ -1,57 +1,80 @@
 "use client";
 
+import { Suspense, useEffect, useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
+import { FiSearch, FiX, FiEye } from "react-icons/fi";
+
 import { DataTables, Breadcrumb } from "@/components/elements";
 import PageBase from "@/components/pagebase";
-import { useRouter  } from "next/navigation";
-import { useState, useEffect } from "react";
 import { usePerjalananPegawai } from "@/hooks/useData";
-import { formatDate } from "@/utils/date";
-import { FiPlus, FiSearch, FiX, FiEye } from "react-icons/fi";
+import { formatRangeDate } from "@/utils/date";
 import { profileStorage } from "@/utils/storage";
 
-export default function DaftarPerjalananDinas({ searchParams }) {
+function DaftarPerjalananDinasContent() {
   const router = useRouter();
-  const [search, setSearch] = useState("");
+  const searchParams = useSearchParams();
 
-  const status = searchParams?.status;
+  const [search, setSearch] = useState("");
+  const [profil, setProfil] = useState(null);
+
+  const status = searchParams.get("status") ?? "";
 
   const { data, isLoading } = usePerjalananPegawai({
     params: { search, status },
   });
-
-  const [profil, setProfil] = useState(null);
 
   useEffect(() => {
     setProfil(profileStorage.get());
   }, []);
 
   const headCells = [
-    { id: "nama", label: "Nama", numeric: false },
-    { id: "tglBerangkat", label: "Tanggal Berangkat", numeric: false },
-    { id: "tglKembali", label: "Tanggal Kembali", numeric: false },
-    { id: "kabkota", label: "Tujuan", numeric: false },
-    // { id: "kegiatan", label: "Kegiatan", numeric: false },
-    // { id: "status", label: "Nomor Surat Tugas", numeric: false },
+    { id: "nama", label: "Nama Pegawai", numeric: false },
+    { id: "tujuan", label: "Tujuan", numeric: false },
+    { id: "tanggal", label: "Tanggal", numeric: false },
     { id: "aksi", label: "", numeric: false },
   ];
 
-  const formattedData = (data ?? []).map((item) => ({
-    ...item,
-    tglBerangkat: item.tglBerangkat ? formatDate(item.tglBerangkat) : "",
-    tglKembali: item.tglKembali ? formatDate(item.tglKembali) : "",
-    aksi: (
-      item?.status === "tolak" && (
-        <button
-          type="button"
-          className="inline-flex items-center gap-2 rounded-lg bg-[#fbf7ec] px-3 py-2 text-sm font-semibold text-brand transition hover:bg-brand hover:text-white"
-          onClick={() => router.push(`/laporan-perjalanan/${item.idPerjalanan}`)}
-        >
-          <FiEye className="h-4 w-4" />
-          Lihat
-        </button>
-      )
-    ),
-  }));
+  console.log('data di filter ', data);
+
+  const formattedData = (data ?? []).map((item) => {
+    const isPerjalananKhusus =
+      String(item?.typePerjalanan ?? "").trim().toLowerCase() === "khusus";
+
+    return {
+      ...item,
+      nama: (
+        <div className="flex flex-col gap-1">
+          <span className="font-medium text-gray-900">{item.nama}</span>
+
+          {item.nip && <span className="text-xs text-gray-500">{item.nip}</span>}
+
+          {isPerjalananKhusus && (
+            <span className="inline-flex w-fit items-center rounded-full border border-amber-200 bg-amber-50 px-2.5 py-0.5 text-xs font-semibold text-amber-700">
+              Perjalanan Khusus
+            </span>
+          )}
+        </div>
+      ),
+      tanggal: formatRangeDate(
+        item.tglBerangkat,
+        item.tglKembali,
+        "DD MMM YYYY",
+      ),
+      aksi:
+        item?.status === "tolak" ? (
+          <button
+            type="button"
+            className="inline-flex items-center gap-2 rounded-lg bg-[#fbf7ec] px-3 py-2 text-sm font-semibold text-brand transition hover:bg-brand hover:text-white"
+            onClick={() =>
+              router.push(`/laporan-perjalanan/${item.idSurat}`)
+            }
+          >
+            <FiEye className="h-4 w-4" />
+            Lihat
+          </button>
+        ) : " ",
+    };
+  });
 
   const breadcrumbItem = [
     { label: "Home", href: "/" },
@@ -113,5 +136,13 @@ export default function DaftarPerjalananDinas({ searchParams }) {
         />
       </section>
     </PageBase>
+  );
+}
+
+export default function DaftarPerjalananDinas() {
+  return (
+    <Suspense fallback={null}>
+      <DaftarPerjalananDinasContent />
+    </Suspense>
   );
 }

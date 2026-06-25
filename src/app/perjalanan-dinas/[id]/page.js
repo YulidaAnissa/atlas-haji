@@ -165,45 +165,63 @@ export default function Component() {
     }
   };
 
-  const formattedData = (suratTugas?.pegawai ?? []).map((item) => ({
-    ...item,
-    tanggal: formatRangeDate(
-      item.tglBerangkat,
-      item.tglKembali,
-      "DD MMM YYYY",
-    ),
-    aksi: (
-      <div className="flex w-max gap-2">
-        {isAdmin && item.status === "perjalanan" && (
-          <button
-            type="button"
-            className="inline-flex items-center justify-center rounded-xl border border-red-200 bg-red-50 px-3 py-2 text-sm font-semibold text-red-700 transition hover:bg-red-100"
-            onClick={() => setDeletedNip(item.nip)}
-          >
-            Hapus
-          </button>
-        )}
+  const formattedData = (suratTugas?.pegawai ?? []).map((item) => {
+    const isPerjalananKhusus =
+      String(item?.typePerjalanan ?? "").trim().toLowerCase() === "khusus";
 
-        <PrintButton
-          data={{
-            ...item,
-            lama: calculateTripDuration(item.tglBerangkat, item.tglKembali),
-            tglBerangkat: formatDate(item.tglBerangkat, "DD MMMM YYYY"),
-            tglKembali: formatDate(item.tglKembali, "DD MMMM YYYY"),
-            kabkota: item.tujuan,
-            kegiatan: suratTugas?.surat?.kegiatan || "-",
-            unit: suratTugas?.surat?.unit,
-            jabatanPPT: suratTugas?.surat?.jabatan,
-            nipPPT: suratTugas?.surat?.nip,
-            namaPPT: suratTugas?.surat?.nama,
-          }}
-          format="/spd-format.docx"
-          file={`spd-${item.nip}`}
-          text="Lihat Surat Perjalanan Dinas"
-        />
-      </div>
-    ),
-  }));
+    return {
+      ...item,
+      nama: (
+        <div className="flex flex-col gap-1">
+          <span className="font-medium text-gray-900">{item.nama}</span>
+          {item.nip && (
+            <span className="text-xs text-gray-500">{item.nip}</span>
+          )}
+          {isPerjalananKhusus && (
+            <span className="inline-flex w-fit items-center rounded-full border border-amber-200 bg-amber-50 px-2.5 py-0.5 text-xs font-semibold text-amber-700">
+              Perjalanan Khusus
+            </span>
+          )}
+        </div>
+      ),
+      tanggal: formatRangeDate(
+        item.tglBerangkat,
+        item.tglKembali,
+        "DD MMM YYYY",
+      ),
+      aksi: (
+        <div className="flex w-max gap-2">
+          {isAdmin && item.status === "perjalanan" && (
+            <button
+              type="button"
+              className="inline-flex items-center justify-center rounded-xl border border-red-200 bg-red-50 px-3 py-2 text-sm font-semibold text-red-700 transition hover:bg-red-100"
+              onClick={() => setDeletedNip(item.nip)}
+            >
+              Hapus
+            </button>
+          )}
+
+          <PrintButton
+            data={{
+              ...item,
+              lama: calculateTripDuration(item.tglBerangkat, item.tglKembali),
+              tglBerangkat: formatDate(item.tglBerangkat, "DD MMMM YYYY"),
+              tglKembali: formatDate(item.tglKembali, "DD MMMM YYYY"),
+              kabkota: item.tujuan,
+              kegiatan: suratTugas?.surat?.kegiatan || "-",
+              unit: suratTugas?.surat?.unit,
+              jabatanPPT: suratTugas?.surat?.jabatan,
+              nipPPT: suratTugas?.surat?.nip,
+              namaPPT: suratTugas?.surat?.nama,
+            }}
+            format="/spd-format.docx"
+            file={`spd-${item.nip}`}
+            text="Lihat Surat Perjalanan Dinas"
+          />
+        </div>
+      ),
+    }
+  });
 
   const breadcrumbItems = [
     { label: "Home", href: "/" },
