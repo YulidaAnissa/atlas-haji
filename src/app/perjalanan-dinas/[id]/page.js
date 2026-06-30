@@ -165,9 +165,39 @@ export default function Component() {
     }
   };
 
+  const getJabatanPPT = (pegawaiJabatan, suratJabatan) => {
+    const jabatan = String(pegawaiJabatan ?? "").trim().toLowerCase();
+    const jabatanSurat = suratJabatan || "-";
+
+    if (jabatan.includes("kepala bidang") || jabatan.includes("kepala bagian")) {
+      return {
+        an: "",
+        pejabatMengetahui: "",
+        jabatanPPT: jabatanSurat,
+      };
+    }
+
+    if (jabatan.includes("kepala kantor wilayah")) {
+      return {
+        an: "An. ",
+        pejabatMengetahui: "Sekretaris Jenderal Kementerian",
+        jabatanPPT: jabatanSurat,
+      };
+    }
+    else {
+      return {
+        an: "An. ",
+        pejabatMengetahui: "Kepala Kantor Wilayah",
+        jabatanPPT: jabatanSurat,
+      };
+    }
+  };
+
   const formattedData = (suratTugas?.pegawai ?? []).map((item) => {
     const isPerjalananKhusus =
       String(item?.typePerjalanan ?? "").trim().toLowerCase() === "khusus";
+    
+    const ppt = getJabatanPPT(item?.jabatan, suratTugas?.surat?.jabatan);
 
     return {
       ...item,
@@ -210,9 +240,11 @@ export default function Component() {
               kabkota: item.tujuan,
               kegiatan: suratTugas?.surat?.kegiatan || "-",
               unit: suratTugas?.surat?.unit,
-              jabatanPPT: suratTugas?.surat?.jabatan,
+              jabatanPPT : ppt.jabatanPPT,
               nipPPT: suratTugas?.surat?.nip,
               namaPPT: suratTugas?.surat?.nama,
+              an: ppt.an,
+              pejabatMengetahui: ppt.pejabatMengetahui
             }}
             format="/spd-format.docx"
             file={`spd-${item.nip}`}
