@@ -20,7 +20,7 @@ export default function Pegawai() {
   const handleSubmit = async (values, form) => {
     try {
       const payload = { ...values, status: "pegawai" };
-
+      console.log('ini add pegawai payload', payload);
       await addPegawai(payload);
       form.reset();
       fetch();

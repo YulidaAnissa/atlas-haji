@@ -63,19 +63,8 @@ function EmployeeIdentityFields({
   form,
   disabled = false,
 }) {
-  const handleTypeChange = (type) => {
-    if (type === "ASN") {
-      form.change("nik", undefined);
-      return;
-    }
-
-    if (type === "NON_ASN") {
-      form.change("nip", undefined);
-      return;
-    }
-
-    form.change("nip", undefined);
-    form.change("nik", undefined);
+  const handleTypeChange = () => {
+    form.change("nip", "");
   };
 
   return (
@@ -102,7 +91,7 @@ function EmployeeIdentityFields({
 
       {employeeType === "NON_ASN" && (
         <Field
-          name="nik"
+          name="nip"
           component={InputField}
           label="NIK"
           placeholder="Masukkan NIK"
@@ -114,10 +103,7 @@ function EmployeeIdentityFields({
 }
 
 function FormProgress({ values }) {
-  const identityField =
-    values.jenisPegawai === "NON_ASN" ? "nik" : "nip";
-
-  const fields = [...BASE_FIELDS, identityField];
+  const fields = [...BASE_FIELDS, "nip"];
 
   const filledFields = fields.filter((field) => {
     const value = values[field];
@@ -237,6 +223,11 @@ export default function AddPegawaiForm({
 
   const initialValues = {
     ...data,
+
+    // Field tetap menggunakan nip.
+    // data.nik hanya dipakai sebagai fallback kalau ada data lama.
+    nip: data.nip || data.nik || "",
+
     jenisPegawai:
       data.jenisPegawai ||
       (data.nik ? "NON_ASN" : data.nip ? "ASN" : ""),
