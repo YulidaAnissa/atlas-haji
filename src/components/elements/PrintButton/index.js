@@ -6,9 +6,9 @@ import Docxtemplater from "docxtemplater";
 import { SERVICES } from "@/configs";
 import { useLoading } from "@/hooks";
 import LoadingOverlay from "@/components/elements/LoadingOverlay";
-import { FiPrinter } from "react-icons/fi";
+import { FaDownload } from "react-icons/fa";
 
-export default function SuratTugas({
+export default function PrintButton({
   data,
   format,
   file = "surat-tugas",
@@ -85,8 +85,8 @@ export default function SuratTugas({
         disabled={loading}
         className="group inline-flex h-10 w-full items-center justify-center gap-2 rounded-xl border border-[#eadfbe] bg-white px-4 text-sm font-bold text-brand shadow-sm transition hover:border-brand hover:bg-brand hover:text-white focus:outline-none focus:ring-4 focus:ring-brand/20 disabled:cursor-not-allowed disabled:opacity-70"
       >
-        <FiPrinter className="h-4 w-4 transition group-hover:-translate-y-0.5" />
-        <span>{loading ? "Memproses..." : text || "Cetak"}</span>
+        <FaDownload className="h-4 w-4 transition group-hover:-translate-y-0.5" />
+        {/* <span>{loading ? "Memproses..." : text}</span> */}
       </button>
 
       <LoadingOverlay show={loading} />

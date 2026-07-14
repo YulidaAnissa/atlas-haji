@@ -31,18 +31,17 @@ export default function DatePickerRange({ input, className = "", minDate }) {
     return date;
   }, []);
 
+  
   const minimumDate = useMemo(() => {
     if (!minDate) return today;
 
     const date = new Date(minDate);
     date.setHours(0, 0, 0, 0);
 
-    return Number.isNaN(date.getTime())
-      ? today
-      : date > today
-        ? date
-        : today;
+    return date;
   }, [minDate, today]);
+
+  console.log('minimumDate ', minimumDate);
 
   const selection = {
     startDate:

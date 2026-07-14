@@ -9,12 +9,6 @@ export default function validation(values) {
     nip: validate(values.nip, [
       { rule: 'required' },
     ]),
-    pangkat: validate(values.pangkat, [
-      { rule: 'required' },
-    ]),
-    gol: validate(values.gol, [
-      { rule: 'required' },
-    ]),
     jabatan: validate(values.jabatan, [
       { rule: 'required' },
     ]),

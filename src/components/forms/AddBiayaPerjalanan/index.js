@@ -45,7 +45,6 @@ export default function ComponentForm({
                 label="Biaya Transportasi"
                 name="biayaTrans"
                 startAdornment={<span className="text-gray-500 text-sm">Rp</span>}
-                type="number"
               />
               <Field
                 component={UploadFile}
@@ -57,7 +56,6 @@ export default function ComponentForm({
                 label="Biaya Penginapan"
                 name="biayaPeng"
                 startAdornment={<span className="text-gray-500 text-sm">Rp</span>}
-                type="number"
               />
               <Field
                 component={UploadFile}

@@ -28,6 +28,7 @@ import {
 } from "@/hooks/useData";
 import { calculateTripDuration, formatDate, formatRangeDate } from "@/utils/date";
 import { profileStorage } from "@/utils/storage";
+import { TiDeleteOutline, TiEdit } from "react-icons/ti";
 
 const EMPTY_SNACKBAR = {
   show: false,
@@ -38,7 +39,7 @@ const EMPTY_SNACKBAR = {
 const HEAD_CELLS = [
   { id: "nama", label: "Nama Pegawai", numeric: false },
   { id: "tujuan", label: "Tujuan", numeric: false },
-  { id: "tanggal", label: "Tanggal", numeric: false },
+  { id: "tanggal", label: "Tanggal Pelaksanaan", numeric: false },
   { id: "aksi", label: "", numeric: false, align: "right" },
 ];
 
@@ -49,6 +50,7 @@ export default function Component() {
   const [profil, setProfil] = useState(null);
   const [deletedNip, setDeletedNip] = useState(null);
   const [showAddPegawai, setShowAddPegawai] = useState(false);
+  const [updatePerjalananPegawai, setUpdatePerjalananPegawai] = useState({ data: null, show: false });
   const [showUpdatePerjalanan, setShowUpdatePerjalanan] = useState(false);
   const [snackbar, setSnackbar] = useState(EMPTY_SNACKBAR);
   const [loading, startLoading, endLoading] = useLoading();
@@ -140,6 +142,31 @@ export default function Component() {
     }
   };
 
+  const handleUpdatePerjalananPegawai = async (values) => {
+    try {
+      await postPegawai({
+        pegawai: values.pegawai,
+        idSurat: id,
+        tglBerangkat: formatDate(
+          values.dateRange?.formattedStart,
+          "YYYY-MM-DD",
+        ),
+        tglKembali: formatDate(
+          values.dateRange?.formattedEnd,
+          "YYYY-MM-DD",
+        ),
+        tujuan: values.tujuan,
+        status: "perjalanan",
+      });
+
+      await fetchSuratTugas();
+      setShowAddPegawai(false);
+      showNotification("Pegawai berhasil ditambahkan", "success");
+    } catch {
+      showNotification("Gagal menambahkan pegawai", "error");
+    }
+  };
+
   const handleDelete = async () => {
     try {
       startLoading();
@@ -198,7 +225,7 @@ export default function Component() {
       String(item?.typePerjalanan ?? "").trim().toLowerCase() === "khusus";
     
     const ppt = getJabatanPPT(item?.jabatan, suratTugas?.surat?.jabatan);
-
+    const isDisabled = isAdmin && item.status === "perjalanan";
     return {
       ...item,
       nama: (
@@ -221,16 +248,22 @@ export default function Component() {
       ),
       aksi: (
         <div className="flex w-max gap-2">
-          {isAdmin && item.status === "perjalanan" && (
-            <button
+          <button
+            type="button"
+            className={`inline-flex items-center justify-center rounded-xl border  px-3 py-2 text-sm font-semibold  ${!isDisabled ? "cursor-not-allowed opacity-50bg-gray-200 text-gray-400 border border-gray-300" : "border-red-200 bg-red-50 text-red-700 transition hover:bg-red-100"}`}
+            onClick={() => setDeletedNip(item.nip)}
+            disabled={!isDisabled}
+          >
+            <TiDeleteOutline className="h-6 w-6" />
+          </button>
+          <button
               type="button"
-              className="inline-flex items-center justify-center rounded-xl border border-red-200 bg-red-50 px-3 py-2 text-sm font-semibold text-red-700 transition hover:bg-red-100"
-              onClick={() => setDeletedNip(item.nip)}
+              className={`inline-flex items-center justify-center rounded-xl border  px-3 py-2 text-sm font-semibold  ${!isDisabled ? "cursor-not-allowed opacity-50bg-gray-200 text-gray-400 border border-gray-300" : "border-blue-200 bg-blue-50 text-blue-700 transition hover:bg-blue-100"}`}
+              onClick={() => setUpdatePerjalananPegawai({ data: item, show: true })}
+              disabled={!isDisabled}
             >
-              Hapus
+              <TiEdit className="h-6 w-6" />
             </button>
-          )}
-
           <PrintButton
             data={{
               ...item,
@@ -248,7 +281,6 @@ export default function Component() {
             }}
             format="/spd-format.docx"
             file={`spd-${item.nip}`}
-            text="Lihat Surat Perjalanan Dinas"
           />
         </div>
       ),
@@ -353,6 +385,23 @@ export default function Component() {
           onClose={() => setShowAddPegawai(false)}
           pegawai={pegawaiTanpaPerjalanan}
           kabkota={kabkota}
+        />
+      </FormModal>
+      
+      {/* Edit Perjalanan Pegawai */}
+      <FormModal
+        className="w-[95vw] max-w-6xl"
+        icon={<TiEdit className="h-6 w-6 text-white" />}
+        show={updatePerjalananPegawai?.show}
+      >
+        <AddPegawaiPerjalanan
+          tglSurat={suratTugas?.surat?.tglSurat}
+          onSubmit={handleUpdatePerjalananPegawai}
+          onClose={() => setUpdatePerjalananPegawai({ data: null, show: false })}
+          pegawai={pegawaiTanpaPerjalanan}
+          kabkota={kabkota}
+          type="edit"
+          perjalananPegawai={updatePerjalananPegawai?.data}
         />
       </FormModal>
 

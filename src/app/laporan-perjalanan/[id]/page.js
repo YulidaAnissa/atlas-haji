@@ -10,7 +10,6 @@ import {
   DataTables,
   Breadcrumb,
   FormModal,
-  PrintButton,
   Snackbar,
   StatusBadge,
   VerifBiayaPerjalanan,
@@ -20,9 +19,9 @@ import LoadingOverlay from "@/components/elements/LoadingOverlay";
 import LaporanPerjalanan from "@/components/forms/LaporanPerjalanan";
 import UpdateLaporanPerjalanan from "@/components/forms/UpdateLaporan";
 
-import { useUpdateLaporan, useLaporan, useSuratTugas } from "@/hooks/useData";
+import { useUpdateLaporan, useSuratTugas } from "@/hooks/useData";
 import { useLoading } from "@/hooks";
-import { formatDate, calculateTripDuration, formatRangeDate } from "@/utils/date";
+import { formatRangeDate } from "@/utils/date";
 
 
 export default function Component() {

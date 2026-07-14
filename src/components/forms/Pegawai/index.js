@@ -131,7 +131,7 @@ function FormProgress({ values }) {
         </p>
       </div>
 
-      <div className="rounded-xl border border-slate-200 bg-white p-4">
+      {/* <div className="rounded-xl border border-slate-200 bg-white p-4">
         <div className="mb-3 flex items-end justify-between gap-3">
           <div>
             <p className="text-3xl font-black text-slate-950">
@@ -154,7 +154,7 @@ function FormProgress({ values }) {
             style={{ width: `${progress}%` }}
           />
         </div>
-      </div>
+      </div> */}
     </aside>
   );
 }
@@ -186,19 +186,24 @@ function PegawaiFields({ values, form, isEdit }) {
           disabled={isEdit}
         />
 
-        <Field
-          name="pangkat"
-          component={InputField}
-          label="Pangkat"
-          placeholder="Masukkan pangkat"
-        />
+        {values.jenisPegawai === "ASN" && (
+          <>
+            <Field
+              name="pangkat"
+              component={InputField}
+              label="Pangkat"
+              placeholder="Masukkan pangkat"
+            />
 
-        <Field
-          name="gol"
-          component={InputField}
-          label="Golongan"
-          placeholder="Masukkan golongan"
-        />
+            <Field
+              name="gol"
+              component={InputField}
+              label="Golongan"
+              placeholder="Masukkan golongan"
+            />
+          </>
+        )}
+
 
         <div className="md:col-span-2">
           <Field
