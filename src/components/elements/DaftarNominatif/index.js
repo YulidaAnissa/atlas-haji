@@ -48,11 +48,29 @@ export default function SuratTugas({
 
   useEffect(() => {
     if (data) {
+      // 💡 Fungsi pembantu untuk mengubah angka 0 menjadi "-"
+      const formatOrDash = (value) => {
+        const num = Number(value || 0);
+        return num === 0 ? "Rp. -" : formatRupiah(num);
+      };
+
+      // 🔍 1. Cari tanggal kembali yang paling terakhir (paling maksimal)
+      const tglKembaliTerakhir = data.pegawai.reduce((latest, current) => {
+        if (!current.tglKembali) return latest;
+        if (!latest) return current.tglKembali;
+        
+        return new Date(current.tglKembali).getTime() > new Date(latest).getTime()
+          ? current.tglKembali
+          : latest;
+      }, null);
+
       const pegawaiData = data.pegawai.map((item, index) => {
         const uh = item?.jenisPegawai === "ASN" ? 430000 : 250000;
         const isKhusus = item.typePerjalanan === "khusus";
         const uhType = isKhusus ? 0 : uh;
         const uhVal = uhCount(uhType, item.tglBerangkat, item.tglKembali);
+        const totalPegawai = totalCount(uhVal, item.biayaTrans, item.biayaPeng);
+
         return {
           idx: index + 1,
           nama: item.nama,
@@ -64,11 +82,14 @@ export default function SuratTugas({
           uh: uhVal,
           biayaTrans: Number(item.biayaTrans) || 0,
           biayaPeng: Number(item.biayaPeng) || 0,
-          jumlah: totalCount(uhVal, item.biayaTrans, item.biayaPeng),
-          uhFormat: formatRupiah(uhVal),
-          biayaTransFormat: formatRupiah(item.biayaTrans) || "",
-          biayaPengFormat: formatRupiah(item.biayaPeng) || "",
-          jumlahFormat: formatRupiah(totalCount(uhVal, item.biayaTrans, item.biayaPeng)),
+          jumlah: totalPegawai,
+          
+          // ⚙️ Mengubah ke "-" jika nominalnya 0
+          uhFormat: formatOrDash(uhVal),
+          biayaTransFormat: formatOrDash(item.biayaTrans),
+          biayaPengFormat: formatOrDash(item.biayaPeng),
+          jumlahFormat: formatOrDash(totalPegawai),
+          
           nipPPK: item?.nipPPK,
           namaPPK: item?.namaPPK,
           unitPPK: item?.unitPPK,
@@ -92,14 +113,19 @@ export default function SuratTugas({
         tglSurat: formatDate(data.surat?.tglSurat, "DD MMMM YYYY") || "",
         kegiatan: data.surat?.kegiatan || "",
         pegawai: pegawaiData,
-        uhTotal: formatRupiah(totals.uhTotal),
-        transTotal: formatRupiah(totals.transTotal),
-        pengTotal: formatRupiah(totals.pengTotal),
-        jumlahAll: formatRupiah(totals.jumlahAll),
+        
+        // ⚙️ Mengubah total keseluruhan ke "-" jika hasilnya 0
+        uhTotal: formatOrDash(totals.uhTotal),
+        transTotal: formatOrDash(totals.transTotal),
+        pengTotal: formatOrDash(totals.pengTotal),
+        jumlahAll: formatOrDash(totals.jumlahAll),
+        
         nipPPK: data.surat?.nip || "",
         namaPPK: data.surat?.nama || "",
         unitPPK: toUpperCase(data.surat?.unit) || "",
-        tglKPPN: formatDate(data.surat?.tglKPPN, "DD MMMM YYYY") || ""
+        tglKPPN: formatDate(data.surat?.tglKPPN, "DD MMMM YYYY") || "",
+        // ⚙️ 2. Set tglKembaliTTD menggunakan tanggal terakhir yang sudah dicari dan diformat
+        tglKembaliTTD: tglKembaliTerakhir ? formatDate(tglKembaliTerakhir, "DD MMMM YYYY") : ""
       });
     }
   }, [data]);

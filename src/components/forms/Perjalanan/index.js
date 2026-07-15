@@ -229,8 +229,8 @@ export default function PerjalananForm({
 
             <h2 className="mt-2 text-xl font-bold tracking-tight text-slate-900 sm:text-2xl">
               {isEdit
-                ? "Perbarui Surat Tugas"
-                : "Buat Surat Tugas"}
+                ? "Perbarui Perjalanan Dinas"
+                : "Buat Perjalanan Dinas"}
             </h2>
 
             <p className="mt-1 max-w-xl text-sm leading-6 text-slate-500">
@@ -378,7 +378,7 @@ export default function PerjalananForm({
                 ? "Menyimpan..."
                 : isEdit
                   ? "Simpan Perubahan"
-                  : "Simpan Surat"}
+                  : "Simpan Perjalanan Dinas"}
             </button>
           </footer>
         </form>

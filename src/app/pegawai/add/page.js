@@ -26,7 +26,18 @@ export default function Pegawai() {
       fetch();
       setShowModalSuccess(true);
     } catch (err) {
-      return err;
+      // 💡 Mengambil pesan error dari response API Axios/Fetch Anda
+      const errorMessage = err.response?.data?.err || "Terjadi kesalahan saat menyimpan data";
+
+      // 💡 Jika error berisi tentang NIP/NIK yang sudah terdaftar
+      if (errorMessage.toLowerCase().includes("nip") || errorMessage.toLowerCase().includes("terdaftar")) {
+        return { 
+          nip: "NIP/NIK ini sudah terdaftar dalam sistem" 
+        };
+      }
+      
+      // Jika ada error validasi field lain dari backend, Anda bisa memetakannya di sini
+      return { FORM_ERROR: errorMessage };
     }
   };
 

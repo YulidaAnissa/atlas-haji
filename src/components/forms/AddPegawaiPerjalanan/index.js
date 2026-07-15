@@ -20,11 +20,12 @@ import { formatDate } from "@/utils/date";
 
 import SelectField from "../FormField/SelectField";
 import validation from "./validate";
+import PegawaiBadge from "./PegawaiBadge";
 
 const INITIAL_VALUES = {
   dateRange: null,
   tujuan: "",
-  pegawai: [""],
+  pegawai: ["", ""],
 };
 
 function getOptionValue(option) {
@@ -258,17 +259,18 @@ export default function ComponentForm({
                     className="w-full"
                   />
 
-                  {values.tujuan && (
+                  {values.tujuan && values.tujuan.length > 0 && (
                     <div className="mt-3 flex items-start gap-3 rounded-xl border border-[#eadfbe] bg-[#fbf7ec] px-4 py-3">
                       <FiMapPin className="mt-0.5 h-4 w-4 shrink-0 text-brand" />
 
                       <div>
                         <p className="text-xs font-semibold text-slate-500">
-                          Tujuan terpilih
+                          Tujuan terpilih (Sesuai Rute Perjalanan)
                         </p>
 
                         <p className="mt-1 text-sm font-bold leading-6 text-slate-800">
-                          {values.tujuan}
+                          {/* 💡 Menggabungkan array berdasarkan urutan klik dengan koma */}
+                          {Array.isArray(values.tujuan) ? values.tujuan.join(", ") : values.tujuan}
                         </p>
                       </div>
                     </div>
@@ -276,7 +278,7 @@ export default function ComponentForm({
                 </div>
               </section>
               {/* Daftar Pegawai */}
-              { type === "add" && (
+              { type === "add" ? (
                 <FieldArray name="pegawai">
                   {({ fields }) => (
                     <section className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
@@ -433,6 +435,12 @@ export default function ComponentForm({
                     </section>
                   )}
                 </FieldArray>
+              ) : (
+                <PegawaiBadge 
+                  nip={perjalananPegawai?.nip} 
+                  nama={perjalananPegawai?.nama} 
+                  className="w-full"
+                />
               )}
               
             </div>

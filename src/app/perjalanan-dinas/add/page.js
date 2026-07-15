@@ -113,7 +113,7 @@ export default function AddPerjalananDinas() {
       setErrorMessage(
         error?.message ||
           error?.err ||
-          "Terjadi kesalahan saat menyimpan surat tugas."
+          "Terjadi kesalahan saat menyimpan perjalanan dinas."
       );
 
       setShowErrorModal(true);
@@ -145,13 +145,13 @@ export default function AddPerjalananDinas() {
       <InfoModal
         show={showSuccessModal}
         icon={<FaCheck className="h-6 w-6 text-white" />}
-        title="Surat tugas berhasil disimpan"
+        title="Perjalanan Dinas berhasil disimpan"
         onCancel={() => setShowSuccessModal(false)}
         onConfirm={handleSuccessConfirm}
       />
       <InfoModal
         show={showErrorModal}
-        title="Surat tugas gagal disimpan"
+        title="Perjalanan Dinas gagal disimpan"
         onCancel={() => setShowErrorModal(false)}
         onConfirm={() => setShowErrorModal(false)}
       >

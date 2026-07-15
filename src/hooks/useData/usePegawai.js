@@ -37,7 +37,7 @@ export function useAddPegawai() {
       }
 
       const res = await fetch(SERVICES.PEGAWAI, {
-        method: "POST", // atau PATCH sesuai API kamu
+        method: "POST",
         headers: {
           Authorization: `Bearer ${token}`,
           "Content-Type": "application/json",
@@ -45,15 +45,22 @@ export function useAddPegawai() {
         body: JSON.stringify(values),
       });
 
+      const data = await res.json();
+
+      // 💡 PERBAIKAN: Jika status HTTP bukan 2xx (misal 400, 500)
       if (!res.ok) {
-        throw new Error("Gagal menambahkan pegawai");
+        // Buat objek error baru dan lampirkan data error dari backend
+        const errorObj = new Error(data.err || "Gagal menyimpan data");
+        errorObj.response = { data }; // Meniru struktur Axios agar handleSubmit Anda tidak patah
+        throw errorObj;
       }
 
-      const data = await res.json();
       return data;
     } catch (err) {
-      setError(err.message);
-      throw err;
+      // Mengambil pesan error teks untuk state internal hook jika diperlukan
+      const msg = err.response?.data?.err || err.message;
+      setError(msg);
+      throw err; // PENTING: Tetap throw agar ditangkap catch di handleSubmit
     } finally {
       setLoading(false);
     }

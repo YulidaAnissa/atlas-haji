@@ -126,6 +126,53 @@ export function useAddPegawaiPerjalanan() {
   return { postPegawai, loading, error };
 }
 
+export function useUpdatePegawaiPerjalanan() {
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+
+  const updatePegawai = async (id, values) => {
+    setLoading(true);
+    setError("");
+
+    try {
+      const tokenObj = accessTokenStorage.get();
+      const token = tokenObj?.value;
+
+      if (!token) {
+        throw new Error("Token tidak tersedia, user belum login");
+      }
+
+      // Asumsi: URL endpoint menggunakan ID, misalnya: /api/perjalanan-pegawai/:id
+      // Jika ID dikirim di dalam body, sesuaikan URL menjadi `${SERVICES.PERJALANAN_PEGAWAI}`
+      const res = await fetch(
+        `${SERVICES.PERJALANAN_PEGAWAI}`,
+        {
+          method: "PUT", // Atau "PATCH" tergantung kebutuhan API kamu
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(values),
+        }
+      );
+
+      if (!res.ok) {
+        throw new Error("Gagal memperbarui data pegawai");
+      }
+
+      const data = await res.json();
+      return data;
+    } catch (err) {
+      setError(err.message);
+      throw err;
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return { updatePegawai, loading, error };
+}
+
 export function useUpdatePerjalanan() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");

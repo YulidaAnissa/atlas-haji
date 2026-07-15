@@ -25,6 +25,7 @@ import {
   useKabKota,
   usePegawai,
   useSuratTugas,
+  useUpdatePegawaiPerjalanan,
 } from "@/hooks/useData";
 import { calculateTripDuration, formatDate, formatRangeDate } from "@/utils/date";
 import { profileStorage } from "@/utils/storage";
@@ -64,7 +65,7 @@ export default function Component() {
   const { editSuratTugas } = useEditSuratTugas();
   const { postPegawai } = useAddPegawaiPerjalanan();
   const { deletePegawaiPerjalanan } = useDeletePegawaiPerjalanan();
-
+  const { updatePegawai } = useUpdatePegawaiPerjalanan();
   useEffect(() => {
     setProfil(profileStorage.get());
   }, []);
@@ -142,31 +143,39 @@ export default function Component() {
     }
   };
 
+  console.log("updatePerjalananPegawai", updatePerjalananPegawai);
   const handleUpdatePerjalananPegawai = async (values) => {
     try {
-      await postPegawai({
-        pegawai: values.pegawai,
-        idSurat: id,
-        tglBerangkat: formatDate(
-          values.dateRange?.formattedStart,
-          "YYYY-MM-DD",
-        ),
-        tglKembali: formatDate(
-          values.dateRange?.formattedEnd,
-          "YYYY-MM-DD",
-        ),
+      // 1. Ambil ID dari data pegawai yang sedang diedit
+      const idPerjalananPegawai = updatePerjalananPegawai?.data?.idPerjalananPegawai;
+
+      if (!idPerjalananPegawai) {
+        showNotification("ID Perjalanan tidak ditemukan", "error");
+        return;
+      }
+
+      // 2. Jalankan fungsi update dengan memisahkan ID dan Payload Body
+      await updatePegawai(idPerjalananPegawai, {
+        idPerjalananPegawai, // Backend mendestruktur ini dari req.body
+        tglBerangkat: formatDate(values.dateRange?.formattedStart, "YYYY-MM-DD"),
+        tglKembali: formatDate(values.dateRange?.formattedEnd, "YYYY-MM-DD"),
         tujuan: values.tujuan,
-        status: "perjalanan",
+        
+        // Tambahkan ini agar pengecekan jadwal bentrok di backend tidak error/skip
+        nip: updatePerjalananPegawai?.data?.nip, 
+        idSurat: id 
       });
 
+      // 3. Refresh data dan tutup modal/form
       await fetchSuratTugas();
       setShowAddPegawai(false);
-      showNotification("Pegawai berhasil ditambahkan", "success");
-    } catch {
-      showNotification("Gagal menambahkan pegawai", "error");
+      showNotification("Pegawai berhasil diperbarui", "success");
+      setUpdatePerjalananPegawai({ data: null, show: false });
+    } catch (error) {
+      console.error("Error update:", error);
+      showNotification("Gagal memperbarui pegawai", "error");
     }
   };
-
   const handleDelete = async () => {
     try {
       startLoading();
@@ -195,7 +204,21 @@ export default function Component() {
   const getJabatanPPT = (pegawaiJabatan, suratJabatan) => {
     const jabatan = String(pegawaiJabatan ?? "").trim().toLowerCase();
     const jabatanSurat = suratJabatan || "-";
+    
+    // 💡 Standardisasi teks jabatanSurat untuk pengecekan yang aman
+    const jabatanSuratLower = jabatanSurat.toLowerCase();
 
+    // Condition 1: Jika jabatanSurat mengandung "kepala kantor wilayah"
+    // Maka tidak memakai "An. " dan pejabatMengetahui dikosongkan (atau disesuaikan)
+    if (jabatanSuratLower.includes("kepala kantor wilayah")) {
+      return {
+        an: "",
+        pejabatMengetahui: "",
+        jabatanPPT: jabatanSurat,
+      };
+    }
+
+    // Condition 2: Jika pegawaiJabatan adalah kepala bidang atau kepala bagian
     if (jabatan.includes("kepala bidang") || jabatan.includes("kepala bagian")) {
       return {
         an: "",
@@ -204,6 +227,7 @@ export default function Component() {
       };
     }
 
+    // Condition 3: Jika pegawaiJabatan adalah kepala kantor wilayah (fallback case dari kode lama)
     if (jabatan.includes("kepala kantor wilayah")) {
       return {
         an: "An. ",
@@ -211,6 +235,8 @@ export default function Component() {
         jabatanPPT: jabatanSurat,
       };
     }
+    
+    // Condition 4: Default/Pegawai biasa
     else {
       return {
         an: "An. ",
@@ -277,7 +303,8 @@ export default function Component() {
               nipPPT: suratTugas?.surat?.nip,
               namaPPT: suratTugas?.surat?.nama,
               an: ppt.an,
-              pejabatMengetahui: ppt.pejabatMengetahui
+              pejabatMengetahui: ppt.pejabatMengetahui,
+              gol: item.gol || "-",
             }}
             format="/spd-format.docx"
             file={`spd-${item.nip}`}

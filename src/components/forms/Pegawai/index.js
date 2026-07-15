@@ -122,39 +122,28 @@ function FormProgress({ values }) {
   return (
     <aside className="rounded-2xl border border-slate-200 bg-slate-50 p-4 sm:p-5">
       <div className="mb-4">
-        <p className="text-sm font-bold text-slate-800">
-          Kelengkapan Data
-        </p>
-
-        <p className="mt-1 text-xs leading-5 text-slate-500">
-          ASN menggunakan NIP, sedangkan Non ASN menggunakan NIK.
-        </p>
-      </div>
-
-      {/* <div className="rounded-xl border border-slate-200 bg-white p-4">
-        <div className="mb-3 flex items-end justify-between gap-3">
-          <div>
-            <p className="text-3xl font-black text-slate-950">
-              {filledFields}
-            </p>
-
-            <p className="text-xs font-semibold text-slate-500">
-              dari {fields.length} field
-            </p>
-          </div>
-
-          <span className="rounded-full bg-[#fbf7ec] px-3 py-1 text-xs font-bold text-brand">
+        <div className="flex items-center justify-between">
+          <p className="text-sm font-bold text-slate-800">
+            Kelengkapan Data
+          </p>
+          {/* 1. Menampilkan teks persentase secara dinamis */}
+          <span className="text-sm font-bold text-brand">
             {progress}%
           </span>
         </div>
 
-        <div className="h-2.5 overflow-hidden rounded-full bg-slate-100">
-          <div
-            className="h-full rounded-full bg-brand transition-all duration-300"
+        {/* 2. Menambahkan visual Progress Bar */}
+        <div className="mt-2 h-2 w-full rounded-full bg-slate-200 overflow-hidden">
+          <div 
+            className="h-full bg-brand transition-all duration-300 ease-out-in"
             style={{ width: `${progress}%` }}
           />
         </div>
-      </div> */}
+
+        <p className="mt-3 text-xs leading-5 text-slate-500">
+          ASN menggunakan NIP, sedangkan Non ASN menggunakan NIK.
+        </p>
+      </div>
     </aside>
   );
 }

@@ -12,16 +12,19 @@ export default function MultiSelectTextField({
   placeholder = "Pilih kabupaten/kota",
   className = "",
 }) {
+  // 1. Ambil nama-nama yang tersimpan di input string
   const selectedNames = String(input.value || "")
     .split(",")
     .map((item) => item.trim().toLowerCase())
     .filter(Boolean);
 
-  const selectedOptions = options.filter((option) =>
-    selectedNames.includes(
-      String(option.label).trim().toLowerCase()
+  // 💡 PERBAIKAN UTAMA: Petakan berdasarkan `selectedNames` (urutan klik) 
+  // bukan mem-filter dari array `options` (urutan default)
+  const selectedOptions = selectedNames
+    .map((name) => 
+      options.find((option) => String(option.label).trim().toLowerCase() === name)
     )
-  );
+    .filter(Boolean); // Hapus jika ada nilai undefined (opsi tidak ditemukan)
 
   const handleChange = (selected) => {
     const textValue = Array.isArray(selected)

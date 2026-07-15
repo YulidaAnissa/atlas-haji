@@ -7,6 +7,7 @@ import { UploadFile } from "@/components/forms/FormField";
 import InputField from "../FormField/InputField";
 import SelectField from "../FormField/SelectField";
 import TextAreaField from "../FormField/TextAreaField";
+import validation from "./validate";
 
 const noop = () => {};
 
@@ -40,7 +41,7 @@ export default function ComponentForm({
       ...data,
       tujuan: data?.idKabKota || "",
       pegawai: data?.pegawai ?? null,
-      hasil: data?.hasil || "",
+      hasil: data?.hasil || `Terlaksananya tugas ${data[0]?.kegiatan}`,
       spd: data?.spd || null,
       adaBiayaPerjalanan: hasBiayaPerjalanan(data),
       biayaTrans: data?.biayaTrans || "",
@@ -55,8 +56,10 @@ export default function ComponentForm({
     [data],
   );
 
+  console.log('data laporan form', initialValues);
+
   return (
-    <Form onSubmit={onSubmit} initialValues={initialValues}>
+    <Form onSubmit={onSubmit} initialValues={initialValues} validate={validation}>
       {({ handleSubmit, values }) => (
         <form
           noValidate
@@ -129,7 +132,6 @@ export default function ComponentForm({
                     name="biayaTrans"
                     component={InputField}
                     label="Biaya Transportasi"
-                    type="number"
                     startAdornment={
                       <span className="text-sm font-semibold text-gray-500">
                         Rp
@@ -141,7 +143,6 @@ export default function ComponentForm({
                     name="biayaPeng"
                     component={InputField}
                     label="Biaya Penginapan"
-                    type="number"
                     startAdornment={
                       <span className="text-sm font-semibold text-gray-500">
                         Rp
