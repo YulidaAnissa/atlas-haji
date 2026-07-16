@@ -67,8 +67,9 @@ export default function Component() {
     return duration * uh;
   };
 
-  const totalCount = (uh, biayaTrans, biayaPeng) => {
-    return (Number(uh) || 0) + (Number(biayaTrans) || 0) + (Number(biayaPeng) || 0);
+  // Update totalCount untuk mengikutsertakan biaya representatif
+  const totalCount = (uh, biayaTrans, biayaPeng, biayaRep = 0) => {
+    return (Number(uh) || 0) + (Number(biayaTrans) || 0) + (Number(biayaPeng) || 0) + (Number(biayaRep) || 0);
   };
 
   const dataFilePegawai = data?.pegawai?.map((item, index) => {
@@ -111,11 +112,6 @@ export default function Component() {
         }
       });
 
-      // // Default rate lama sebagai fallback jika daerah tidak ditemukan di master data
-      // if (maxUhDaerah === 0) {
-      //   maxUhDaerah = item?.jenisPegawai === "ASN" || item?.jenisPegawai === "PNS" ? 430000 : 250000;
-      // }
-
       uhPerHari = maxUhDaerah;
     } else {
       // Default fallback global
@@ -128,10 +124,19 @@ export default function Component() {
     // Hitung akumulasi total UH
     const totalUangHarian = uhCount(uhValue, item.tglBerangkat, item.tglKembali);
     
+    // 💡 Hitung Biaya Representatif (150rb per hari jika jabatannya mengandung "Kepala Kantor")
+    let biayaRepVal = 0;
+    const isKepalaKantor = item.jabatan?.toLowerCase().includes("kepala kantor");
+    if (isKepalaKantor) {
+      const durasiHari = calculateTripDuration(item.tglBerangkat, item.tglKembali, false, false);
+      biayaRepVal = durasiHari * 150000;
+    }
+
     const jumlahTotal = totalCount(
       totalUangHarian,
       item.biayaTrans,
-      item.biayaPeng
+      item.biayaPeng,
+      biayaRepVal
     );
 
     return {
@@ -155,6 +160,12 @@ export default function Component() {
       unitPPK: item?.unitPPK,
       trans: Number(item.biayaTrans || 0) === 0 ? "" : "- Transportasi",
       peng: Number(item.biayaPeng || 0) === 0 ? "" : "- Penginapan",
+      
+      // ⚙️ Integrasi Field Representatif Baru
+      repre: Number(biayaRepVal) === 0 ? "" : "- Representatif",
+      isRepre: isKepalaKantor ? "Rp" : "",
+      biayaRepre: isKepalaKantor ? formatRupiah(biayaRepVal) + ",-" : "",
+      
       terbilang: `${capitalize(terbilang(jumlahTotal))} Rupiah`
     };
   });

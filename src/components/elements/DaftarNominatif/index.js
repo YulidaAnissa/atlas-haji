@@ -27,11 +27,12 @@ export default function SuratTugas({
     return duration * uh;
   };
 
-  const totalCount = (uh, biayaTrans, biayaPeng) => {
+  const totalCount = (uh, biayaTrans, biayaPeng, biayaRep = 0) => {
     const u = Number(uh) || 0;
     const t = Number(biayaTrans) || 0;
     const p = Number(biayaPeng) || 0;
-    return u + t + p;
+    const r = Number(biayaRep) || 0;
+    return u + t + p + r;
   };
 
   const formatTujuan = (tujuan) => {
@@ -42,8 +43,6 @@ export default function SuratTugas({
     }
     return tujuan;
   };
-
-  console.log('data daftar nominatif', data);
 
   useEffect(() => {
     if (data) {
@@ -65,15 +64,11 @@ export default function SuratTugas({
         let uhPerHari = 0;
         const tipeSurat = data.surat?.type;
 
-        // 1. Cek tipe surat terlebih dahulu
         if (tipeSurat === "half_day") {
           uhPerHari = 90000;
         } else if (tipeSurat === "full_board") {
           uhPerHari = 130000;
         } else if (tipeSurat === "full_day") {
-          // 2. Jika full_day, cari UH terbesar berdasarkan array tujuan (bisa lebih dari satu daerah)
-          // Asumsi: item.tujuan bisa berupa array daerah, atau string yang dipisah koma. 
-          // Di sini kita handle jika bentuknya string dipisah koma, atau jadikan array jika tunggal.
           const daftarTujuan = Array.isArray(item.tujuan) 
             ? item.tujuan 
             : (item.tujuan ? item.tujuan.split(',').map(t => t.trim()) : []);
@@ -81,24 +76,20 @@ export default function SuratTugas({
           let maxUhDaerah = 0;
 
           daftarTujuan.forEach((tujuanPegawai) => {
-            // Cari data kabupaten/kota yang cocok di master data kabKota
             const matchKabKota = kabKota.find(
               (kab) => kab.kabkota?.toLowerCase() === tujuanPegawai.toLowerCase()
             );
 
             if (matchKabKota) {
-              // Tentukan key rate berdasarkan jenisPegawai
               let rate = 0;
               if (item.jenisPegawai === "PNS") {
                 rate = Number(matchKabKota.uhPNS) || 0;
               } else if (item.jenisPegawai === "PPPK") {
                 rate = Number(matchKabKota.uhPPPK) || 0;
               } else {
-                // Non ASN / selain PNS & PPPK
                 rate = Number(matchKabKota.uhNonASN) || 0;
               }
 
-              // Ambil yang terbesar
               if (rate > maxUhDaerah) {
                 maxUhDaerah = rate;
               }
@@ -107,18 +98,24 @@ export default function SuratTugas({
 
           uhPerHari = maxUhDaerah;
         } else {
-          // Default fallback jika type surat tidak terdefinisi
           uhPerHari = 0;
         }
 
         const isKhusus = item.typePerjalanan === "khusus";
         const uhType = isKhusus ? 0 : uhPerHari;
         
-        // Hitung total akumulasi UH berdasarkan durasi hari
         const uhVal = uhCount(uhType, item.tglBerangkat, item.tglKembali);
-        const totalPegawai = totalCount(uhVal, item.biayaTrans, item.biayaPeng);
 
-        // Gabungkan teks tujuan untuk tampilan jika inputnya berupa array
+        // Hitung Biaya Representatif (150rb/hari untuk "Kepala Kantor")
+        let biayaRepVal = 0;
+        const isKepalaKantor = item.jabatan?.toLowerCase().includes("kepala kantor");
+        if (isKepalaKantor) {
+          const durasiHari = calculateTripDuration(item.tglBerangkat, item.tglKembali, false, false);
+          biayaRepVal = durasiHari * 150000;
+        }
+
+        const totalPegawai = totalCount(uhVal, item.biayaTrans, item.biayaPeng, biayaRepVal);
+
         const tujuanTeks = Array.isArray(item.tujuan) ? item.tujuan.join(', ') : item.tujuan;
 
         return {
@@ -132,11 +129,13 @@ export default function SuratTugas({
           uh: uhVal,
           biayaTrans: Number(item.biayaTrans) || 0,
           biayaPeng: Number(item.biayaPeng) || 0,
+          biayaRepresentatif: biayaRepVal,
           jumlah: totalPegawai,
           
           uhFormat: formatOrDash(uhVal),
           biayaTransFormat: formatOrDash(item.biayaTrans),
           biayaPengFormat: formatOrDash(item.biayaPeng),
+          biayaRepresentatifFormat: formatOrDash(biayaRepVal) || 0,
           jumlahFormat: formatOrDash(totalPegawai),
           
           nipPPK: item?.nipPPK,
@@ -150,10 +149,11 @@ export default function SuratTugas({
           acc.uhTotal += Number(curr.uh) || 0;
           acc.transTotal += Number(curr.biayaTrans) || 0;
           acc.pengTotal += Number(curr.biayaPeng) || 0;
+          acc.repTotal += Number(curr.biayaRepresentatif) || 0;
           acc.jumlahAll += Number(curr.jumlah) || 0;
           return acc;
         },
-        { uhTotal: 0, transTotal: 0, pengTotal: 0, jumlahAll: 0 }
+        { uhTotal: 0, transTotal: 0, pengTotal: 0, repTotal: 0, jumlahAll: 0 }
       );
 
       setDataFile({
@@ -165,6 +165,7 @@ export default function SuratTugas({
         uhTotal: formatOrDash(totals.uhTotal),
         transTotal: formatOrDash(totals.transTotal),
         pengTotal: formatOrDash(totals.pengTotal),
+        repTotal: formatOrDash(totals.repTotal),
         jumlahAll: formatOrDash(totals.jumlahAll),
         
         nipPPK: data.surat?.nip || "",
@@ -174,14 +175,30 @@ export default function SuratTugas({
         tglKembaliTTD: tglKembaliTerakhir ? formatDate(tglKembaliTerakhir, "DD MMMM YYYY") : ""
       });
     }
-  }, [data, kabKota]); // Tambahkan kabKota ke dependency array
+  }, [data, kabKota]);
 
   const handleGenerate = async () => {
     try {
       startLoading();
-      const response = await fetch(format);
+
+      // 💡 LOGIKA PINDAH TEMPLATE: 
+      // Deteksi apakah di dalam list pegawai ada yang menjabat sebagai "Kepala Kantor"
+      const adaKepalaKantor = dataFile?.pegawai?.some((p) => 
+        p.jabatan?.toLowerCase().includes("kepala kantor")
+      );
+
+      // Jika ada Kepala Kantor, gunakan template khusus kakanwil, jika tidak gunakan template default props "format"
+      const templatePath = adaKepalaKantor 
+        ? "/nominatif-format-kakanwil.docx" 
+        : format;
+
+      console.log("Menggunakan template:", templatePath);
+
+      // 1. Ambil template docx dinamis
+      const response = await fetch(templatePath);
       const content = await response.arrayBuffer();
 
+      // 2. generate DOCX
       const zip = new PizZip(content);
       const doc = new Docxtemplater(zip, {
         paragraphLoop: true,
@@ -195,6 +212,7 @@ export default function SuratTugas({
         mimeType: "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
       });
 
+      // 3. Kirim ke backend converter
       const formData = new FormData();
       formData.append("file", docxBlob, `${file}.docx`);
 
