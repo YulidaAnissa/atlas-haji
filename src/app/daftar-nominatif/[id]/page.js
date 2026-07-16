@@ -141,6 +141,7 @@ export default function Component() {
       kegiatan: data?.surat?.kegiatan,
       tujuan: Array.isArray(item.tujuan) ? item.tujuan.join(', ') : item.tujuan,
       tglBerangkat: formatDate(item.tglBerangkat, "DD MMMM YYYY"),
+      tglKembali: formatDate(item.tglKembali, "DD MMMM YYYY"),
       lama: calculateTripDuration(item.tglBerangkat, item.tglKembali),
       uh: formatRupiah(uhValue),
       uhTotal: formatRupiah(totalUangHarian),

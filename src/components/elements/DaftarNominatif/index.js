@@ -83,7 +83,7 @@ export default function SuratTugas({
           daftarTujuan.forEach((tujuanPegawai) => {
             // Cari data kabupaten/kota yang cocok di master data kabKota
             const matchKabKota = kabKota.find(
-              (kab) => kab.nama?.toLowerCase() === tujuanPegawai.toLowerCase()
+              (kab) => kab.kabkota?.toLowerCase() === tujuanPegawai.toLowerCase()
             );
 
             if (matchKabKota) {
@@ -105,15 +105,10 @@ export default function SuratTugas({
             }
           });
 
-          // Jika tidak ditemukan kecocokan sama sekali di kabKota, pasang default rate lama
-          if (maxUhDaerah === 0) {
-            maxUhDaerah = item?.jenisPegawai === "ASN" || item?.jenisPegawai === "PNS" ? 430000 : 250000;
-          }
-
           uhPerHari = maxUhDaerah;
         } else {
           // Default fallback jika type surat tidak terdefinisi
-          uhPerHari = item?.jenisPegawai === "ASN" || item?.jenisPegawai === "PNS" ? 430000 : 250000;
+          uhPerHari = 0;
         }
 
         const isKhusus = item.typePerjalanan === "khusus";
@@ -129,7 +124,7 @@ export default function SuratTugas({
         return {
           idx: index + 1,
           nama: item.nama,
-          gol: item.gol,
+          gol: item.gol || "-",
           jabatan: item.jabatan,
           tujuan: formatTujuan(tujuanTeks),
           tglBerangkat: formatDate(item.tglBerangkat, "DD MMMM YYYY"),
