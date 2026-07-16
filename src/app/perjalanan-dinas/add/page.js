@@ -23,6 +23,13 @@ const breadcrumbItems = [
   { label: "Tambah Surat Tugas" },
 ];
 
+// Definisikan opsi tipe perjalanan di luar komponen agar tidak di-recreate tiap render
+const typeOptions = [
+  { label: "Full Board", value: "full_board" },
+  { label: "Full Day", value: "full_day" },
+  { label: "Half Day", value: "half_day" },
+];
+
 function getOptionValue(option) {
   if (typeof option === "object" && option !== null) {
     return option.value;
@@ -36,6 +43,8 @@ function buildSuratTugasFormData(values) {
 
   const nip = getOptionValue(values.nip);
   const noSurat = getOptionValue(values.noSurat);
+  // Ambil nilai tipe jika bertipe objek select option
+  const typePerjalanan = getOptionValue(values.type);
 
   if (values.idSurat) {
     formData.append("idSurat", values.idSurat);
@@ -47,6 +56,11 @@ function buildSuratTugasFormData(values) {
 
   if (noSurat) {
     formData.append("noSurat", noSurat);
+  }
+
+  // Tambahkan field type ke Form Data
+  if (typePerjalanan) {
+    formData.append("type", typePerjalanan);
   }
 
   if (values.tglSurat) {
@@ -97,6 +111,8 @@ export default function AddPerjalananDinas() {
     try {
       const formData =
         buildSuratTugasFormData(values);
+      
+      // console.log('form data', formData);
 
       const resp = await addSuratTugas(formData);
 
@@ -138,9 +154,11 @@ export default function AddPerjalananDinas() {
   return (
     <PageBase className="mx-auto max-w-5xl px-6 py-10 lg:px-12">
       <Breadcrumb items={breadcrumbItems} />
+      {/* Teruskan opsi tipe ke dalam form melalui props */}
       <AddPerjalananForm
         onSubmit={handleSubmit}
         pejabat={pejabat}
+        typeOptions={typeOptions}
       />
       <InfoModal
         show={showSuccessModal}

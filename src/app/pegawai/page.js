@@ -14,7 +14,8 @@ import { useState } from "react";
 import { usePegawai, useDeletePegawai, useEditPegawai } from "@/hooks/useData";
 import AddPegawaiForm from "@/components/forms/Pegawai";
 import { FaEdit } from "react-icons/fa";
-import { FiEdit2, FiPlus, FiSearch, FiTrash2, FiX } from "react-icons/fi";
+import { FiPlus, FiSearch, FiTrash2, FiX } from "react-icons/fi";
+import { TiEdit, TiDeleteOutline } from "react-icons/ti";
 
 export default function DaftarPegawai() {
   const router = useRouter();
@@ -56,9 +57,13 @@ export default function DaftarPegawai() {
       });
       await fetch();
     } catch (err) {
+      console.log("error", err.response?.data?.err)
+      // 💡 Mengambil pesan error dinamis dari backend
+      const errorMessage = err.response?.data?.err || "Gagal menghapus pegawai";
+
       setShowSnackbar({
         show: true,
-        message: "Gagal menghapus pegawai",
+        message: errorMessage, // Menampilkan pesan error spesifik ke user
         type: "error",
       });
       console.error("Error:", err);
@@ -103,20 +108,17 @@ export default function DaftarPegawai() {
       <div className="flex gap-2">
         <button
           type="button"
-          className="inline-flex items-center gap-2 rounded-lg bg-[#fbf7ec] px-3 py-2 text-sm font-semibold text-brand transition hover:bg-brand hover:text-white"
-          onClick={() => setShowEdit({ show: true, data: item })}
-        >
-          <FiEdit2 className="h-4 w-4" />
-          Ubah
-        </button>
-
-        <button
-          type="button"
           className="inline-flex items-center gap-2 rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm font-semibold text-red-700 transition hover:bg-red-100"
           onClick={() => setDeleted(item.nip)}
         >
-          <FiTrash2 className="h-4 w-4" />
-          Hapus
+          <TiDeleteOutline className="h-6 w-6" />
+        </button>
+        <button
+          type="button"
+          className="inline-flex items-center justify-center rounded-xl border  px-3 py-2 text-sm font-semibold  border-blue-200 bg-blue-50 text-blue-700 transition hover:bg-blue-100"
+          onClick={() => setShowEdit({ show: true, data: item })}
+        >
+          <TiEdit className="h-6 w-6" />
         </button>
       </div>
     ),

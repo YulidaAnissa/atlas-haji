@@ -1,17 +1,21 @@
 import validate from '../../../utils/validator';
 
 export default function validation(values) {
-  
   return {
     kabkota: validate(values.kabkota, [
       { rule: 'required' },
     ]),
-    uh: validate(values.uh, [
+    uhPNS: validate(values.uhPNS, [
       { rule: 'required' },
-      { rule: 'number' },
+      { rule: 'isNumber' },
     ]),
-    alamat: validate(values.alamat, [
+    uhPPPK: validate(values.uhPPPK, [
       { rule: 'required' },
+      { rule: 'isNumber' },
+    ]),
+    uhNonASN: validate(values.uhNonASN, [
+      { rule: 'required' },
+      { rule: 'isNumber' },
     ]),
   };
-};
+}

@@ -10,100 +10,118 @@ import {
 } from "@/components/elements";
 import PageBase from "@/components/pagebase";
 import { usePathname, useRouter } from "next/navigation";
-import { useState } from "react";
-import { useDeleteKabKota, useEditKabKota, useKabKota } from "@/hooks/useData";
-import AddKabKotaForm from "@/components/forms/KabKota";
+import { useState, useEffect, useCallback } from "react";
+import { useUangHarian } from "@/hooks/useData"; // Menggunakan hook baru yang dibuat sebelumnya
+import UangHarianForm from "@/components/forms/UangHarian"; // Membuat form input baru
 import { FaEdit } from "react-icons/fa";
-import { FiEdit2, FiPlus, FiSearch, FiTrash2, FiX } from "react-icons/fi";
+import { FiEdit2, FiPlus, FiSearch, FiTrash2, FiX, FiDollarSign } from "react-icons/fi";
 import { formatRupiah } from "@/utils/currency";
 
-export default function DaftarKabupatenKota() {
+export default function DaftarUangHarian() {
   const router = useRouter();
   const pathname = usePathname();
 
   const [search, setSearch] = useState("");
   const [showEdit, setShowEdit] = useState(null);
+  const [showAdd, setShowAdd] = useState(false);
   const [deleted, setDeleted] = useState(null);
+  const [listData, setListData] = useState([]);
   const [showSnackbar, setShowSnackbar] = useState({
     show: false,
     message: "",
     type: "",
   });
 
-  const { data, isLoading, fetch } = useKabKota({
-    params: { search },
-  });
-  const { deleteKabKota, loading } = useDeleteKabKota();
-  const { editKabKota, loading: loadingEdit } = useEditKabKota();
+  const { fetchAll, deleteData, updateData, loading: hookLoading } = useUangHarian();
+  const [loadingFetch, setLoadingFetch] = useState(false);
 
-  // 1. Memecah header tabel Uang Harian menjadi 3 kategori kepegawaian
+  // Fungsi mengambil data
+  const loadData = useCallback(async () => {
+    setLoadingFetch(true);
+    try {
+      const res = await fetchAll();
+      if (res.success) {
+        setListData(res.data || []);
+      }
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setLoadingFetch(false);
+    }
+  }, [fetchAll]);
+
+  useEffect(() => {
+    loadData();
+  }, [loadData]);
+
+  // Kolom Table disesuaikan dengan skema gambar
   const headCells = [
-    { id: "kabkota", label: "Kabupaten / Kota", numeric: false, width: 200 },
-    { id: "uhPNS", label: "UH PNS", numeric: false, width: 130 },
-    { id: "uhPPPK", label: "UH PPPK", numeric: false, width: 130 },
-    { id: "uhNonASN", label: "UH Non ASN", numeric: false, width: 130 },
-    { id: "alamat", label: "Alamat", numeric: false },
-    { id: "aksi", label: "", numeric: false, width: 200 },
+    { id: "jenisPegawai", label: "Jenis / Golongan Pegawai", numeric: false, width: 300 },
+    { id: "jumlah", label: "Besaran Uang Harian", numeric: false, width: 200 },
+    { id: "aksi", label: "", numeric: false },
   ];
 
   const handleDelete = async () => {
     try {
-      await deleteKabKota({ id: deleted });
+      await deleteData(deleted);
       setDeleted(null);
       setShowSnackbar({
         show: true,
-        message: "Kabupaten / Kota berhasil dihapus",
+        message: "Data uang harian berhasil dihapus",
         type: "success",
       });
-      await fetch();
+      await loadData();
     } catch (err) {
       setShowSnackbar({
         show: true,
-        message: "Gagal menghapus kabupaten / kota",
+        message: "Gagal menghapus data uang harian",
         type: "error",
       });
       console.error("Error:", err);
     }
   };
 
-  const handleUpdateKabKota = async (values) => {
+  const handleUpdateUangHarian = async (values) => {
     try {
-      // 2. Menyesuaikan payload edit untuk mengirimkan 3 field Uang Harian yang baru
       const payload = {
-        ...(values.kabkota && { kabkota: values.kabkota }),
-        ...(values.uhPNS !== undefined && { uhPNS: Number(values.uhPNS) }),
-        ...(values.uhPPPK !== undefined && { uhPPPK: Number(values.uhPPPK) }),
-        ...(values.uhNonASN !== undefined && { uhNonASN: Number(values.uhNonASN) }),
-        ...(values.alamat && { alamat: values.alamat }),
+        idUH: showEdit?.data?.idUH,
+        jumlah: Number(values.jumlah),
+        jenisPegawai: values.jenisPegawai,
       };
 
-      await editKabKota(payload, showEdit?.data?.idKabKota);
-      await fetch();
+      await updateData(payload);
+      await loadData();
 
       setShowEdit({ show: false, data: null });
       setShowSnackbar({
         show: true,
-        message: "Kabupaten / Kota berhasil diubah",
+        message: "Data uang harian berhasil diubah",
         type: "success",
       });
     } catch (err) {
       setShowSnackbar({
         show: true,
-        message: "Gagal mengubah kabupaten / kota",
+        message: "Gagal mengubah data uang harian",
         type: "error",
       });
       throw err;
     }
   };
 
-  // 3. Format masing-masing kolom uang harian menggunakan utilitas formatRupiah
-  const formattedData = (data ?? []).map((item) => ({
+  // Filter pencarian data lokal (client-side) berdasarkan jenisPegawai atau jumlah
+  const filteredData = listData.filter((item) => {
+    const term = search.toLowerCase();
+    return (
+      item.jenisPegawai?.toLowerCase().includes(term) ||
+      String(item.jumlah).includes(term)
+    );
+  });
+
+  const formattedData = filteredData.map((item) => ({
     ...item,
-    uhPNS: formatRupiah(item.uhPNS),
-    uhPPPK: formatRupiah(item.uhPPPK),
-    uhNonASN: formatRupiah(item.uhNonASN),
+    jumlah: formatRupiah(item.jumlah),
     aksi: (
-      <div className="flex gap-2">
+      <div className="flex gap-2 justify-end">
         <button
           type="button"
           className="inline-flex items-center gap-2 rounded-lg bg-[#fbf7ec] px-3 py-2 text-sm font-semibold text-brand transition hover:bg-brand hover:text-white"
@@ -116,7 +134,7 @@ export default function DaftarKabupatenKota() {
         <button
           type="button"
           className="inline-flex items-center gap-2 rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm font-semibold text-red-700 transition hover:bg-red-100"
-          onClick={() => setDeleted(item.idKabKota)}
+          onClick={() => setDeleted(item.idUH)}
         >
           <FiTrash2 className="h-4 w-4" />
           Hapus
@@ -127,7 +145,7 @@ export default function DaftarKabupatenKota() {
 
   const breadcrumbItem = [
     { label: "Home", href: "/" },
-    { label: "Daftar Kabupaten / Kota" },
+    { label: "Daftar Uang Harian" },
   ];
 
   return (
@@ -144,22 +162,22 @@ export default function DaftarKabupatenKota() {
             </p>
 
             <h1 className="text-3xl font-black tracking-tight text-slate-950 sm:text-4xl">
-              Daftar Kabupaten / Kota
+              Daftar Standar Uang Harian
             </h1>
 
             <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-500">
-              Kelola tujuan perjalanan dinas, alamat, dan nilai uang harian
-              berdasarkan kabupaten atau kota serta tipe kepegawaian.
+              Kelola acuan besaran plafon uang harian perjalanan dinas berdasarkan jenis jabatan 
+              atau golongan kepegawaian.
             </p>
           </div>
 
           <button
             type="button"
             className="inline-flex h-11 items-center justify-center gap-2 rounded-xl bg-brand px-5 text-sm font-bold text-white shadow-lg shadow-[#c9a961]/25 transition hover:bg-[#b5964f] focus:outline-none focus:ring-4 focus:ring-[#c9a961]/25"
-            onClick={() => router.push(`${pathname}/add`)}
+            onClick={() => setShowAdd(true)}
           >
             <FiPlus className="h-4 w-4" />
-            Tambah Kabupaten / Kota
+            Tambah Uang Harian
           </button>
         </div>
       </section>
@@ -175,7 +193,7 @@ export default function DaftarKabupatenKota() {
               name="search"
               value={search}
               onChange={(event) => setSearch(event.target.value)}
-              placeholder="Cari kabupaten / kota..."
+              placeholder="Cari jenis pegawai atau nominal..."
               className="min-w-0 flex-1 bg-transparent text-sm font-medium text-slate-800 outline-none placeholder:text-slate-400"
             />
 
@@ -195,7 +213,7 @@ export default function DaftarKabupatenKota() {
         <DataTables
           headCells={headCells}
           data={formattedData}
-          loading={isLoading}
+          loading={loadingFetch}
         />
       </section>
 
@@ -204,19 +222,31 @@ export default function DaftarKabupatenKota() {
         onConfirm={handleDelete}
         onCancel={() => setDeleted(null)}
       >
-        <p>Apakah kamu yakin ingin menghapus kabupaten / kota ini?</p>
+        <p>Apakah kamu yakin ingin menghapus standar ketentuan uang harian ini?</p>
       </InfoModal>
 
       <FormModal
-        className="w-3xl"
-        icon={<FaEdit className="h-6 w-6 text-white" />}
+        className="w-xl"
+        icon={<FiDollarSign className="h-6 w-6 text-white" />}
         show={showEdit?.show}
       >
-        <AddKabKotaForm
+        <UangHarianForm
           data={showEdit?.data}
-          onSubmit={handleUpdateKabKota}
+          onSubmit={handleUpdateUangHarian}
           onClose={() => setShowEdit({ show: false, data: null })}
           type="edit"
+        />
+      </FormModal>
+
+      <FormModal
+        className="w-xl"
+        icon={<FiDollarSign className="h-6 w-6 text-white" />}
+        show={showAdd}
+      >
+        <UangHarianForm
+          // data={showAdd}
+          onSubmit={handleUpdateUangHarian}
+          onClose={() => setShowAdd(false)}
         />
       </FormModal>
 
@@ -229,7 +259,7 @@ export default function DaftarKabupatenKota() {
         }
       />
 
-      <LoadingOverlay show={loadingEdit || loading} />
+      <LoadingOverlay show={hookLoading} />
     </PageBase>
   );
 }

@@ -25,7 +25,7 @@ import PegawaiBadge from "./PegawaiBadge";
 const INITIAL_VALUES = {
   dateRange: null,
   tujuan: "",
-  pegawai: ["", ""],
+  pegawai: [],
 };
 
 function getOptionValue(option) {

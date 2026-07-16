@@ -17,6 +17,13 @@ import InputField from "../FormField/InputField";
 import SelectField from "../FormField/SelectField";
 import validation from "./validate";
 
+// Definisikan opsi tipe perjalanan secara statis
+const defaulttypeOptions = [
+  { label: "Full Board", value: "full_board" },
+  { label: "Full Day", value: "full_day" },
+  { label: "Half Day", value: "half_day" },
+];
+
 function getOptionValue(option) {
   return typeof option === "object" && option !== null
     ? option.value
@@ -39,6 +46,7 @@ function formatNoSurat(value) {
 export default function PerjalananForm({
   data = null,
   pejabat = [],
+  typeOptions = defaulttypeOptions, // Menambahkan props opsi tipe perjalanan dengan fallback
   onSubmit = () => {},
   onClose,
 }) {
@@ -126,6 +134,18 @@ export default function PerjalananForm({
           }
         : null,
 
+      // Inisialisasi nilai tipe perjalanan untuk mode Edit
+      type: suratData?.type
+        ? typeOptions.find(
+            (option) =>
+              normalizeValue(option.value) ===
+              normalizeValue(suratData.type)
+          ) || {
+            value: normalizeValue(suratData.type),
+            label: suratData.type,
+          }
+        : null,
+
       tglSurat: suratData?.tglSurat
         ? new Date(suratData.tglSurat)
         : null,
@@ -138,7 +158,7 @@ export default function PerjalananForm({
         suratData?.file ||
         null,
     }),
-    [suratData, pejabatOptions]
+    [suratData, pejabatOptions, typeOptions]
   );
 
   const handleFormSubmit = (values, form) => {
@@ -155,6 +175,11 @@ export default function PerjalananForm({
 
       noSurat: formatNoSurat(
         getOptionValue(values.noSurat)
+      ),
+
+      // Ekstrak nilai string murni dari komponen select untuk tipe perjalanan
+      type: normalizeValue(
+        getOptionValue(values.type)
       ),
     };
 
@@ -283,53 +308,66 @@ export default function PerjalananForm({
               </div>
 
               <div className="space-y-5">
-                <Field
-                  primary
-                  name="noSurat"
-                  component={CreateableSelect}
-                  label="Nomor Surat"
-                  options={noSuratOptions}
-                  placeholder="Contoh: 002"
-                  className="text-left"
-                  formatCreateLabel={(inputValue) =>
-                    `Gunakan ${formatNoSurat(
-                      inputValue
-                    )}`
-                  }
-                  getNewOptionData={(inputValue) => {
-                    const formattedNoSurat =
-                      formatNoSurat(inputValue);
-
-                    return {
-                      value: formattedNoSurat,
-                      label: formattedNoSurat,
-                    };
-                  }}
-                  isValidNewOption={(
-                    inputValue
-                  ) => {
-                    const formattedNoSurat =
-                      formatNoSurat(inputValue);
-
-                    if (!formattedNoSurat) {
-                      return false;
+                <div className="grid gap-5 md:grid-cols-2">
+                  <Field
+                    primary
+                    name="noSurat"
+                    component={CreateableSelect}
+                    label="Nomor Surat"
+                    options={noSuratOptions}
+                    placeholder="Contoh: 002"
+                    className="text-left"
+                    formatCreateLabel={(inputValue) =>
+                      `Gunakan ${formatNoSurat(
+                        inputValue
+                      )}`
                     }
+                    getNewOptionData={(inputValue) => {
+                      const formattedNoSurat =
+                        formatNoSurat(inputValue);
 
-                    return !noSuratOptions.some(
-                      (option) =>
-                        normalizeValue(
-                          option.value
-                        ).toLowerCase() ===
-                        formattedNoSurat.toLowerCase()
-                    );
-                  }}
-                  onChange={(newSurat) =>
-                    handleSuratChange(
-                      newSurat,
-                      form
-                    )
-                  }
-                />
+                      return {
+                        value: formattedNoSurat,
+                        label: formattedNoSurat,
+                      };
+                    }}
+                    isValidNewOption={(
+                      inputValue
+                    ) => {
+                      const formattedNoSurat =
+                        formatNoSurat(inputValue);
+
+                      if (!formattedNoSurat) {
+                        return false;
+                      }
+
+                      return !noSuratOptions.some(
+                        (option) =>
+                          normalizeValue(
+                            option.value
+                          ).toLowerCase() ===
+                          formattedNoSurat.toLowerCase()
+                      );
+                    }}
+                    onChange={(newSurat) =>
+                      handleSuratChange(
+                        newSurat,
+                        form
+                      )
+                    }
+                  />
+
+                  {/* Field Baru: Tipe Perjalanan */}
+                  <Field
+                    primary
+                    name="type"
+                    component={SelectField}
+                    label="Tipe Perjalanan"
+                    options={typeOptions}
+                    placeholder="Pilih tipe"
+                    className="w-full"
+                  />
+                </div>
 
                 <div className="grid gap-5 md:grid-cols-2">
                   <Field

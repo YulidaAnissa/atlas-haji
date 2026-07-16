@@ -95,7 +95,7 @@ export default function Component() {
       formData.append("noSurat", values.noSurat);
       formData.append("tglSurat", formatDate(values.tglSurat, "YYYY-MM-DD"));
       formData.append("kegiatan", values.kegiatan ?? "");
-
+      formData.append("type", values.type ?? ""); // Menambahkan field type ke Form Data
       if (values.fileSurat) {
         formData.append("fileSurat", values.fileSurat);
       }
@@ -160,7 +160,7 @@ export default function Component() {
         tglBerangkat: formatDate(values.dateRange?.formattedStart, "YYYY-MM-DD"),
         tglKembali: formatDate(values.dateRange?.formattedEnd, "YYYY-MM-DD"),
         tujuan: values.tujuan,
-        
+        type: values.type,
         // Tambahkan ini agar pengecekan jadwal bentrok di backend tidak error/skip
         nip: updatePerjalananPegawai?.data?.nip, 
         idSurat: id 
@@ -248,7 +248,7 @@ export default function Component() {
 
   const formattedData = (suratTugas?.pegawai ?? []).map((item) => {
     const isPerjalananKhusus =
-      String(item?.typePerjalanan ?? "").trim().toLowerCase() === "khusus";
+      String(item?.type ?? "").trim().toLowerCase() === "khusus";
     
     const ppt = getJabatanPPT(item?.jabatan, suratTugas?.surat?.jabatan);
     const isDisabled = isAdmin && item.status === "perjalanan";

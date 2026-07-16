@@ -94,15 +94,19 @@ export function useDeletePegawai() {
           },
         }
       );
+      const data = await res.json();
 
+      // 💡 Ubah bagian pengecekan !res.ok di sini
       if (!res.ok) {
-        throw new Error("Gagal menghapus pegawai");
+        const errorObj = new Error(data.err || "Gagal menyimpan data");
+        errorObj.response = { data }; // Meniru struktur Axios agar handleSubmit Anda tidak patah
+        throw errorObj;
       }
 
-      const data = await res.json();
       return data;
     } catch (err) {
-      setError(err.message);
+      const msg = err.response?.data?.err || err.message;
+      setError(msg);
       throw err;
     } finally {
       setLoading(false);
