@@ -12,11 +12,13 @@ export default function validation(values) {
     hasil: validate(values.hasil, [
       { rule: 'required' },
     ]),
-    biayaTrans: validate(values.biayaTrans, [
-      { rule: 'isNumber' },
-    ]),
-    biayaPeng: validate(values.biayaPeng, [
-      { rule: 'isNumber' },
-    ]),
+    // Validasi isNumber hanya berjalan jika field diisi (opsional)
+    biayaTrans: values.biayaTrans 
+      ? validate(values.biayaTrans, [{ rule: 'isNumber' }]) 
+      : undefined,
+      
+    biayaPeng: values.biayaPeng 
+      ? validate(values.biayaPeng, [{ rule: 'isNumber' }]) 
+      : undefined,
   };
 };

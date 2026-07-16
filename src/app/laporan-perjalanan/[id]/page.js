@@ -52,6 +52,7 @@ export default function Component() {
   const { updateLaporan } = useUpdateLaporan();
 
   const handleLaporanPerjalanan = async (values) => {
+    console.log('values laporan', values);
     const idPerjalananPegawai = values?.pegawai?.value;
     try {
       startLoading();
@@ -245,7 +246,7 @@ export default function Component() {
 
       <FormModal
         className="w-3xl"
-        icon={<FaEdit className="h-6 w-6 text-white" />}
+        icon={<FaPlusCircle className="h-6 w-6 text-white" />}
         show={showAddLaporan}
       >
         <LaporanPerjalanan
