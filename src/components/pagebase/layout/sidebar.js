@@ -62,11 +62,6 @@ export default function Sidebar({ sidebarOpen, setSidebarOpen }) {
                   icon: <FiClipboard />,
                   path: "/surat-tugas",
                 },
-                {
-                  name: "Uang Harian",
-                  icon: <FiDollarSign />,
-                  path: "/uang-harian",
-                },
               ],
             },
           ]

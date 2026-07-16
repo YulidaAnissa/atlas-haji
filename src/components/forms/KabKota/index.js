@@ -8,7 +8,7 @@ import InputField from "../FormField/InputField";
 import validation from "./validate";
 
 // Komponen internal untuk menghitung progres kelengkapan data master wilayah & tarif SBM
-function KabKotaFormProgress({ values = {}, fieldsCount = 4 }) {
+function KabKotaFormProgress({ values = {} }) {
   const targetFields = ["kabkota", "uhPNS", "uhPPPK", "uhNonASN"];
 
   const filledFields = targetFields.filter((field) => {
@@ -43,7 +43,9 @@ export default function KabKotaForm({
   onClose = () => {},
   type = "add",
 }) {
-  const fields = ["kabkota", "uh_pns", "uhPPPK", "uhNonASN"];
+
+  console.log("data form kabkota", data);
+  const fields = ["kabkota", "uhPNS", "uhPPPK", "uhNonASN"];
   const isEdit = type === "edit";
 
   if (isEdit) {

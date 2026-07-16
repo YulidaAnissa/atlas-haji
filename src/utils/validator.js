@@ -72,7 +72,8 @@ const validate = (value, rules) => {
         }
         break;
       case 'isNumber':
-        if (value && !value.match(/^[0-9]+$/)) {
+        // Konversi value ke String dulu dengan String(value) agar aman saat disortir regex
+        if (value !== undefined && value !== null && !/^[0-9]+$/.test(String(value))) {
           errors.push({
             message: `Format harus berupa angka`,
             ...rule

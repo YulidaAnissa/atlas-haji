@@ -16,6 +16,7 @@ import AddKabKotaForm from "@/components/forms/KabKota";
 import { FaEdit } from "react-icons/fa";
 import { FiEdit2, FiPlus, FiSearch, FiTrash2, FiX } from "react-icons/fi";
 import { formatRupiah } from "@/utils/currency";
+import { TiEdit, TiDeleteOutline } from "react-icons/ti";
 
 export default function DaftarKabupatenKota() {
   const router = useRouter();
@@ -42,7 +43,6 @@ export default function DaftarKabupatenKota() {
     { id: "uhPNS", label: "UH PNS", numeric: false, width: 130 },
     { id: "uhPPPK", label: "UH PPPK", numeric: false, width: 130 },
     { id: "uhNonASN", label: "UH Non ASN", numeric: false, width: 130 },
-    { id: "alamat", label: "Alamat", numeric: false },
     { id: "aksi", label: "", numeric: false, width: 200 },
   ];
 
@@ -74,7 +74,6 @@ export default function DaftarKabupatenKota() {
         ...(values.uhPNS !== undefined && { uhPNS: Number(values.uhPNS) }),
         ...(values.uhPPPK !== undefined && { uhPPPK: Number(values.uhPPPK) }),
         ...(values.uhNonASN !== undefined && { uhNonASN: Number(values.uhNonASN) }),
-        ...(values.alamat && { alamat: values.alamat }),
       };
 
       await editKabKota(payload, showEdit?.data?.idKabKota);
@@ -106,20 +105,17 @@ export default function DaftarKabupatenKota() {
       <div className="flex gap-2">
         <button
           type="button"
-          className="inline-flex items-center gap-2 rounded-lg bg-[#fbf7ec] px-3 py-2 text-sm font-semibold text-brand transition hover:bg-brand hover:text-white"
-          onClick={() => setShowEdit({ show: true, data: item })}
-        >
-          <FiEdit2 className="h-4 w-4" />
-          Ubah
-        </button>
-
-        <button
-          type="button"
           className="inline-flex items-center gap-2 rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm font-semibold text-red-700 transition hover:bg-red-100"
           onClick={() => setDeleted(item.idKabKota)}
         >
-          <FiTrash2 className="h-4 w-4" />
-          Hapus
+          <TiDeleteOutline className="h-6 w-6" />
+        </button>
+        <button
+          type="button"
+          className="inline-flex items-center justify-center rounded-xl border  px-3 py-2 text-sm font-semibold  border-blue-200 bg-blue-50 text-blue-700 transition hover:bg-blue-100"
+          onClick={() => setShowEdit({ show: true, data: item })}
+        >
+          <TiEdit className="h-6 w-6" />
         </button>
       </div>
     ),
