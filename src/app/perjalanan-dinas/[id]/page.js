@@ -246,8 +246,11 @@ export default function Component() {
     }
   };
 
-  console.log("suratTugas", suratTugas?.pegawai);
-  const formattedData = (suratTugas?.pegawai ?? []).map((item) => {
+  const sortedPegawai = [...(suratTugas?.pegawai ?? [])].sort((a, b) => {
+    return new Date(a.tglBerangkat).getTime() - new Date(b.tglBerangkat).getTime();
+  });
+
+  const formattedData = sortedPegawai.map((item) => {
     const isPerjalananKhusus =
       String(item?.type ?? "").trim().toLowerCase() === "khusus";
     

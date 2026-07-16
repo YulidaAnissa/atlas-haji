@@ -132,7 +132,13 @@ export default function Component() {
     { id: "aksi", label: "", numeric: false },
   ];
 
-  const formattedData = (data?.pegawai ?? []).map((item) => {
+  // 1. Urutkan data pegawai berdasarkan tglBerangkat secara ascending (menaik)
+  const sortedPegawai = [...(data?.pegawai ?? [])].sort((a, b) => {
+    return new Date(a.tglBerangkat).getTime() - new Date(b.tglBerangkat).getTime();
+  });
+
+  // 2. Map data yang sudah berurutan untuk ditampilkan di tabel
+  const formattedData = sortedPegawai.map((item) => {
     const isPerjalananKhusus =
       String(item?.typePerjalanan ?? "").trim().toLowerCase() === "khusus";
 
