@@ -72,11 +72,64 @@ export default function Component() {
   };
 
   const dataFilePegawai = data?.pegawai?.map((item, index) => {
-    const uh = item?.jenisPegawai === "ASN" ? 430000 : 250000;
+    let uhPerHari = 0;
+    const tipeSurat = data?.surat?.type;
+
+    // 1. Cek tipe surat terlebih dahulu sesuai aturan dinas
+    if (tipeSurat === "half_day") {
+      uhPerHari = 90000;
+    } else if (tipeSurat === "full_board") {
+      uhPerHari = 130000;
+    } else if (tipeSurat === "full_day") {
+      // 2. Jika full_day, cari UH terbesar berdasarkan array/string tujuan
+      const daftarTujuan = Array.isArray(item.tujuan) 
+        ? item.tujuan 
+        : (item.tujuan ? item.tujuan.split(',').map(t => t.trim()) : []);
+
+      let maxUhDaerah = 0;
+
+      daftarTujuan.forEach((tujuanPegawai) => {
+        // Cari data daerah yang cocok di master data dataKabKota
+        const matchKabKota = dataKabKota?.find(
+          (kab) => kab.kabkota?.toLowerCase() === tujuanPegawai.toLowerCase()
+        );
+
+        if (matchKabKota) {
+          let rate = 0;
+          if (item.jenisPegawai === "PNS") {
+            rate = Number(matchKabKota.uhPNS) || 0;
+          } else if (item.jenisPegawai === "PPPK") {
+            rate = Number(matchKabKota.uhPPPK) || 0;
+          } else {
+            // Non ASN
+            rate = Number(matchKabKota.uhNonASN) || 0;
+          }
+
+          if (rate > maxUhDaerah) {
+            maxUhDaerah = rate;
+          }
+        }
+      });
+
+      // // Default rate lama sebagai fallback jika daerah tidak ditemukan di master data
+      // if (maxUhDaerah === 0) {
+      //   maxUhDaerah = item?.jenisPegawai === "ASN" || item?.jenisPegawai === "PNS" ? 430000 : 250000;
+      // }
+
+      uhPerHari = maxUhDaerah;
+    } else {
+      // Default fallback global
+      uhPerHari = 0;
+    }
+
     const isKhusus = item.typePerjalanan === "khusus";
-    const uhValue = isKhusus ? 0 : uh;
+    const uhValue = isKhusus ? 0 : uhPerHari;
+    
+    // Hitung akumulasi total UH
+    const totalUangHarian = uhCount(uhValue, item.tglBerangkat, item.tglKembali);
+    
     const jumlahTotal = totalCount(
-      uhCount(uhValue, item.tglBerangkat, item.tglKembali),
+      totalUangHarian,
       item.biayaTrans,
       item.biayaPeng
     );
@@ -86,13 +139,11 @@ export default function Component() {
       nama: item.nama,
       nip: item.nip,
       kegiatan: data?.surat?.kegiatan,
-      tujuan: item.tujuan,
+      tujuan: Array.isArray(item.tujuan) ? item.tujuan.join(', ') : item.tujuan,
       tglBerangkat: formatDate(item.tglBerangkat, "DD MMMM YYYY"),
       lama: calculateTripDuration(item.tglBerangkat, item.tglKembali),
       uh: formatRupiah(uhValue),
-      uhTotal: formatRupiah(
-        uhCount(uhValue, item.tglBerangkat, item.tglKembali)
-      ),
+      uhTotal: formatRupiah(totalUangHarian),
       biayaTrans: formatRupiah(item.biayaTrans),
       biayaPeng: formatRupiah(item.biayaPeng),
       jumlahTotal: formatRupiah(jumlahTotal),

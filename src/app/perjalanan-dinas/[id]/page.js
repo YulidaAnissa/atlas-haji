@@ -307,7 +307,7 @@ export default function Component() {
               an: ppt.an,
               pejabatMengetahui: ppt.pejabatMengetahui,
               gol: item.gol || "-",
-              nip: item.jenisPegawai === "PNS" ? item.nip : "-",
+              nip: item.jenisPegawai === "PNS" || item.jenisPegawai === "PPPK" ? item.nip : "-",
             }}
             format="/spd-format.docx"
             file={`spd-${item.nip}`}
