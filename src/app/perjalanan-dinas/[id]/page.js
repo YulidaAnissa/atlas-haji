@@ -246,12 +246,14 @@ export default function Component() {
     }
   };
 
+  console.log("suratTugas", suratTugas?.pegawai);
   const formattedData = (suratTugas?.pegawai ?? []).map((item) => {
     const isPerjalananKhusus =
       String(item?.type ?? "").trim().toLowerCase() === "khusus";
     
     const ppt = getJabatanPPT(item?.jabatan, suratTugas?.surat?.jabatan);
     const isDisabled = isAdmin && item.status === "perjalanan";
+    console.log("item", item);
     return {
       ...item,
       nama: (
@@ -305,6 +307,7 @@ export default function Component() {
               an: ppt.an,
               pejabatMengetahui: ppt.pejabatMengetahui,
               gol: item.gol || "-",
+              nip: item.jenisPegawai === "PNS" ? item.nip : "-",
             }}
             format="/spd-format.docx"
             file={`spd-${item.nip}`}

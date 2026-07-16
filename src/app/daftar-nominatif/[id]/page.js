@@ -18,7 +18,7 @@ import FormModal from "@/components/elements/FormModal";
 import LoadingOverlay from "@/components/elements/LoadingOverlay";
 import ConfirmPembayaran from "@/components/forms/KonfirmPembayaran";
 import { IoDocumentTextOutline } from "react-icons/io5";
-import { useSuratTugas, useUpdateLaporan, useEditSuratTugas } from "@/hooks/useData";
+import { useSuratTugas, useUpdateLaporan, useEditSuratTugas, useKabKota } from "@/hooks/useData";
 import { useLoading } from "@/hooks";
 import { calculateTripDuration, formatDate, formatRangeDate } from "@/utils/date";
 import { profileStorage } from "@/utils/storage";
@@ -50,6 +50,8 @@ export default function Component() {
 
   const { updateLaporan } = useUpdateLaporan();
   const { editSuratTugas, loading: loadingEdit } = useEditSuratTugas();
+  const { data: dataKabKota, isLoading: isLoadingKabKota } = useKabKota();
+  console.log('data kabkota', dataKabKota);
 
   useEffect(() => {
     setProfil(profileStorage.get());
@@ -263,7 +265,7 @@ export default function Component() {
     (data?.pegawai?.length ?? 0) > 0 &&
     data?.pegawai?.every((item) => item.status === "verifikasi");
 
-  console.log('data ', data);
+  console.log('data daftar nominatif', data);
 
   return (
     <PageBase className="mx-auto max-w-7xl px-6 py-10 lg:px-12">
@@ -290,7 +292,7 @@ export default function Component() {
                 className="inline-flex items-center gap-2 justify-center rounded-xl border border-gray-200 bg-white px-5 py-2.5 text-sm font-semibold text-gray-700 shadow-sm transition hover:bg-gray-50"
               >
                 <IoDocumentTextOutline className="h-4 w-4" />
-                <DaftarNominatif data={data} />
+                <DaftarNominatif data={data} kabKota={dataKabKota} />
               </button>
             </div>
           )}

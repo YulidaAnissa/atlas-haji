@@ -118,7 +118,7 @@ export default function ComponentForm({ data = {}, onSubmit, onClose = false, ty
 
   const dataFilePreview = {
     nama: data?.nama,
-    nip: data?.nip,
+    nip: data?.jenisPegawai === "PNS" ? data?.nip : "-",
     tglBerangkat: formatDate(data?.tglBerangkat, "DD MMMM YYYY"),
     tglKembali: formatDate(data?.tglKembali, "DD MMMM YYYY"),
     kabkota: data?.tujuan,
