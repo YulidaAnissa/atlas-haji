@@ -30,7 +30,7 @@ function DaftarPerjalananDinasContent() {
   const headCells = [
     { id: "nama", label: "Nama Pegawai", numeric: false },
     { id: "tujuan", label: "Tujuan", numeric: false },
-    { id: "tanggal", label: "Tanggal", numeric: false },
+    { id: "tanggal", label: "Tanggal Pelaksanaan", numeric: false },
     { id: "aksi", label: "", numeric: false },
   ];
 

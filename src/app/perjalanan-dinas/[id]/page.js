@@ -252,7 +252,7 @@ export default function Component() {
 
   const formattedData = sortedPegawai.map((item) => {
     const isPerjalananKhusus =
-      String(item?.type ?? "").trim().toLowerCase() === "khusus";
+      String(item?.typePerjalanan ?? "").trim().toLowerCase() === "khusus";
     
     const ppt = getJabatanPPT(item?.jabatan, suratTugas?.surat?.jabatan);
     const isDisabled = isAdmin && item.status === "perjalanan";
