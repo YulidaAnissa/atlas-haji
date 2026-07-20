@@ -49,20 +49,27 @@ export function useUpdateLaporan() {
         body: isFormData ? values : JSON.stringify(values),
       });
 
+      // 💡 Coba parse JSON dari respon backend
+      const data = await res.json().catch(() => null);
 
       if (!res.ok) {
-        throw new Error("Gagal mengupdate perjalanan");
+        // 💡 Ambil pesan error dari backend jika ada, kalau tidak ada gunakan status text / default
+        const errorMessage =
+          data?.message ||
+          res.statusText ||
+          "Gagal mengupdate laporan perjalanan";
+          
+        throw new Error(errorMessage);
       }
 
-      const data = await res.json();
       return data;
     } catch (err) {
       setError(err.message);
-      throw err;
+      throw err; // Lempar error dengan pesan yang sudah diekstrak
     } finally {
       setLoading(false);
     }
   };
-  
+
   return { updateLaporan, loading, error };
 }

@@ -74,9 +74,12 @@ export default function Component() {
         type: "success",
       });
     } catch (err) {
+      // 💡 Menangkap pesan error spesifik dari backend (misal: "Ukuran file terlalu besar...")
+      const errorMessage = err?.message || "Gagal menyimpan laporan";
+
       setShowSnackbar({
         show: true,
-        message: "Gagal menyimpan laporan",
+        message: errorMessage,
         type: "error",
       });
       return err;
@@ -113,9 +116,12 @@ export default function Component() {
         type: "success",
       });
     } catch (err) {
+      // 💡 Menangkap pesan error spesifik dari backend
+      const errorMessage = err?.message || "Gagal memperbarui laporan";
+
       setShowSnackbar({
         show: true,
-        message: "Gagal memperbarui laporan",
+        message: errorMessage,
         type: "error",
       });
       return err;
