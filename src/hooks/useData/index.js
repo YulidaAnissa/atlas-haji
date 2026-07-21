@@ -4,5 +4,4 @@ export * from './usePerjalanan';
 export * from './useLaporan';
 export * from './useSuratTugas';
 export * from './useDashboard';
-// export * from './useUangHarian';
 export * from './useKantor';
