@@ -133,6 +133,7 @@ export default function Component() {
         ),
         tujuan: values.tujuan,
         status: "perjalanan",
+        asal: values.idKabKota
       });
 
       await fetchSuratTugas();
@@ -143,7 +144,6 @@ export default function Component() {
     }
   };
 
-  console.log("updatePerjalananPegawai", updatePerjalananPegawai);
   const handleUpdatePerjalananPegawai = async (values) => {
     try {
       // 1. Ambil ID dari data pegawai yang sedang diedit
@@ -204,19 +204,6 @@ export default function Component() {
   const getJabatanPPT = (pegawaiJabatan, suratJabatan) => {
     const jabatan = String(pegawaiJabatan ?? "").trim().toLowerCase();
     const jabatanSurat = suratJabatan || "-";
-    
-    // 💡 Standardisasi teks jabatanSurat untuk pengecekan yang aman
-    const jabatanSuratLower = jabatanSurat.toLowerCase();
-
-    // Condition 1: Jika jabatanSurat mengandung "kepala kantor wilayah"
-    // Maka tidak memakai "An. " dan pejabatMengetahui dikosongkan (atau disesuaikan)
-    if (jabatanSuratLower.includes("kepala kantor wilayah")) {
-      return {
-        an: "",
-        pejabatMengetahui: "",
-        jabatanPPT: jabatanSurat,
-      };
-    }
 
     // Condition 2: Jika pegawaiJabatan adalah kepala bidang atau kepala bagian
     if (jabatan.includes("kepala bidang") || jabatan.includes("kepala bagian")) {
@@ -301,6 +288,7 @@ export default function Component() {
               lama: calculateTripDuration(item.tglBerangkat, item.tglKembali),
               tglBerangkat: formatDate(item.tglBerangkat, "DD MMMM YYYY"),
               tglKembali: formatDate(item.tglKembali, "DD MMMM YYYY"),
+              asal: item.asal,
               kabkota: item.tujuan,
               kegiatan: suratTugas?.surat?.kegiatan || "-",
               unit: suratTugas?.surat?.unit,
@@ -418,6 +406,7 @@ export default function Component() {
           onClose={() => setShowAddPegawai(false)}
           pegawai={pegawaiTanpaPerjalanan}
           kabkota={kabkota}
+          surat={suratTugas?.surat}
         />
       </FormModal>
       

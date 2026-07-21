@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { FaCheck } from "react-icons/fa";
 
@@ -13,6 +13,7 @@ import Breadcrumb from "@/components/elements/Breadcrumb";
 import { usePegawai } from "@/hooks/useData";
 import { useAddSuratTugas } from "@/hooks/useData";
 import { formatDate } from "@/utils/date";
+import { profileStorage } from "@/utils/storage";
 
 const breadcrumbItems = [
   { label: "Home", href: "/" },
@@ -28,6 +29,7 @@ const typeOptions = [
   { label: "Full Board", value: "full_board" },
   { label: "Full Day", value: "full_day" },
   { label: "Half Day", value: "half_day" },
+  { label: "Reguler", value: "reguler" },
 ];
 
 function getOptionValue(option) {
@@ -38,7 +40,7 @@ function getOptionValue(option) {
   return option;
 }
 
-function buildSuratTugasFormData(values) {
+function buildSuratTugasFormData(values, profil) {
   const formData = new FormData();
 
   const nip = getOptionValue(values.nip);
@@ -81,6 +83,8 @@ function buildSuratTugasFormData(values) {
     formData.append("fileSurat", values.fileSurat);
   }
 
+  formData.append("idKantor", profil?.idKantor || "");
+
   return formData;
 }
 
@@ -98,19 +102,29 @@ export default function AddPerjalananDinas() {
   const [savedDataId, setSavedDataId] = useState(null);
 
   const { addSuratTugas, loading } = useAddSuratTugas();
+  const [profil, setProfil] = useState(null);
+
+  useEffect(() => {
+    const storedProfile = profileStorage.get();
+    setProfil(storedProfile);
+  }, []);
+
   const {
     data: pejabat = [],
     loading: loadingPejabat,
   } = usePegawai({
     params: {
       status: "eselon",
+      idKantor: profil?.idKantor || "",
     },
   });
+
+  console.log(profil, "profil");
 
   const handleSubmit = async (values, form) => {
     try {
       const formData =
-        buildSuratTugasFormData(values);
+        buildSuratTugasFormData(values, profil);
       
       // console.log('form data', formData);
 

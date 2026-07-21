@@ -4,13 +4,11 @@ import { SERVICES } from '@/configs';
 import { fetcher, createSwrKey, defaultOptions, getDedupingInterval } from './../utils';
 import { accessTokenStorage } from '@/utils/storage';
 
-// ==========================================
-// 1. Hook GET ALL / READ Uang Harian
-// ==========================================
-export function useUangHarian({ dedupingInterval, params = {} } = defaultOptions) {
+// ✅ Hook Fetch Data Kantor (List & Filter)
+export function useKantor({ dedupingInterval, params = {} } = defaultOptions) {
   const token = accessTokenStorage.get()?.value;
   const { data: { data } = {}, error, mutate } = useSWR(
-    createSwrKey(SERVICES.UANG_HARIAN, { params }), 
+    createSwrKey(SERVICES.KANTOR, { params }), 
     fetcher({ headers: { Authorization: `Bearer ${token}` } }),
     { dedupingInterval: getDedupingInterval(dedupingInterval) }
   );
@@ -23,14 +21,12 @@ export function useUangHarian({ dedupingInterval, params = {} } = defaultOptions
   };
 }
 
-// ==========================================
-// 2. Hook POST / CREATE Uang Harian
-// ==========================================
-export function useAddUangHarian() {
+// ✅ Hook Tambah Kantor
+export function useAddKantor() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
-  const addUangHarian = async (values) => {
+  const addKantor = async (values) => {
     setLoading(true);
     setError("");
 
@@ -42,17 +38,18 @@ export function useAddUangHarian() {
         throw new Error("Token tidak tersedia, user belum login");
       }
 
-      const res = await fetch(SERVICES.UANG_HARIAN, {
+      const res = await fetch(SERVICES.KANTOR, {
         method: "POST",
         headers: {
           Authorization: `Bearer ${token}`,
           "Content-Type": "application/json",
         },
-        body: JSON.stringify(values), // values berisi: { jumlah, jenisPegawai }
+        body: JSON.stringify(values),
       });
 
       if (!res.ok) {
-        throw new Error("Gagal menambahkan data uang harian");
+        const errData = await res.json().catch(() => ({}));
+        throw new Error(errData.err || "Gagal menambahkan data kantor");
       }
 
       const data = await res.json();
@@ -65,17 +62,15 @@ export function useAddUangHarian() {
     }
   };
   
-  return { addUangHarian, loading, error };
+  return { addKantor, loading, error };
 }
 
-// ==========================================
-// 3. Hook DELETE Uang Harian
-// ==========================================
-export function useDeleteUangHarian() {
+// ✅ Hook Hapus Kantor
+export function useDeleteKantor() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
-  const deleteUangHarian = async (idUH) => {
+  const deleteKantor = async ({ idKantor }) => {
     setLoading(true);
     setError("");
 
@@ -87,9 +82,8 @@ export function useDeleteUangHarian() {
         throw new Error("Token tidak tersedia, user belum login");
       }
 
-      // Sesuai dengan route backend: router.delete('/:idUH')
       const res = await fetch(
-        `${SERVICES.UANG_HARIAN}/${idUH}`,
+        `${SERVICES.KANTOR}/${idKantor}`,
         {
           method: "DELETE",
           headers: {
@@ -99,7 +93,8 @@ export function useDeleteUangHarian() {
       );
 
       if (!res.ok) {
-        throw new Error("Gagal menghapus data uang harian");
+        const errData = await res.json().catch(() => ({}));
+        throw new Error(errData.err || "Gagal menghapus data kantor");
       }
 
       const data = await res.json();
@@ -112,17 +107,15 @@ export function useDeleteUangHarian() {
     }
   };
 
-  return { deleteUangHarian, loading, error };
+  return { deleteKantor, loading, error };
 }
 
-// ==========================================
-// 4. Hook PUT / EDIT Uang Harian
-// ==========================================
-export function useEditUangHarian() {
+// ✅ Hook Edit Kantor
+export function useEditKantor() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
-  const editUangHarian = async (values) => {
+  const editKantor = async (values, idKantor) => {
     setLoading(true);
     setError("");
 
@@ -134,21 +127,21 @@ export function useEditUangHarian() {
         throw new Error("Token tidak tersedia, user belum login");
       }
 
-      // Sesuai dengan route backend: router.put('/', ...) di mana idUH dikirim di body
       const res = await fetch(
-        SERVICES.UANG_HARIAN,
+        `${SERVICES.KANTOR}/${idKantor}`,
         {
           method: "PUT",
           headers: {
             Authorization: `Bearer ${token}`,
             "Content-Type": "application/json",
           },
-          body: JSON.stringify(values), // values wajib menyertakan: idUH
+          body: JSON.stringify(values),
         }
       );
 
       if (!res.ok) {
-        throw new Error("Gagal memperbarui data uang harian");
+        const errData = await res.json().catch(() => ({}));
+        throw new Error(errData.err || "Gagal mengubah data kantor");
       }
 
       const data = await res.json();
@@ -161,5 +154,5 @@ export function useEditUangHarian() {
     }
   };
 
-  return { editUangHarian, loading, error };
+  return { editKantor, loading, error };
 }

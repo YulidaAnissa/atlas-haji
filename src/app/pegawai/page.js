@@ -7,14 +7,20 @@ import {
   Snackbar,
   LoadingOverlay,
   InfoModal,
+  DropdownFilter, // 💡 Import Reusable Dropdown
 } from "@/components/elements";
 import PageBase from "@/components/pagebase";
 import { usePathname, useRouter } from "next/navigation";
 import { useState } from "react";
-import { usePegawai, useDeletePegawai, useEditPegawai } from "@/hooks/useData";
+import { FiBriefcase, FiPlus, FiSearch, FiX } from "react-icons/fi";
+import { 
+  usePegawai, 
+  useDeletePegawai, 
+  useEditPegawai, 
+  useKantor 
+} from "@/hooks/useData";
 import AddPegawaiForm from "@/components/forms/Pegawai";
 import { FaEdit } from "react-icons/fa";
-import { FiPlus, FiSearch, FiTrash2, FiX } from "react-icons/fi";
 import { TiEdit, TiDeleteOutline } from "react-icons/ti";
 
 export default function DaftarPegawai() {
@@ -22,6 +28,7 @@ export default function DaftarPegawai() {
   const pathname = usePathname();
 
   const [search, setSearch] = useState("");
+  const [selectedKantor, setSelectedKantor] = useState("");
   const [showEdit, setShowEdit] = useState(null);
   const [deleted, setDeleted] = useState(null);
   const [showSnackbar, setShowSnackbar] = useState({
@@ -30,19 +37,25 @@ export default function DaftarPegawai() {
     type: "",
   });
 
+  // Fetch daftar kantor untuk opsi dropdown
+  const { data: dataKantor, isLoading: loadingKantor } = useKantor();
+  console.log(selectedKantor, "selected kantor");
+
+  // Fetch data pegawai
   const { data, isLoading, fetch } = usePegawai({
-    params: { search },
+    params: { 
+      search,
+      ...(selectedKantor && { idKantor: selectedKantor }),
+    },
   });
 
-  console.log('ini pegawai ', data);
   const { deletePegawai, loading } = useDeletePegawai();
   const { editPegawai, loading: loadingEdit } = useEditPegawai();
 
   const headCells = [
-    { id: "nama", label: "Nama Pegawai", numeric: false, width: 250 },
-    { id: "nip", label: "NIP", numeric: false },
+    { id: "nama", label: "Nama Pegawai", numeric: false, width: 300 },
     { id: "pangkatGol", label: "Pangkat / Gol", numeric: false, width: 150 },
-    { id: "jabatan", label: "Jabatan", numeric: false },
+    { id: "jabatan", label: "Jabatan", numeric: false, width: 350 },
     { id: "aksi", label: "", numeric: false },
   ];
 
@@ -57,13 +70,10 @@ export default function DaftarPegawai() {
       });
       await fetch();
     } catch (err) {
-      console.log("error", err.response?.data?.err)
-      // 💡 Mengambil pesan error dinamis dari backend
       const errorMessage = err.response?.data?.err || "Gagal menghapus pegawai";
-
       setShowSnackbar({
         show: true,
-        message: errorMessage, // Menampilkan pesan error spesifik ke user
+        message: errorMessage,
         type: "error",
       });
       console.error("Error:", err);
@@ -73,12 +83,11 @@ export default function DaftarPegawai() {
   const handleUpdatePegawai = async (values) => {
     try {
       const payload = {
-        ...(values.nama && { nama: values.nama }),
-        ...(values.nip && { nip: values.nip }),
-        ...(values.pangkat && { pangkat: values.pangkat }),
-        ...(values.gol && { gol: values.gol }),
-        ...(values.jabatan && { jabatan: values.jabatan }),
+        ...values,
+        status: values.isPejabat ? "eselon" : "pegawai",
       };
+
+      console.log(payload, "values");
 
       await editPegawai(payload);
       await fetch();
@@ -101,6 +110,14 @@ export default function DaftarPegawai() {
 
   const formattedData = (data ?? []).map((item) => ({
     ...item,
+    nama: (
+      <div className="flex flex-col gap-1">
+        <span className="font-medium text-gray-900">{item.nama}</span>
+        {item.nip && (
+          <span className="text-xs text-gray-500">{item.nip}</span>
+        )}
+      </div>
+    ),
     pangkatGol: item.pangkat?.trim()
       ? `${item.pangkat.trim()} / ${item.gol || "-"}`
       : item.gol || "-",
@@ -115,7 +132,7 @@ export default function DaftarPegawai() {
         </button>
         <button
           type="button"
-          className="inline-flex items-center justify-center rounded-xl border  px-3 py-2 text-sm font-semibold  border-blue-200 bg-blue-50 text-blue-700 transition hover:bg-blue-100"
+          className="inline-flex items-center justify-center rounded-xl border px-3 py-2 text-sm font-semibold border-blue-200 bg-blue-50 text-blue-700 transition hover:bg-blue-100"
           onClick={() => setShowEdit({ show: true, data: item })}
         >
           <TiEdit className="h-6 w-6" />
@@ -129,6 +146,7 @@ export default function DaftarPegawai() {
     { label: "Daftar Pegawai" },
   ];
 
+  console.log(showEdit, "show edit");
   return (
     <PageBase className="mx-auto p-6 sm:p-8 lg:p-10">
       <div className="mb-8">
@@ -164,30 +182,48 @@ export default function DaftarPegawai() {
       </section>
 
       <section className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
-        <div className="mb-5 flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-          <div className="flex h-11 w-full items-center rounded-xl border border-slate-200 bg-slate-50 px-3 transition focus-within:border-brand focus-within:bg-white focus-within:ring-4 focus-within:ring-brand/15 md:max-w-sm">
-            <FiSearch className="mr-3 h-4 w-4 shrink-0 text-slate-400" />
+        {/* BARIS CONTROLS: SEARCH & FILTER KANTOR */}
+        <div className="mb-5 flex flex-col gap-3 sm:flex-row sm:items-center justify-between w-full">
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-center w-full">
+            
+            {/* Input Search Pegawai */}
+            <div className="flex h-11 w-full sm:w-72 md:w-80 shrink-0 items-center rounded-xl border border-slate-200 bg-slate-50 px-3.5 transition focus-within:border-brand focus-within:bg-white focus-within:ring-4 focus-within:ring-brand/15 md:max-w-sm">
+              <FiSearch className="mr-3 h-4 w-4 shrink-0 text-slate-400" />
 
-            <input
-              type="text"
-              id="search"
-              name="search"
-              value={search}
-              onChange={(event) => setSearch(event.target.value)}
-              placeholder="Cari pegawai..."
-              className="min-w-0 flex-1 bg-transparent text-sm font-medium text-slate-800 outline-none placeholder:text-slate-400"
+              <input
+                type="text"
+                id="search"
+                name="search"
+                value={search}
+                onChange={(event) => setSearch(event.target.value)}
+                placeholder="Cari pegawai..."
+                className="w-full min-w-0 flex-1 bg-transparent text-sm font-medium text-slate-800 outline-none placeholder:text-slate-400"
+              />
+
+              {search && (
+                <button
+                  type="button"
+                  aria-label="Hapus pencarian"
+                  className="ml-2 grid h-7 w-7 shrink-0 place-items-center rounded-full text-slate-400 transition hover:bg-slate-200 hover:text-slate-700"
+                  onClick={() => setSearch("")}
+                >
+                  <FiX className="h-4 w-4" />
+                </button>
+              )}
+            </div>
+
+            {/* 💡 Dropdown Filter Kantor Panjang (Flex-1 mengisi sisa ruang) */}
+            <DropdownFilter
+              options={dataKantor ?? []}
+              value={selectedKantor}
+              onChange={setSelectedKantor}
+              placeholder="Semua Kantor"
+              valueKey="idKantor"
+              labelKey="nama"
+              icon={FiBriefcase}
+              loading={loadingKantor}
+              className="w-full sm:flex-1 sm:max-w-md"
             />
-
-            {search && (
-              <button
-                type="button"
-                aria-label="Hapus pencarian"
-                className="ml-2 grid h-7 w-7 place-items-center rounded-full text-slate-400 transition hover:bg-slate-200 hover:text-slate-700"
-                onClick={() => setSearch("")}
-              >
-                <FiX className="h-4 w-4" />
-              </button>
-            )}
           </div>
         </div>
 
@@ -216,6 +252,7 @@ export default function DaftarPegawai() {
           onSubmit={handleUpdatePegawai}
           onClose={() => setShowEdit({ show: false, data: null })}
           type="edit"
+          kantorOptions={dataKantor ?? []}
         />
       </FormModal>
 

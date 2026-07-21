@@ -34,6 +34,7 @@ export function useAuth() {
         data.token,
         { expires: new Date(data.expiredAt) }
       );
+      console.log(data?.profile, "data profile");
       profileStorage.set(data?.profile);
       
       router.push("/dashboard");

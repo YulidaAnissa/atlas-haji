@@ -7,60 +7,81 @@ import { FiUserPlus } from "react-icons/fi";
 
 import PageBase from "@/components/pagebase";
 import AddPegawaiForm from "@/components/forms/Pegawai";
-import { usePegawai, useAddPegawai } from "@/hooks/useData";
+import { usePegawai, useAddPegawai, useKantor } from "@/hooks/useData"; 
 import InfoModal from "@/components/elements/InfoModal";
 import LoadingOverlay from "@/components/elements/LoadingOverlay";
 import Breadcrumb from "@/components/elements/Breadcrumb";
+import { Snackbar } from "@/components/elements";
 
-export default function Pegawai() {
+export default function PegawaiPage() {
   const [showModalSuccess, setShowModalSuccess] = useState(false);
+  const [showSnackbar, setShowSnackbar] = useState({
+    show: false,
+    message: "",
+    type: "",
+  });
   const [isMounted, setIsMounted] = useState(false);
+
+  const router = useRouter();
+  
+  const { data: kantor, loading: loadingKantor } = useKantor(); 
+  const { fetch: fetchPegawai } = usePegawai();
+  const { addPegawai, loading: loadingAdd } = useAddPegawai();
 
   useEffect(() => {
     setIsMounted(true);
   }, []);
 
-  const { fetch } = usePegawai();
-  const { addPegawai, loading } = useAddPegawai();
-  const router = useRouter();
-
   const handleSubmit = async (values, form) => {
     try {
-      const payload = { 
-        ...values, 
-        status: values.isPejabat ? "eselon" : "pegawai" 
+      const payload = {
+        ...values,
+        status: values.isPejabat ? "eselon" : "pegawai",
       };
 
       await addPegawai(payload);
-      form.reset();
       
-      if (typeof fetch === 'function') await fetch();
-      
-      setShowModalSuccess(true);
-    } catch (err) {
-      const errorMessage = err.response?.data?.err || err.message || "Terjadi kesalahan saat menyimpan data";
-
-      if (errorMessage.toLowerCase().includes("nip") || errorMessage.toLowerCase().includes("terdaftar")) {
-        return { 
-          nip: "NIP/NIK ini sudah terdaftar dalam sistem" 
-        };
+      if (form && typeof form.reset === "function") {
+        form.reset();
       }
-      
-      return { FORM_ERROR: errorMessage };
+
+      if (typeof fetchPegawai === "function") {
+        await fetchPegawai();
+      }
+
+      setShowModalSuccess(true);
+    } catch (err) { // DIUBAH: Hapus ': any' di sini
+      const errorMessage =
+      err.response?.data?.err ||
+      err.message ||
+      "Terjadi kesalahan saat menyimpan data pegawai";
+
+      setShowSnackbar({
+        show: true,
+        message: errorMessage,
+        type: "error",
+      });
     }
   };
 
-  const breadcrumbItem = [
+  const handleCloseSuccessModal = () => {
+    setShowModalSuccess(false);
+    router.push("/pegawai");
+  };
+
+  const breadcrumbItems = [
     { label: "Home", href: "/" },
     { label: "Daftar Pegawai", href: "/pegawai" },
     { label: "Tambah" },
   ];
 
+  const isPageLoading = loadingAdd || loadingKantor;
+
   return (
     <PageBase className="mx-auto p-6 sm:p-8 lg:p-10">
       {/* BREADCRUMB SECTION */}
       <div className="mb-6">
-        <Breadcrumb items={breadcrumbItem} />
+        <Breadcrumb items={breadcrumbItems} />
       </div>
 
       {/* HEADER BANNER SECTION */}
@@ -79,8 +100,9 @@ export default function Pegawai() {
             </h1>
 
             <p className="mt-1.5 max-w-2xl text-sm leading-relaxed text-slate-500">
-              Lengkapi data profil pegawai, nomor identitas (NIP), pangkat, golongan, 
-              serta detail jabatan untuk pemetaan otomatis hak biaya perjalanan dinas.
+              Lengkapi data profil pegawai, nomor identitas (NIP), pangkat,
+              golongan, penempatan kantor, serta detail jabatan untuk pemetaan otomatis hak biaya
+              perjalanan dinas.
             </p>
           </div>
         </div>
@@ -89,11 +111,15 @@ export default function Pegawai() {
       {/* FORM CONTAINER */}
       <section className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm sm:p-8">
         {isMounted ? (
-          <AddPegawaiForm onSubmit={handleSubmit} type="add" />
+          <AddPegawaiForm 
+            onSubmit={handleSubmit} 
+            type="add" 
+            kantorOptions={kantor} 
+          />
         ) : (
-          <div className="h-48 w-full animate-pulse rounded-xl bg-slate-50 border border-slate-100 flex flex-col items-center justify-center gap-2 text-slate-400 text-sm">
+          <div className="flex h-48 w-full flex-col items-center justify-center gap-2 rounded-xl border border-slate-100 bg-slate-50 text-sm text-slate-400 animate-pulse">
             <div className="h-5 w-5 animate-spin rounded-full border-2 border-slate-300 border-t-slate-500" />
-            <span>Menyiapkan formulir aman...</span>
+            <span>Menyiapkan formulir...</span>
           </div>
         )}
       </section>
@@ -103,21 +129,25 @@ export default function Pegawai() {
         show={showModalSuccess}
         icon={<FaCheck className="h-6 w-6 text-white" />}
         title="Data Berhasil Disimpan"
-        onCancel={() => {
-          setShowModalSuccess(false);
-          router.push("/pegawai");
-        }}
-        onConfirm={() => {
-          setShowModalSuccess(false);
-          router.push("/pegawai");
-        }}
+        onCancel={handleCloseSuccessModal}
+        onConfirm={handleCloseSuccessModal}
       >
-        <p className="mt-2 text-sm text-slate-500 leading-relaxed">
-          Profil data pegawai baru telah terdaftar dan siap digunakan di modul administrasi perjalanan dinas.
+        <p className="mt-2 text-sm leading-relaxed text-slate-500">
+          Profil data pegawai baru telah terdaftar dan siap digunakan di modul
+          administrasi perjalanan dinas.
         </p>
       </InfoModal>
+      <Snackbar
+        show={showSnackbar.show}
+        type={showSnackbar.type}
+        message={showSnackbar.message}
+        onClose={() =>
+          setShowSnackbar({ show: false, message: "", type: "" })
+        }
+      />
 
-      <LoadingOverlay show={loading} />
+      {/* LOADING OVERLAY */}
+      <LoadingOverlay show={isPageLoading} />
     </PageBase>
   );
 }

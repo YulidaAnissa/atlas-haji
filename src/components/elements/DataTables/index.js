@@ -157,6 +157,11 @@ export default function EnhancedTable({ data = [], headCells = [], loading }) {
   const [page, setPage] = React.useState(0);
   const [rowsPerPage, setRowsPerPage] = React.useState(5);
 
+  // 💡 AUTO-RESET HALAMAN KE 0 SAAT DATA ATAU PANJANG DATA BERUBAH (FILTER/SEARCH)
+  React.useEffect(() => {
+    setPage(0);
+  }, [data?.length, data]);
+
   const handleRequestSort = (event, property) => {
     const isAsc = orderBy === property && order === "asc";
 
@@ -198,11 +203,13 @@ export default function EnhancedTable({ data = [], headCells = [], loading }) {
           zIndex: 1,
         }}
       >
-        <TableContainer sx={{
-          maxHeight: 620,
-          overflow: "auto",
-          borderRadius: "20px 20px 0 0",
-        }}>
+        <TableContainer
+          sx={{
+            maxHeight: 620,
+            overflow: "auto",
+            borderRadius: "20px 20px 0 0",
+          }}
+        >
           {loading ? (
             <LoadingState />
           ) : (
@@ -242,21 +249,27 @@ export default function EnhancedTable({ data = [], headCells = [], loading }) {
                         {index + 1 + page * rowsPerPage}
                       </TableCell>
 
-                      {headCells.map((headCell) => (
-                        <TableCell
-                          key={headCell.id}
-                          align={headCell.align || "left"}
-                          sx={{
-                            width: headCell.width,
-                            color: "#374151",
-                            fontSize: 14,
-                            borderBottom: "1px solid #eef2f7",
-                            whiteSpace: headCell.noWrap ? "nowrap" : "normal",
-                          }}
-                        >
-                          {row?.[headCell.id] || "-"}
-                        </TableCell>
-                      ))}
+                      {headCells.map((headCell) => {
+                        const cellValue = row?.[headCell.id];
+                        return (
+                          <TableCell
+                            key={headCell.id}
+                            align={headCell.align || "left"}
+                            sx={{
+                              width: headCell.width,
+                              color: "#374151",
+                              fontSize: 14,
+                              borderBottom: "1px solid #eef2f7",
+                              whiteSpace: headCell.noWrap ? "nowrap" : "normal",
+                            }}
+                          >
+                            {/* 💡 Perbaikan Pengecekan Nilai Cell agar JSX (Action Button) / angka 0 tidak hilang */}
+                            {cellValue !== undefined && cellValue !== null && cellValue !== ""
+                              ? cellValue
+                              : "-"}
+                          </TableCell>
+                        );
+                      })}
                     </TableRow>
                   ))
                 )}

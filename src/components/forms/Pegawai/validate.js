@@ -1,32 +1,20 @@
 import validate from '../../../utils/validator';
 
+// Contoh validate.js yang benar:
 export default function validation(values) {
-  // Fungsi helper untuk mengekstrak string pesan saja dari validator bawaan Anda
-  const getErrorString = (value, rules) => {
-    const result = validate(value, rules);
-    return result && typeof result === 'object' ? result.message : result;
-  };
-
-  const errors = {
-    jenisPegawai: getErrorString(values.jenisPegawai, [
-      { rule: 'required', message: 'Jenis pegawai harus dipilih' },
-    ]),
-    nama: getErrorString(values.nama, [
+  return {
+    jenisPegawai: validate(values.jenisPegawai, [
       { rule: 'required' },
     ]),
-    nip: getErrorString(values.nip, [
+    nip: validate(values.nip, [
+      { rule: 'required' },
+      { rule: 'isNumber' },
+    ]),
+    nama: validate(values.nama, [
       { rule: 'required' },
     ]),
-    jabatan: getErrorString(values.jabatan, [
+    idKantor: validate(values.idKantor, [
       { rule: 'required' },
     ]),
   };
-
-  if (values.jenisPegawai === 'PNS' && values.isPejabat) {
-    errors.unit = getErrorString(values.unit, [
-      { rule: 'required', message: 'Unit Kerja wajib diisi untuk pejabat' },
-    ]);
-  }
-
-  return errors;
 }

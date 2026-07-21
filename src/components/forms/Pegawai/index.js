@@ -1,63 +1,62 @@
 "use client";
 
 import React, { useMemo } from "react";
+import PropTypes from "prop-types";
 import { Form, Field } from "react-final-form";
 import { FiSave, FiX } from "react-icons/fi";
 
 import InputField from "../FormField/InputField";
+import SelectField from "../FormField/SelectField";
+import RadioField from "../FormField/RadioField";
 import validation from "./validate";
 
+// --- KONSTANTA & UTILS ---
 const EMPLOYEE_TYPES = [
   { label: "PNS", value: "PNS" },
   { label: "PPPK", value: "PPPK" },
   { label: "Non ASN", value: "NON_ASN" },
 ];
 
-function SelectField({
-  input,
-  meta,
-  label,
-  placeholder = "Pilih data",
-  options = [],
-  disabled = false,
-  onValueChange,
-}) {
-  const handleChange = (event) => {
-    input.onChange(event);
-    onValueChange?.(event.target.value);
-  };
+/** Ekstrak nilai string dari objek React-Select atau string murni */
+const extractValue = (val) => {
+  if (!val) return "";
+  if (typeof val === "object") return val.value ?? "";
+  return String(val);
+};
 
-  return (
-    <div>
-      <label className="mb-2 block text-sm font-semibold text-slate-700">
-        {label}
-      </label>
+/** Normalisasi string Jenis Pegawai dari payload backend */
+const normalizeJenisPegawai = (data = {}) => {
+  const raw = String(data.jenisPegawai || data.jenis_pegawai || "").trim().toUpperCase();
 
-      <select
-        {...input}
-        disabled={disabled}
-        onChange={handleChange}
-        className="h-11 w-full rounded-xl border border-slate-200 bg-white px-3 text-sm text-slate-900 outline-none transition focus:border-brand focus:ring-4 focus:ring-brand/10 disabled:cursor-not-allowed disabled:bg-slate-100 disabled:text-slate-500"
-      >
-        <option value="">{placeholder}</option>
-        {options.map((option) => (
-          <option key={option.value} value={option.value}>
-            {option.label}
-          </option>
-        ))}
-      </select>
+  if (["PNS", "PPPK", "NON_ASN"].includes(raw)) return raw;
+  if (raw.includes("NON") || raw.includes("HONORER")) return "NON_ASN";
+  if (data.nik && !data.nip) return "NON_ASN";
+  if (data.pangkat || (data.gol && String(data.gol).includes("/"))) return "PNS";
+  if (data.nip) return "PNS";
 
-      {meta.touched && meta.error && (
-        <p className="mt-1 text-xs font-medium text-red-500">
-          {typeof meta.error === 'object' ? meta.error.message : meta.error}
-        </p>
-      )}
-    </div>
-  );
-}
+  return "";
+};
 
-function EmployeeIdentityFields({ employeeType, form, disabled = false }) {
-  const handleTypeChange = (newValue) => {
+/** Normalisasi string Role dari payload backend (default: user) */
+const normalizeRole = (data = {}) => {
+  const raw = String(data.role || "").trim().toLowerCase();
+  if (["user", "admin", "finance"].includes(raw)) return raw;
+  return "user"; // Default role
+};
+
+/** Pengecekan status Pejabat */
+const parseIsPejabat = (data = {}) => {
+  if (data.isPejabat !== undefined) return Boolean(data.isPejabat);
+  if (!data.status) return false;
+  return String(data.status).toLowerCase().includes("eselon");
+};
+
+// --- SUB-KOMPONEN ---
+
+function EmployeeIdentityFields({ employeeType, form, disabled }) {
+  const handleTypeChange = (option) => {
+    const newValue = extractValue(option);
+
     form.change("nip", "");
     if (newValue !== "PNS") {
       form.change("isPejabat", false);
@@ -110,7 +109,7 @@ function EmployeeIdentityFields({ employeeType, form, disabled = false }) {
             component={InputField}
             label="NIP / NIK"
             placeholder="Pilih jenis pegawai terlebih dahulu"
-            disabled={true}
+            disabled
           />
         )}
       </div>
@@ -118,38 +117,42 @@ function EmployeeIdentityFields({ employeeType, form, disabled = false }) {
   );
 }
 
+EmployeeIdentityFields.propTypes = {
+  employeeType: PropTypes.string,
+  form: PropTypes.object.isRequired,
+  disabled: PropTypes.bool,
+};
+
 function FormProgress({ values }) {
-  const baseFields = ["jenisPegawai", "nama", "jabatan", "nip"];
-  const isPns = values.jenisPegawai === "PNS";
-  const isPppk = values.jenisPegawai === "PPPK";
-  
-  let targetFields = [...baseFields];
-  if (isPns) {
-    targetFields = [...targetFields, "pangkat", "gol"];
-  } else if (isPppk) {
-    targetFields = [...targetFields, "gol"];
-  }
+  const jenisVal = extractValue(values.jenisPegawai);
+  const isPns = jenisVal === "PNS";
+  const isPppk = jenisVal === "PPPK";
 
-  if (isPns && values.isPejabat) {
-    targetFields = [...targetFields, "unit"];
-  }
+  // Field "role" dihapus dari perhitungan kelengkapan data
+  const targetFields = ["jenisPegawai", "nama", "jabatan", "nip", "idKantor"];
+  if (isPns) targetFields.push("pangkat", "gol");
+  else if (isPppk) targetFields.push("gol");
+  if (isPns && values.isPejabat) targetFields.push("unit");
 
-  const filledFields = targetFields.filter((field) => {
-    const value = values[field];
-    return value !== undefined && value !== null && String(value).trim() !== "";
+  const filledCount = targetFields.filter((field) => {
+    const val = extractValue(values[field]);
+    return val.trim() !== "";
   }).length;
 
-  const progress = Math.round((filledFields / targetFields.length) * 100);
+  const progress = Math.round((filledCount / targetFields.length) * 100);
 
   return (
-    <aside className="rounded-2xl border border-slate-200 bg-slate-50 p-4 sm:p-5 h-fit sticky top-4">
+    <aside className="sticky top-4 h-fit rounded-2xl border border-slate-200 bg-slate-50 p-4 sm:p-5">
       <div className="mb-4">
         <div className="flex items-center justify-between">
           <p className="text-sm font-bold text-slate-800">Kelengkapan Data</p>
           <span className="text-sm font-bold text-brand">{progress}%</span>
         </div>
-        <div className="mt-2 h-2 w-full rounded-full bg-slate-200 overflow-hidden">
-          <div className="h-full bg-brand transition-all duration-300 ease-out-in" style={{ width: `${progress}%` }} />
+        <div className="mt-2 h-2 w-full overflow-hidden rounded-full bg-slate-200">
+          <div
+            className="h-full bg-brand transition-all duration-300 ease-out-in"
+            style={{ width: `${progress}%` }}
+          />
         </div>
         <p className="mt-3 text-xs leading-5 text-slate-500">
           PNS menggunakan NIP, pangkat & golongan. PPPK menggunakan NIP & golongan. Non ASN menggunakan NIK.
@@ -160,22 +163,44 @@ function FormProgress({ values }) {
   );
 }
 
-function PegawaiFields({ values, form, isEdit }) {
-  const isPns = values.jenisPegawai === "PNS";
-  const isPppk = values.jenisPegawai === "PPPK";
+FormProgress.propTypes = {
+  values: PropTypes.object.isRequired,
+};
+
+function PegawaiFields({ values, form, isEdit, formattedKantorOptions }) {
+  const currentJenis = extractValue(values.jenisPegawai);
+  const isPns = currentJenis === "PNS";
+  const isPppk = currentJenis === "PPPK";
 
   return (
     <section className="space-y-6">
       <div className="border-b border-slate-100 pb-4">
         <h3 className="text-base font-bold text-slate-900">Informasi Pegawai</h3>
-        <p className="mt-1 text-sm leading-6 text-slate-500">Isi identitas, kategori kepegawaian, dan jabatan saat ini.</p>
+        <p className="mt-1 text-sm leading-6 text-slate-500">
+          Isi identitas, penempatan kantor, kategori kepegawaian, dan jabatan saat ini.
+        </p>
       </div>
 
       <div className="grid grid-cols-2 gap-x-5 gap-y-4">
-        <EmployeeIdentityFields employeeType={values.jenisPegawai} form={form} disabled={isEdit} />
+        <EmployeeIdentityFields employeeType={currentJenis} form={form} disabled={isEdit} />
 
-        <div className="col-span-2">
-          <Field name="nama" component={InputField} label="Nama Pegawai" placeholder="Masukkan nama lengkap beserta gelar" />
+        <div className="col-span-2 sm:col-span-1">
+          <Field
+            name="nama"
+            component={InputField}
+            label="Nama Pegawai"
+            placeholder="Masukkan nama lengkap beserta gelar"
+          />
+        </div>
+
+        <div className="col-span-2 sm:col-span-1">
+          <Field
+            name="idKantor"
+            component={SelectField}
+            label="Penempatan Kantor"
+            placeholder="Pilih unit kantor / instansi"
+            options={formattedKantorOptions}
+          />
         </div>
 
         {isPns && (
@@ -185,24 +210,29 @@ function PegawaiFields({ values, form, isEdit }) {
         )}
 
         {(isPns || isPppk) && (
-          <div className={`col-span-2 ${isPns ? 'sm:col-span-1' : ''}`}>
-            <Field 
-              name="gol" 
-              component={InputField} 
-              label={isPppk ? "Golongan / Kelas Jabatan" : "Golongan"} 
-              placeholder={isPppk ? "Contoh: IX atau VII" : "Contoh: III/c"} 
+          <div className={`col-span-2 ${isPns ? "sm:col-span-1" : ""}`}>
+            <Field
+              name="gol"
+              component={InputField}
+              label={isPppk ? "Golongan / Kelas Jabatan" : "Golongan"}
+              placeholder={isPppk ? "Contoh: IX atau VII" : "Contoh: III/c"}
             />
           </div>
         )}
 
         <div className="col-span-2">
-          <Field name="jabatan" component={InputField} label="Jabatan" placeholder="Masukkan nama jabatan atau posisi saat ini" />
+          <Field
+            name="jabatan"
+            component={InputField}
+            label="Jabatan"
+            placeholder="Masukkan nama jabatan atau posisi saat ini"
+          />
         </div>
 
         {isPns && (
           <>
-            <div className="col-span-2 py-2 border-t border-slate-100 mt-2">
-              <label className="flex items-center gap-3 cursor-pointer select-none">
+            <div className="col-span-2 mt-2 border-t border-slate-100 py-2">
+              <label className="flex cursor-pointer select-none items-center gap-3">
                 <Field
                   name="isPejabat"
                   component="input"
@@ -215,50 +245,101 @@ function PegawaiFields({ values, form, isEdit }) {
                 />
                 <div className="text-sm">
                   <p className="font-semibold text-slate-800">Pegawai ini merupakan Pejabat</p>
-                  <p className="text-slate-500 text-xs">Centang jika memiliki peran struktural tertentu</p>
+                  <p className="text-xs text-slate-500">Centang jika memiliki peran struktural tertentu</p>
                 </div>
               </label>
             </div>
 
             {values.isPejabat && (
               <div className="col-span-2 animate-fadeIn">
-                <Field name="unit" component={InputField} label="Unit Kerja" placeholder="Masukkan nama unit kerja (Contoh: Bidang Integrasi Data)" />
+                <Field
+                  name="unit"
+                  component={InputField}
+                  label="Unit Kerja Pejabat"
+                  placeholder="Masukkan nama unit kerja (Contoh: Bidang Integrasi Data)"
+                />
               </div>
             )}
           </>
         )}
+
+        {/* --- FIELD ROLE PENGGUNA (PALING BAWAH - RADIO GROUP) --- */}
+        <div className="col-span-2 mt-4 border-t border-slate-100 pt-5">
+          <Field name="role" component={RadioField} />
+        </div>
       </div>
     </section>
   );
 }
 
-export default function AddPegawaiForm({ onSubmit = () => {}, data = {}, onClose = () => {}, type = "add" }) {
+PegawaiFields.propTypes = {
+  values: PropTypes.object.isRequired,
+  form: PropTypes.object.isRequired,
+  isEdit: PropTypes.bool,
+  formattedKantorOptions: PropTypes.array.isRequired,
+};
+
+// --- KOMPONEN UTAMA ---
+
+export default function AddPegawaiForm({
+  onSubmit = () => {},
+  data = {},
+  onClose = () => {},
+  type = "add",
+  kantorOptions = [],
+}) {
   const isEdit = type === "edit";
 
-  const getInitialJenisPegawai = () => {
-    if (data.jenisPegawai) return data.jenisPegawai;
-    if (data.nik) return "NON_ASN";
-    if (data.nip) return "PNS";
-    return "";
-  };
+  // Formatter Opsi Kantor
+  const formattedKantorOptions = useMemo(() => {
+    if (!Array.isArray(kantorOptions)) return [];
+    return kantorOptions.map((item) => ({
+      label: item.nama || item.nama_kantor || item.namaKantor || "",
+      value: String(item.idKantor ?? item.id ?? item.value ?? ""),
+    }));
+  }, [kantorOptions]);
 
-  const checkIsPejabat = () => {
-    if (!data.status) return false;
-    return String(data.status).toLowerCase().includes("eselon");
-  };
+  // Initial Values dengan Default Role 'user'
+  const initialValues = useMemo(() => {
+    const rawJenisStr = normalizeJenisPegawai(data);
+    const rawRoleStr = normalizeRole(data);
+    const rawIdKantorStr = String(data.idKantor ?? data.id_kantor ?? "");
 
-  const initialValues = useMemo(() => ({
-    ...data,
-    nip: data.nip || data.nik || "",
-    jenisPegawai: getInitialJenisPegawai(),
-    isPejabat: checkIsPejabat(),
-    unit: data.unit || "",
-  }), [data]);
+    return {
+      ...data,
+      nip: data.nip || data.nik || "",
+      jenisPegawai: EMPLOYEE_TYPES.find((opt) => opt.value === rawJenisStr) || null,
+      role: rawRoleStr, // Menyimpan string murni: 'user' | 'admin' | 'finance'
+      isPejabat: parseIsPejabat(data),
+      unit: data.unit || "",
+      idKantor: formattedKantorOptions.find((opt) => opt.value === rawIdKantorStr) || null,
+    };
+  }, [data, formattedKantorOptions]);
+
+  // Submit Handler
+  const handleFormSubmit = (formValues) => {
+    const cleanPayload = {
+      ...formValues,
+      jenisPegawai: extractValue(formValues.jenisPegawai),
+      role: formValues.role || "user",
+      idKantor: extractValue(formValues.idKantor),
+    };
+    onSubmit(cleanPayload);
+  };
 
   return (
-    <Form onSubmit={onSubmit} validate={validation} initialValues={initialValues}>
+    <Form
+      onSubmit={handleFormSubmit}
+      validate={validation}
+      initialValues={initialValues}
+      enableReinitialize
+    >
       {({ handleSubmit, values, form, submitting }) => (
-        <form noValidate onSubmit={handleSubmit} className="overflow-hidden rounded-2xl border border-[#eadfbe] bg-white shadow-sm">
+        <form
+          noValidate
+          onSubmit={handleSubmit}
+          className="overflow-hidden rounded-2xl border border-[#eadfbe] bg-white shadow-sm"
+        >
           {!isEdit && (
             <div className="border-b border-[#eadfbe] bg-[#fbf7ec] px-4 py-5 sm:px-6">
               <p className="text-xs font-bold uppercase tracking-[0.24em] text-brand">Data Master</p>
@@ -269,17 +350,30 @@ export default function AddPegawaiForm({ onSubmit = () => {}, data = {}, onClose
           <div className={`grid gap-6 p-4 sm:p-6 ${isEdit ? "" : "lg:grid-cols-[280px_1fr]"}`}>
             {!isEdit && <FormProgress values={values} />}
             <div className="min-w-0 bg-white">
-              <PegawaiFields values={values} form={form} isEdit={isEdit} />
+              <PegawaiFields
+                values={values}
+                form={form}
+                isEdit={isEdit}
+                formattedKantorOptions={formattedKantorOptions}
+              />
             </div>
           </div>
 
           <div className="flex flex-col-reverse gap-3 border-t border-[#eadfbe] bg-[#fbf7ec] px-4 py-4 sm:flex-row sm:justify-end sm:px-6">
             {isEdit && (
-              <button type="button" onClick={onClose} className="inline-flex h-11 w-full items-center justify-center gap-2 rounded-xl border border-red-200 bg-red-50 px-5 text-sm font-bold text-red-700 transition hover:bg-red-100 sm:w-auto sm:min-w-44">
+              <button
+                type="button"
+                onClick={onClose}
+                className="inline-flex h-11 w-full items-center justify-center gap-2 rounded-xl border border-red-200 bg-red-50 px-5 text-sm font-bold text-red-700 transition hover:bg-red-100 sm:w-auto sm:min-w-44"
+              >
                 <FiX className="h-4 w-4" /> Tutup
               </button>
             )}
-            <button type="submit" disabled={submitting} className="inline-flex h-11 w-full items-center justify-center gap-2 rounded-xl bg-brand px-6 text-sm font-bold text-white shadow-lg shadow-brand/25 transition hover:bg-[#b5964f] focus:outline-none focus:ring-4 focus:ring-brand/25 disabled:cursor-not-allowed disabled:opacity-70 sm:w-auto sm:min-w-44">
+            <button
+              type="submit"
+              disabled={submitting}
+              className="inline-flex h-11 w-full items-center justify-center gap-2 rounded-xl bg-brand px-6 text-sm font-bold text-white shadow-lg shadow-brand/25 transition hover:bg-[#b5964f] focus:outline-none focus:ring-4 focus:ring-brand/25 disabled:cursor-not-allowed disabled:opacity-70 sm:w-auto sm:min-w-44"
+            >
               <FiSave className="h-4 w-4" />
               {submitting ? "Menyimpan..." : isEdit ? "Simpan Perubahan" : "Simpan Pegawai"}
             </button>
@@ -289,3 +383,11 @@ export default function AddPegawaiForm({ onSubmit = () => {}, data = {}, onClose
     </Form>
   );
 }
+
+AddPegawaiForm.propTypes = {
+  onSubmit: PropTypes.func,
+  data: PropTypes.object,
+  onClose: PropTypes.func,
+  type: PropTypes.oneOf(["add", "edit"]),
+  kantorOptions: PropTypes.array,
+};

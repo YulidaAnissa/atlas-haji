@@ -5,7 +5,8 @@ import {
   PROFILE_GOLONGAN_STORAGE,
   PROFILE_ID_STORAGE,
   PROFILE_JABATAN_STORAGE,
-  PROFILE_ROLE_STORAGE
+  PROFILE_ROLE_STORAGE,
+  PROFILE_ID_KANTOR_STORAGE
 } from "@/configs";
 import nookies from 'nookies';
 import { encrypt, decrypt } from "./crypto";
@@ -13,11 +14,18 @@ import { encrypt, decrypt } from "./crypto";
 function createCookieStorage(_name, options = {}) {
   return {
     _name,
-    set(value, { ctx = null , ...cookieOptions } = {}) {
-      nookies.set(ctx, this._name, options.encrypt ? encrypt(value) : value, { path: '/', ...cookieOptions });
+    set(value, { ctx = null, ...cookieOptions } = {}) {
+      // 💡 PASTIKAN VALUE TIDAK UNDEFINED & DI-CAST KE STRING
+      if (value === undefined || value === null) return;
+
+      const stringValue = String(value);
+      const dataToSave = options.encrypt ? encrypt(stringValue) : stringValue;
+
+      nookies.set(ctx, this._name, dataToSave, { path: '/', ...cookieOptions });
     },
     get(ctx) {
       const cookie = nookies.get(ctx)[this._name];
+      if (!cookie) return null;
       return options.encrypt ? decrypt(cookie) : cookie;
     },
     remove(ctx, options) {
@@ -81,19 +89,37 @@ export const profileStorage = {
   _jabatan: createCookieStorage(PROFILE_JABATAN_STORAGE, { encrypt: true }),
   _gol: createCookieStorage(PROFILE_GOLONGAN_STORAGE, { encrypt: true }),
   _role: createCookieStorage(PROFILE_ROLE_STORAGE, { encrypt: true }),
-  set({ nama, nip, jabatan, gol, role }, options = {}) {
+  _idKantor: createCookieStorage(PROFILE_ID_KANTOR_STORAGE, { encrypt: true }),
+
+  // 💡 Menerima fallback jika backend mengirim id_kantor atau idKantor
+  set(user = {}, options = {}) {
     const finalOptions = {
-      ...options
+      ...options,
+      domain: getCookieDomain(options?.ctx)
     };
 
-    finalOptions.domain = getCookieDomain(options?.ctx);
+    const {
+      nama,
+      nip,
+      jabatan,
+      gol,
+      role,
+      idKantor,
+      id_kantor, // 👈 Fallback dari API
+      idkantor   // 👈 Fallback dari API
+    } = user;
 
-    this._fullname.set(nama, finalOptions);
-    this._id.set(nip, finalOptions);
-    this._jabatan.set(jabatan, finalOptions);
-    this._gol.set(gol, finalOptions);
-    this._role.set(role, finalOptions);
+    // Ambil mana saja yang tidak undefined
+    const validIdKantor = idKantor ?? id_kantor ?? idkantor ?? "";
+
+    this._fullname.set(nama ?? "", finalOptions);
+    this._id.set(nip ?? "", finalOptions);
+    this._jabatan.set(jabatan ?? "", finalOptions);
+    this._gol.set(gol ?? "", finalOptions);
+    this._role.set(role ?? "", finalOptions);
+    this._idKantor.set(validIdKantor, finalOptions); // 👈 Disimpan secara aman
   },
+
   get(ctx) {
     return {
       nama: this._fullname.get(ctx),
@@ -101,8 +127,10 @@ export const profileStorage = {
       jabatan: this._jabatan.get(ctx),
       gol: this._gol.get(ctx),
       role: this._role.get(ctx),
+      idKantor: this._idKantor.get(ctx),
     };
   },
+
   remove(ctx) {
     const options = {
       domain: getCookieDomain(ctx)
@@ -112,5 +140,6 @@ export const profileStorage = {
     this._jabatan.remove(ctx, options);
     this._gol.remove(ctx, options);
     this._role.remove(ctx, options);
+    this._idKantor.remove(ctx, options);
   }
 };

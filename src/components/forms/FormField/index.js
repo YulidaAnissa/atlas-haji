@@ -8,3 +8,6 @@ export const UploadFile = dynamic(() => import("./UploadFile"), { ssr: false });
 export const TextArea = dynamic(() => import("./TextArea"), { ssr: false });
 export const InputBase = dynamic(() => import("./InputBase"), { ssr: false });
 export const MultiSelectTextField = dynamic(() => import("./MultiSelectTextField"), { ssr: false });
+export const InputField = dynamic(() => import("./InputField"), { ssr: false });
+export const SelectField = dynamic(() => import("./SelectField"), { ssr: false });
+export const RadioField = dynamic(() => import("./RadioField"), { ssr: false });
