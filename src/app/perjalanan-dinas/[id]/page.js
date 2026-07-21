@@ -222,6 +222,14 @@ export default function Component() {
         jabatanPPT: jabatanSurat,
       };
     }
+
+    if(jabatanSurat.includes("kepala kantor")) {
+      return {
+        an: "",
+        pejabatMengetahui: "",
+        jabatanPPT: jabatanSurat,
+      };
+    }
     
     // Condition 4: Default/Pegawai biasa
     else {

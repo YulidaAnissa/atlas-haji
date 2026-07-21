@@ -65,6 +65,8 @@ export default function Component() {
       formData.append("spd", values?.spd); // file object
       formData.append("status", "pengajuan");
       formData.append("hasil", values?.hasil);
+      formData.append("tfBiayaPeng", values?.tfBiayaPeng?.value);
+      formData.append("tfBiayaTrans", values?.tfBiayaTrans?.value);
       await updateLaporan(idPerjalananPegawai, formData);
       await fetch();
       setShowAddLaporan(false);
@@ -106,6 +108,8 @@ export default function Component() {
       formData.append("spd", values?.spd); // file object
       formData.append("status", "pengajuan");
       formData.append("hasil", values?.hasil);
+      formData.append("tfBiayaPeng", values?.tfBiayaPeng?.value);
+      formData.append("tfBiayaTrans", values?.tfBiayaTrans?.value);
       await updateLaporan(idPerjalananPegawai, formData);
 
       await fetch();
@@ -209,6 +213,8 @@ export default function Component() {
     { label: data?.surat?.kegiatan || "Detail" },
   ];
 
+  console.log("show laporan ", showLaporan?.data);
+
   return (
     <PageBase className="mx-auto max-w-7xl px-6 py-10 lg:px-12">
       <Breadcrumb items={breadcrumbItem} />
@@ -279,6 +285,7 @@ export default function Component() {
           data={showUpdateLaporan.data}
           onSubmit={handleUpdateLaporan}
           onClose={() => setShowUpdateLaporan(EMPTY_MODAL)}
+          pegawai={data?.pegawai}
         />
       </FormModal>
 

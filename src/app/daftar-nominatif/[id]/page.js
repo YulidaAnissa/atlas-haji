@@ -209,6 +209,7 @@ export default function Component() {
     const canVerify = item.status === "pengajuan" && profil?.role === "finance";
     const isPerjalananKhusus =
       String(item?.typePerjalanan ?? "").trim().toLowerCase() === "khusus";
+
     return {
       ...item,
       nama: (
@@ -236,27 +237,32 @@ export default function Component() {
         />
       ),
       aksi: (
-        <div className="flex justify-end gap-2">
-          {item?.status !== "verifikasi" ? canVerify && (
-            <button
-              type="button"
-              onClick={() =>
-                setShowVerifBiayaPerjalanan({
-                  show: true,
-                  data: item.idPerjalananPegawai,
-                })
-              }
-              className="inline-flex items-center gap-2 rounded-lg bg-[#fbf7ec] px-3 py-2 text-sm font-semibold text-brand transition hover:bg-brand hover:text-white"
-            >
-              <FiEye className="h-4 w-4" />
-              Lihat
-            </button>
+        <div className="flex justify-center gap-2">
+          {item?.status !== "verifikasi" ? (
+            canVerify && (
+              <button
+                type="button"
+                onClick={() =>
+                  setShowVerifBiayaPerjalanan({
+                    show: true,
+                    data: item.idPerjalananPegawai,
+                  })
+                }
+                className="inline-flex items-center gap-2 rounded-lg bg-[#fbf7ec] px-3 py-2 text-sm font-semibold text-brand transition hover:bg-brand hover:text-white"
+              >
+                <FiEye className="h-4 w-4" />
+                Lihat
+              </button>
+            )
           ) : (
-            <PrintButton
-              data={dataFilePegawai?.find((p) => p.nama === item.nama) || {}}
-              format="/spd-rampung-kwitansi-format.docx"
-              file={`spd-rampung-kwitansi-format-${item.nip}`}
-            />
+            <div title={!data?.surat?.anggaran ? "Anggaran belum ditentukan" : "Cetak Dokumen"}>
+              <PrintButton
+                data={dataFilePegawai?.find((p) => p.nama === item.nama) || {}}
+                format="/spd-rampung-kwitansi-format.docx"
+                file={`spd-rampung-kwitansi-format-${item.nip}`}
+                disabled={!data?.surat?.anggaran}
+              />
+            </div>
           )}
         </div>
       ),
@@ -324,9 +330,7 @@ export default function Component() {
   };
 
   const pegawaiVerifikasi =
-    String(profil?.role || "").trim().toLowerCase() === "finance" &&
-    (data?.pegawai?.length ?? 0) > 0 &&
-    data?.pegawai?.every((item) => item.status === "verifikasi");
+    String(profil?.role || "").trim().toLowerCase() === "finance";
 
   console.log('data daftar nominatif', data);
 

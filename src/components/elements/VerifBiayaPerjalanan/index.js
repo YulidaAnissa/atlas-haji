@@ -82,14 +82,29 @@ function FilePreview({ file, title }) {
   );
 }
 
-function CostCard({ title, amount, file }) {
+// Menambahkan prop payerName pada CostCard
+function CostCard({ title, amount, file, payerName }) {
   return (
     <section className="min-w-0 space-y-3 rounded-2xl border border-gray-200 bg-white p-5 shadow-sm">
-      <div>
-        <p className="text-sm font-semibold text-gray-500">{title}</p>
-        <p className="mt-1 text-2xl font-bold tracking-tight text-gray-900">
-          Rp {formatRupiah(amount)}
-        </p>
+      <div className="flex items-start justify-between gap-4">
+        <div>
+          <p className="text-sm font-semibold text-gray-500">{title}</p>
+          <p className="mt-1 text-2xl font-bold tracking-tight text-gray-900">
+            Rp {formatRupiah(amount)}
+          </p>
+        </div>
+        
+        {/* Menampilkan label Ditanggung Oleh jika payerName ada */}
+        {payerName && (
+          <div className="flex shrink-0 flex-col items-end justify-center rounded-lg bg-blue-50 px-3 py-2 text-right">
+            <span className="text-[10px] font-bold uppercase tracking-wider text-blue-600">
+              Ditanggung Oleh
+            </span>
+            <span className="mt-0.5 max-w-[140px] truncate text-xs font-semibold text-blue-900 sm:max-w-[200px]">
+              {payerName}
+            </span>
+          </div>
+        )}
       </div>
 
       <FilePreview file={file} title={`Bukti ${title}`} />
@@ -115,6 +130,8 @@ function DocumentCard({ title, file }) {
 export default function ComponentForm({ data = {}, onSubmit, onClose = false, type = "verifikasi" }) {
   const [showAlasan, setShowAlasan] = useState(false);
   const [catatan, setCatatan] = useState("");
+
+  console.log(data, "dataVerify");
 
   const dataFilePreview = {
     nama: data?.nama,
@@ -177,36 +194,34 @@ export default function ComponentForm({ data = {}, onSubmit, onClose = false, ty
             </div>
           </div>
 
-          {/* <div className="min-w-0 rounded-xl border border-gray-200 bg-gray-50 px-4 py-3">
-            <p className="whitespace-pre-line wrap-break-word text-sm leading-6 text-gray-700"> */}
-              {data?.hasil ? (
-                <PreviewPDF 
-                  title="Laporan Perjalanan"
-                  text="Hasil laporan perjalanan dinas"
-                  data={dataFilePreview}
-                  format="/laporan-format.docx"
-                  file={`laporan-${data?.nip}`}
-                />
-              ) : (
-                <div className="rounded-xl border border-dashed border-gray-300 bg-gray-50 px-4 py-8 text-center">
-                  <p className="text-sm text-gray-500">Laporan belum tersedia</p>
-                </div>
-              )}
-              
-            {/* </p>
-          </div> */}
+          {data?.hasil ? (
+            <PreviewPDF 
+              title="Laporan Perjalanan"
+              text="Hasil laporan perjalanan dinas"
+              data={dataFilePreview}
+              format="/laporan-format.docx"
+              file={`laporan-${data?.nip}`}
+            />
+          ) : (
+            <div className="rounded-xl border border-dashed border-gray-300 bg-gray-50 px-4 py-8 text-center">
+              <p className="text-sm text-gray-500">Laporan belum tersedia</p>
+            </div>
+          )}
         </section>
 
+        {/* Mengirimkan namaBiayaTrans dan namaBiayaPeng sebagai prop payerName */}
         <CostCard
           title="Biaya Transportasi"
           amount={data?.biayaTrans}
           file={data?.buktiTrans}
+          payerName={data?.namaBiayaTrans} 
         />
 
         <CostCard
           title="Biaya Penginapan"
           amount={data?.biayaPeng}
           file={data?.buktiPeng}
+          payerName={data?.namaBiayaPeng} 
         />
       </div>
 
@@ -240,20 +255,20 @@ export default function ComponentForm({ data = {}, onSubmit, onClose = false, ty
               type="button"
               onClick={() => onSubmit("verifikasi")}
               className="inline-flex items-center gap-2 rounded-xl bg-green-600 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-green-700"
-          >
-            <FaCheckCircle className="h-4 w-4" />
-            Verifikasi
-          </button>
+            >
+              <FaCheckCircle className="h-4 w-4" />
+              Verifikasi
+            </button>
 
-          <button
-            type="button"
-            onClick={() => setShowAlasan(true)}
-            className="inline-flex items-center gap-2 rounded-xl border border-red-200 bg-red-50 px-4 py-2.5 text-sm font-semibold text-red-700 transition hover:bg-red-100"
-          >
-            <FaTimesCircle className="h-4 w-4" />
-            Tolak
-          </button>
-        </div>
+            <button
+              type="button"
+              onClick={() => setShowAlasan(true)}
+              className="inline-flex items-center gap-2 rounded-xl border border-red-200 bg-red-50 px-4 py-2.5 text-sm font-semibold text-red-700 transition hover:bg-red-100"
+            >
+              <FaTimesCircle className="h-4 w-4" />
+              Tolak
+            </button>
+          </div>
         )}
 
         <button

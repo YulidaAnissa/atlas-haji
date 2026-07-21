@@ -13,6 +13,7 @@ export default function PrintButton({
   format,
   file = "surat-tugas",
   text,
+  disabled
 }) {
   const [loading, startLoading, endLoading] = useLoading();
 
@@ -82,7 +83,7 @@ export default function PrintButton({
       <button
         type="button"
         onClick={handleGenerate}
-        disabled={loading}
+        disabled={loading || disabled}
         className="group inline-flex h-10 w-full items-center justify-center gap-2 rounded-xl border border-[#eadfbe] bg-white px-4 text-sm font-bold text-brand shadow-sm transition hover:border-brand hover:bg-brand hover:text-white focus:outline-none focus:ring-4 focus:ring-brand/20 disabled:cursor-not-allowed disabled:opacity-70"
       >
         <FaDownload className="h-4 w-4 transition group-hover:-translate-y-0.5" />
