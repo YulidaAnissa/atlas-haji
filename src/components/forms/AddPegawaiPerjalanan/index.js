@@ -57,8 +57,7 @@ export default function ComponentForm({
   const defaultKabKotaOption = useMemo(() => {
     const rawId =
       type === "edit"
-        ? perjalananPegawai?.idKabKota ?? surat?.idKabKota
-        : surat?.idKabKota;
+        ? perjalananPegawai?.asal : surat?.idKabKota;
 
     if (!rawId) return "";
 

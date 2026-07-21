@@ -26,12 +26,13 @@ function formatTipePerjalanan(type) {
     .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
     .join(" ");
 }
+
 export default function InformasiPerjalanan({
   data,
   className = "",
 }) {
-  const fileSurat =
-    data?.file || data?.fileSurat || null;
+  const fileSurat = data?.file || data?.fileSurat || null;
+  const namaKantor = data?.namaKantor || data?.kantor || null;
 
   const details = [
     {
@@ -110,14 +111,26 @@ export default function InformasiPerjalanan({
             </div>
           </div>
 
-          {/* Sisi Kanan: Badges / Tags */}
-          <div className="flex flex-wrap items-center gap-2 self-start sm:self-auto">
-            {tipeDinas && (
-              <span className="inline-flex items-center rounded-full bg-blue-50/80 px-3 py-1 text-xs font-semibold uppercase tracking-wider text-blue-700 ring-1 ring-inset ring-blue-700/10 backdrop-blur-sm transition-all hover:bg-blue-100/70">
-                <span className="mr-1.5 h-1.5 w-1.5 rounded-full bg-blue-500 animate-pulse" />
-                {tipeDinas}
-              </span>
-            )}
+          <div className="flex items-center self-start sm:self-auto">
+            <div className="inline-flex items-center rounded-full border border-slate-200/90 bg-white/90 p-1 text-xs shadow-xs backdrop-blur-sm">
+              {/* Segment 1: Tipe Dinas */}
+              {tipeDinas && (
+                <span className="inline-flex items-center gap-1.5 rounded-full bg-slate-900 px-3 py-1 font-medium text-white shadow-xs">
+                  <span className="h-1.5 w-1.5 rounded-full bg-emerald-400" />
+                  {tipeDinas}
+                </span>
+              )}
+
+              {/* Segment 2: Nama Kantor */}
+              {namaKantor && (
+                <span className="inline-flex items-center gap-1.5 px-3 py-1 font-medium text-slate-600">
+                  <svg className="h-3.5 w-3.5 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+                  </svg>
+                  {namaKantor}
+                </span>
+              )}
+            </div>
           </div>
 
         </div>
@@ -140,6 +153,7 @@ export default function InformasiPerjalanan({
 DetailItem.propTypes = {
   label: PropTypes.string.isRequired,
   value: PropTypes.node,
+  className: PropTypes.string,
 };
 
 InformasiPerjalanan.propTypes = {
@@ -152,6 +166,8 @@ InformasiPerjalanan.propTypes = {
     kegiatan: PropTypes.string,
     file: PropTypes.string,
     fileSurat: PropTypes.string,
+    namaKantor: PropTypes.string,
+    kantor: PropTypes.string,
 
     tglSurat: PropTypes.oneOfType([
       PropTypes.string,
