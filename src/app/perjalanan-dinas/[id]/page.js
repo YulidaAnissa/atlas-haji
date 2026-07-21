@@ -299,11 +299,12 @@ export default function Component() {
               pejabatMengetahui: ppt.pejabatMengetahui,
               gol: item.gol || "-",
               nip: item.jenisPegawai === "PNS" || item.jenisPegawai === "PPPK" ? item.nip : "-",
-              namaKantor: item.namaKantor || "-",
-              callCenter: item.callCenter || "-",
-              alamat: item.alamat || "-",
-              email: item.email || "-",
-              website: item.website || "-"
+              namaKantor: suratTugas?.surat?.namaKantor || "-",
+              callCenter: suratTugas?.surat?.callCenter || "-",
+              alamat: suratTugas?.surat?.alamat || "-",
+              email: suratTugas?.surat?.email || "-",
+              website: suratTugas?.surat?.website || "-",
+              asal: item.kabkota
             }}
             format="/spd-format.docx"
             file={`spd-${item.nip}`}
