@@ -13,6 +13,7 @@ import {
   FiMapPin,
   FiUsers,
 } from "react-icons/fi";
+import { FaBuilding } from "react-icons/fa";
 
 import { profileStorage } from "@/utils/storage";
 
@@ -53,6 +54,11 @@ export default function Sidebar({ sidebarOpen, setSidebarOpen }) {
               children: [
                 { name: "Pegawai", icon: <FiUsers />, path: "/pegawai" },
                 {
+                  name: "Kantor",
+                  icon: <FaBuilding />,
+                  path: "/kantor",
+                },
+                {
                   name: "Kabupaten / Kota",
                   icon: <FiMapPin />,
                   path: "/kabupaten-kota",
@@ -62,6 +68,7 @@ export default function Sidebar({ sidebarOpen, setSidebarOpen }) {
                   icon: <FiClipboard />,
                   path: "/surat-tugas",
                 },
+                
               ],
             },
           ]

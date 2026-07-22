@@ -15,14 +15,20 @@ export default function DaftarPerjalananDinas() {
   const pathname = usePathname();
   const [search, setSearch] = useState("");
   const [selectedKantor, setSelectedKantor] = useState("");
+  const [profil, setProfil] = useState(null);
+
+  // Tentukan target kantor: utamakan selectedKantor, jika tidak ada gunakan profil?.idKantor
+  const targetKantor = selectedKantor || profil?.idKantor;
+
+  console.log(selectedKantor, "targetKantor ");
 
   const { data, isLoading } = useSuratTugas({
     params: { 
       search,
-      ...(selectedKantor && { idKantor: selectedKantor })
+      ...(targetKantor && { idKantor: targetKantor })
     },
   });
-  const [profil, setProfil] = useState(null);
+  
 
   const { data: dataKantor, isLoading: loadingKantor } = useKantor();
 
@@ -53,6 +59,7 @@ export default function DaftarPerjalananDinas() {
     { label: "Daftar Perjalanan Dinas" },
   ];
 
+  console.log(profil?.idKantor === "1");
   return (
     <PageBase className="mx-auto p-6 sm:p-8 lg:p-10">
       <div className="mb-8">
@@ -116,17 +123,19 @@ export default function DaftarPerjalananDinas() {
                 </button>
               )}
             </div>
-            <DropdownFilter
-              options={dataKantor ?? []}
-              value={selectedKantor}
-              onChange={setSelectedKantor}
-              placeholder="Semua Kantor"
-              valueKey="idKantor"
-              labelKey="nama"
-              icon={FiBriefcase}
-              loading={loadingKantor}
-              className="w-full sm:flex-1 sm:max-w-md"
-            />
+            {profil?.idKantor === "1" && (
+              <DropdownFilter
+                options={dataKantor ?? []}
+                value={selectedKantor}
+                onChange={setSelectedKantor}
+                placeholder="Semua Kantor"
+                valueKey="idKantor"
+                labelKey="nama"
+                icon={FiBriefcase}
+                loading={loadingKantor}
+                className="w-full sm:flex-1 sm:max-w-md"
+              />
+            )}
           </div>
         </div>
 

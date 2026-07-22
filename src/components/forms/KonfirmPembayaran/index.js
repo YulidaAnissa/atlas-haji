@@ -5,6 +5,7 @@ import { Field, Form } from "react-final-form";
 import { formatDate } from "@/utils/date";
 import { DatePicker, UploadFile } from "../FormField";
 import SelectField from "../FormField/SelectField";
+import { formatTipePerjalanan } from "@/utils/string";
 
 function DetailItem({ label, value }) {
   return (
@@ -38,6 +39,8 @@ export default function ComponentForm({
   const selectedAnggaran =
     anggaranOptions.find((option) => option.value === data?.surat?.anggaran) ??
     null;
+
+  console.log(data, 'data konfirm pembayaran');
 
   return (
     <Form
@@ -78,14 +81,70 @@ export default function ComponentForm({
             </div>
 
             <div className="grid gap-4 p-6 md:grid-cols-2 xl:grid-cols-3">
-              <DetailItem label="Nomor Surat" value={data?.surat?.noSurat} />
+              {/* Bagian ini dibuat col-span-full agar mengambil lebar penuh di dalam grid */}
+              <div className="col-span-full flex items-center self-start sm:self-auto">
+                <div className="flex w-full items-center justify-start gap-3 rounded-full border border-slate-200/80 bg-white/95 p-1.5 pr-5 shadow-sm backdrop-blur-md transition-shadow hover:shadow-md">
+                  {/* Segment 1: Tipe Dinas */}
+                  {data?.surat?.type && (
+                    <span className="inline-flex shrink-0 items-center gap-2.5 rounded-full bg-slate-900 px-4 py-2 text-sm font-semibold tracking-wide text-white shadow-sm">
+                      {/* Indikator Titik (Sedikit diperbesar dengan efek pulse halus) */}
+                      <span className="relative flex h-2.5 w-2.5 items-center justify-center">
+                        <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-75" />
+                        <span className="relative inline-flex h-2 w-2 rounded-full bg-emerald-500" />
+                      </span>
+                      {formatTipePerjalanan(data?.surat?.type)}
+                    </span>
+                  )}
+
+                  {/* Garis Pembatas (Divider) - Menambah kerapian visual */}
+                  {data?.surat?.type && data?.surat?.namaKantor && (
+                    <div className="h-6 w-px shrink-0 bg-slate-200" />
+                  )}
+
+                  {/* Segment 2: Nama Kantor */}
+                  {data?.surat?.namaKantor && (
+                    <div className="flex min-w-0 flex-1 items-center gap-3 text-slate-600">
+                      {/* Ikon dibungkus dalam lingkaran agar tampak lebih premium */}
+                      <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-slate-100/80 text-slate-500 shadow-inner">
+                        <svg
+                          className="h-4 w-4"
+                          fill="none"
+                          viewBox="0 0 24 24"
+                          stroke="currentColor"
+                          strokeWidth="2.5"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"
+                          />
+                        </svg>
+                      </div>
+                      {/* Teks diperbesar ke text-sm */}
+                      <span className="truncate text-sm font-medium text-slate-700">
+                        {data?.surat?.namaKantor}
+                      </span>
+                    </div>
+                  )}
+                  
+                </div>
+              </div>
+
+              {/* Sisa form di bawahnya */}
+              <DetailItem 
+                label="Nomor Surat" 
+                value={data?.surat?.noSurat} 
+              />
 
               <DetailItem
                 label="Tanggal Surat"
                 value={formatDate(data?.surat?.tglSurat)}
               />
 
-              <DetailItem label="Kegiatan" value={data?.surat?.kegiatan} />
+              <DetailItem 
+                label="Kegiatan" 
+                value={data?.surat?.kegiatan} 
+              />
 
               {canVerify ? (
                 <>

@@ -49,7 +49,7 @@ export default function Component() {
   const router = useRouter();
 
   const [profil, setProfil] = useState(null);
-  const [deletedNip, setDeletedNip] = useState(null);
+  const [deletedPegawai, setDeletedPegawai] = useState(null);
   const [showAddPegawai, setShowAddPegawai] = useState(false);
   const [updatePerjalananPegawai, setUpdatePerjalananPegawai] = useState({ data: null, show: false });
   const [showUpdatePerjalanan, setShowUpdatePerjalanan] = useState(false);
@@ -180,12 +180,12 @@ export default function Component() {
     try {
       startLoading();
 
+      // Kirim idPerjalananPegawai, idSurat, dan nip untuk mengakomodasi berbagai skenario backend
       const result = await deletePegawaiPerjalanan({
-        idSurat: id,
-        nip: deletedNip,
+        idPerjalananPegawai: deletedPegawai?.idPerjalananPegawai,
       });
 
-      setDeletedNip(null);
+      setDeletedPegawai(null);
 
       if (result?.message?.includes("perjalanan otomatis terhapus")) {
         router.push("/perjalanan-dinas");
@@ -200,13 +200,12 @@ export default function Component() {
       endLoading();
     }
   };
-
   const getJabatanPPT = (pegawaiJabatan, suratJabatan) => {
     const jabatan = String(pegawaiJabatan ?? "").trim().toLowerCase();
     const jabatanSurat = suratJabatan || "-";
 
     // Condition 2: Jika pegawaiJabatan adalah kepala bidang atau kepala bagian
-    if (jabatan.includes("kepala bidang") || jabatan.includes("kepala bagian")) {
+    if (jabatan.includes("kepala")) {
       return {
         an: "",
         pejabatMengetahui: "",
@@ -235,7 +234,7 @@ export default function Component() {
     else {
       return {
         an: "An. ",
-        pejabatMengetahui: "Kepala Kantor Wilayah",
+        pejabatMengetahui: profil?.idKantor === "1" ? "Kepala Kantor Wilayah" : "Kepala Kantor",
         jabatanPPT: jabatanSurat,
       };
     }
@@ -277,7 +276,7 @@ export default function Component() {
           <button
             type="button"
             className={`inline-flex items-center justify-center rounded-xl border  px-3 py-2 text-sm font-semibold  ${!isDisabled ? "cursor-not-allowed opacity-50bg-gray-200 text-gray-400 border border-gray-300" : "border-red-200 bg-red-50 text-red-700 transition hover:bg-red-100"}`}
-            onClick={() => setDeletedNip(item.nip)}
+            onClick={() => setDeletedPegawai(item)}
             disabled={!isDisabled}
           >
             <TiDeleteOutline className="h-6 w-6" />
@@ -296,7 +295,6 @@ export default function Component() {
               lama: calculateTripDuration(item.tglBerangkat, item.tglKembali),
               tglBerangkat: formatDate(item.tglBerangkat, "DD MMMM YYYY"),
               tglKembali: formatDate(item.tglKembali, "DD MMMM YYYY"),
-              asal: item.asal,
               kabkota: item.tujuan,
               kegiatan: suratTugas?.surat?.kegiatan || "-",
               unit: suratTugas?.surat?.unit,
@@ -309,6 +307,7 @@ export default function Component() {
               nip: item.jenisPegawai === "PNS" || item.jenisPegawai === "PPPK" ? item.nip : "-",
               namaKantor: suratTugas?.surat?.namaKantor || "-",
               callCenter: suratTugas?.surat?.callCenter || "-",
+              unitKantor: suratTugas?.surat?.unitKantor || " ",
               alamat: suratTugas?.surat?.alamat || "-",
               email: suratTugas?.surat?.email || "-",
               website: suratTugas?.surat?.website || "-",
@@ -382,9 +381,9 @@ export default function Component() {
       </section>
 
       <InfoModal
-        show={Boolean(deletedNip)}
+        show={Boolean(deletedPegawai)}
         onConfirm={handleDelete}
-        onCancel={() => setDeletedNip(null)}
+        onCancel={() => setDeletedPegawai(null)}
       >
         {suratTugas?.pegawai?.length === 1 ? (
           <p>

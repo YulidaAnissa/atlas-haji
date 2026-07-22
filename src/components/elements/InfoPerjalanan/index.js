@@ -1,6 +1,6 @@
 import PropTypes from "prop-types";
 import { formatDate } from "@/utils/date";
-import { FaInfoCircle } from "react-icons/fa";
+import { formatTipePerjalanan } from "@/utils/string";
 
 function DetailItem({ label, value, className }) {
   return (
@@ -16,23 +16,12 @@ function DetailItem({ label, value, className }) {
   );
 }
 
-function formatTipePerjalanan(type) {
-  if (!type) return null;
-  // Mencegah konflik jika type bernilai "khusus"
-  if (type === "khusus") return null; 
-  
-  return type
-    .split("_")
-    .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
-    .join(" ");
-}
-
 export default function InformasiPerjalanan({
   data,
   className = "",
 }) {
   const fileSurat = data?.file || data?.fileSurat || null;
-  const namaKantor = data?.namaKantor || data?.kantor || null;
+  const namaKantor = data?.namaKantor || "-";
 
   const details = [
     {

@@ -24,7 +24,7 @@ import { calculateTripDuration, formatDate, formatRangeDate } from "@/utils/date
 import { profileStorage } from "@/utils/storage";
 import { FiEye } from "react-icons/fi";
 import { terbilang } from "@/utils/currency";
-import { capitalize } from "@/utils/string";
+import { capitalize, toUpperCase } from "@/utils/string";
 
 export default function Component() {
   const { id } = useParams();
@@ -81,7 +81,7 @@ export default function Component() {
       uhPerHari = 90000;
     } else if (tipeSurat === "full_board") {
       uhPerHari = 130000;
-    } else if (tipeSurat === "full_day") {
+    } else if (tipeSurat === "full_day" && tipeSurat === "reguler") {
       // 2. Jika full_day, cari UH terbesar berdasarkan array/string tujuan
       const daftarTujuan = Array.isArray(item.tujuan) 
         ? item.tujuan 
@@ -166,7 +166,12 @@ export default function Component() {
       isRepre: isKepalaKantor ? "Rp" : "",
       biayaRepre: isKepalaKantor ? formatRupiah(biayaRepVal) + ",-" : "",
       
-      terbilang: `${capitalize(terbilang(jumlahTotal))} Rupiah`
+      terbilang: `${capitalize(terbilang(jumlahTotal))} Rupiah`,
+      namaKantor: data?.surat?.namaKantor || " ",
+      alamat: data?.surat?.alamat || " ",
+      asal: item.kabkota,
+      unitKantor: data?.surat?.unitKantor || " ",
+      unitKantorCapital : toUpperCase(data?.surat?.unitKantor)
     };
   });
 
@@ -331,8 +336,6 @@ export default function Component() {
 
   const pegawaiVerifikasi =
     String(profil?.role || "").trim().toLowerCase() === "finance";
-
-  console.log('data daftar nominatif', data);
 
   return (
     <PageBase className="mx-auto max-w-7xl px-6 py-10 lg:px-12">

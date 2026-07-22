@@ -119,8 +119,6 @@ export default function AddPerjalananDinas() {
     },
   });
 
-  console.log(profil, "profil");
-
   const handleSubmit = async (values, form) => {
     try {
       const formData =

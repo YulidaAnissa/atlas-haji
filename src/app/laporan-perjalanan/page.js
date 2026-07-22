@@ -3,28 +3,30 @@
 import { DataTables, Breadcrumb, DropdownFilter } from "@/components/elements";
 import PageBase from "@/components/pagebase";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useSuratTugas, useKantor } from "@/hooks/useData";
 import { formatDate } from "@/utils/date";
 import { FiEye, FiSearch, FiX, FiBriefcase } from "react-icons/fi";
 import { HEAD_CELL } from "../../constants";
+import { profileStorage } from "@/utils/storage";
 
 export default function DaftarLaporanPerjalananDinas() {
   const router = useRouter();
+  const [profil, setProfil] = useState(null);
   const [search, setSearch] = useState("");
   const [selectedKantor, setSelectedKantor] = useState("");
-
+  const targetKantor = selectedKantor || profil?.idKantor;
   const { data, isLoading } = useSuratTugas({
     params: { 
       search,
-      ...(selectedKantor && { idKantor: selectedKantor })
+      ...(targetKantor && { idKantor: targetKantor })
     }
   });
 
-  console.log('selectedKantor ', selectedKantor);
-
   const { data: dataKantor, isLoading: loadingKantor } = useKantor();
-
+  useEffect(() => {
+    setProfil(profileStorage.get());
+  }, []);
   const formattedData = (data ?? []).map((item) => ({
     ...item,
     tglSurat: item.tglSurat ? formatDate(item.tglSurat, "DD MMMM YYYY") : "",
@@ -95,17 +97,20 @@ export default function DaftarLaporanPerjalananDinas() {
                 </button>
               )}
             </div>
-            <DropdownFilter
-              options={dataKantor ?? []}
-              value={selectedKantor}
-              onChange={setSelectedKantor}
-              placeholder="Semua Kantor"
-              valueKey="idKantor"
-              labelKey="nama"
-              icon={FiBriefcase}
-              loading={loadingKantor}
-              className="w-full sm:flex-1 sm:max-w-md"
-            />
+            {profil?.idKantor === '1' && (
+              <DropdownFilter
+                options={dataKantor ?? []}
+                value={selectedKantor}
+                onChange={setSelectedKantor}
+                placeholder="Semua Kantor"
+                valueKey="idKantor"
+                labelKey="nama"
+                icon={FiBriefcase}
+                loading={loadingKantor}
+                className="w-full sm:flex-1 sm:max-w-md"
+              />
+            )}
+            
           </div>
         </div>
 

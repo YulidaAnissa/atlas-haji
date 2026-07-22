@@ -1,6 +1,17 @@
 const patternAngka = /[0-9]/;
 const patternUppercase = /[A-Z]/;
 
+export const formatTipePerjalanan = (type) => {
+  if (!type) return null;
+  // Mencegah konflik jika type bernilai "khusus"
+  if (type === "khusus") return null; 
+  
+  return type
+    .split("_")
+    .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+    .join(" ");
+}
+
 export const checkPasswordStrength = (password) => {
   if(password.length >= 15 && patternAngka.test(password) || patternUppercase.test(password)){
     return 'Kuat';
