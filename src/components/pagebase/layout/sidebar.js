@@ -17,7 +17,7 @@ import { FaBuilding } from "react-icons/fa";
 
 import { profileStorage } from "@/utils/storage";
 
-const ADMIN_MENU_NAMES = ["Pegawai", "Kabupaten / Kota", "Surat Tugas"];
+const ADMIN_MENU_NAMES = ["Pegawai", "Kantor", "Kabupaten / Kota", "Surat Tugas"];
 
 export default function Sidebar({ sidebarOpen, setSidebarOpen }) {
   const router = useRouter();
@@ -27,6 +27,7 @@ export default function Sidebar({ sidebarOpen, setSidebarOpen }) {
   const [profil, setProfil] = useState(null);
 
   const isAdmin = String(profil?.role ?? "").trim().toLowerCase() === "admin";
+  const isSuperAdmin = isAdmin && String(profil?.idKantor ?? "").trim() === "1";
 
   const menuItems = useMemo(
     () => [
@@ -53,28 +54,32 @@ export default function Sidebar({ sidebarOpen, setSidebarOpen }) {
               icon: <FiDatabase />,
               children: [
                 { name: "Pegawai", icon: <FiUsers />, path: "/pegawai" },
-                {
-                  name: "Kantor",
-                  icon: <FaBuilding />,
-                  path: "/kantor",
-                },
-                {
-                  name: "Kabupaten / Kota",
-                  icon: <FiMapPin />,
-                  path: "/kabupaten-kota",
-                },
+                // Menu Kantor & Kabupaten / Kota hanya muncul jika idKantor === "1"
+                ...(isSuperAdmin
+                  ? [
+                      {
+                        name: "Kantor",
+                        icon: <FaBuilding />,
+                        path: "/kantor",
+                      },
+                      {
+                        name: "Kabupaten / Kota",
+                        icon: <FiMapPin />,
+                        path: "/kabupaten-kota",
+                      },
+                    ]
+                  : []),
                 {
                   name: "Surat Tugas",
                   icon: <FiClipboard />,
                   path: "/surat-tugas",
                 },
-                
               ],
             },
           ]
         : []),
     ],
-    [isAdmin],
+    [isAdmin, isSuperAdmin],
   );
 
   const closeSidebarOnMobile = () => {
@@ -110,6 +115,14 @@ export default function Sidebar({ sidebarOpen, setSidebarOpen }) {
       return;
     }
 
+    // Jika bukan superadmin tapi mencoba mengakses menu khusus superadmin dari cache
+    if (!isSuperAdmin && (savedMenu === "Kantor" || savedMenu === "Kabupaten / Kota")) {
+      localStorage.removeItem("activeMenu");
+      setActiveMenu(null);
+      setOpenDropdown(null);
+      return;
+    }
+
     setActiveMenu(savedMenu);
 
     const parentMenu = menuItems.find((item) =>
@@ -119,7 +132,7 @@ export default function Sidebar({ sidebarOpen, setSidebarOpen }) {
     if (parentMenu) {
       setOpenDropdown(parentMenu.name);
     }
-  }, [isAdmin, menuItems]);
+  }, [isAdmin, isSuperAdmin, menuItems]);
 
   return (
     <aside

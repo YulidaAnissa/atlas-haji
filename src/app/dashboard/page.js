@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import {
   FaCar,
@@ -8,6 +8,8 @@ import {
   FaCheckCircle,
   FaHome,
   FaCalendarAlt,
+  FaBriefcase,
+  FaFilter,
 } from "react-icons/fa";
 import Box from "@mui/material/Box";
 import CircularProgress from "@mui/material/CircularProgress";
@@ -18,13 +20,15 @@ import {
   StatCard,
   MonthlySchedule,
   NotificationDashboard,
+  DropdownFilter,
 } from "@/components/elements";
 import {
   useDashboardFilter,
   useDashboardSummary,
-  useNotifPegawai,
   usePerjalananPegawai,
+  useKantor,
 } from "@/hooks/useData";
+import { profileStorage } from "@/utils/storage";
 
 const months = [
   "Januari",
@@ -62,16 +66,45 @@ export default function PerjalananDinasPage() {
 
   const [month, setMonth] = useState(today.getMonth() + 1);
   const [year, setYear] = useState(today.getFullYear());
+  const [selectedKantor, setSelectedKantor] = useState("");
+  const [profil, setProfil] = useState(null);
 
+  useEffect(() => {
+    setProfil(profileStorage.get());
+  }, []);
+
+  // Tentukan target kantor: admin (idKantor === "1") bisa bebas pilih, jika tidak dikunci ke profil user
+  const targetKantor = profil?.idKantor === "1" 
+    ? selectedKantor 
+    : (selectedKantor || profil?.idKantor);
+
+  // Hook Dashboard Filter dengan parameter bulan, tahun, dan kantor
   const { data, isLoading } = useDashboardFilter({
-    urlParams: { month, year },
+    params: { 
+      month, 
+      year,
+      ...(targetKantor && { idKantor: targetKantor })
+    },
   });
 
-  const { data: summary, isLoading: isSummaryLoading } = useDashboardSummary();
+  console.log("data jadwal", data);
 
+  const { data: summary, isLoading: isSummaryLoading } = useDashboardSummary({
+    params: { 
+      month, 
+      year,
+      ...(targetKantor && { idKantor: targetKantor }) 
+    }
+  });
+  
   const { data: perjalananData } = usePerjalananPegawai({
-    params: { status: "tolak" },
+    params: { 
+      status: "tolak",
+      ...(targetKantor && { idKantor: targetKantor })
+    },
   });
+
+  const { data: dataKantor, isLoading: loadingKantor } = useKantor();
 
   const handlePerjalananClick = (status) => {
     router.push(`/perjalanan-dinas/filter?status=${status}`);
@@ -95,8 +128,7 @@ export default function PerjalananDinasPage() {
                   Perjalanan Dinas
                 </h1>
                 <p className="mt-2 max-w-2xl text-sm leading-6 text-gray-500">
-                  Pantau ringkasan perjalanan, status pengajuan pembayaran, dan
-                  jadwal perjalanan dinas berdasarkan bulan.
+                  Pantau ringkasan perjalanan, status pengajuan pembayaran, dan jadwal perjalanan dinas.
                 </p>
               </div>
             </div>
@@ -115,6 +147,67 @@ export default function PerjalananDinasPage() {
           </div>
         </div>
       </header>
+
+      {/* FILTER BAR DI ATAS STAT CARD */}
+      <section className="mb-6 rounded-2xl border border-gray-200 bg-white p-5 shadow-sm">
+        <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+          <div className="flex items-center gap-2">
+            <div className="grid h-9 w-9 place-items-center rounded-xl bg-gray-100 text-gray-600">
+              <FaFilter className="text-sm" />
+            </div>
+            <div>
+              <h2 className="text-sm font-bold text-gray-900">Filter Data Dashboard</h2>
+              <p className="text-xs text-gray-500">Sesuaikan periode dan kantor untuk melihat statistik</p>
+            </div>
+          </div>
+
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
+            {profil?.idKantor === "1" && (
+              <DropdownFilter
+                options={dataKantor ?? []}
+                value={selectedKantor}
+                onChange={setSelectedKantor}
+                placeholder="Semua Kantor"
+                valueKey="idKantor"
+                labelKey="nama"
+                icon={FaBriefcase}
+                loading={loadingKantor}
+                className="w-full sm:w-60"
+              />
+            )}
+
+            <label className="flex items-center gap-2">
+              <span className="text-sm font-medium text-gray-600">Bulan</span>
+              <select
+                value={month}
+                onChange={(event) => setMonth(Number(event.target.value))}
+                className="h-10 rounded-xl border border-gray-300 bg-white px-3 text-sm font-medium text-gray-800 shadow-sm outline-none transition hover:border-blue-500 focus:border-blue-600 focus:ring-4 focus:ring-blue-100"
+              >
+                {months.map((monthName, index) => (
+                  <option key={monthName} value={index + 1}>
+                    {monthName}
+                  </option>
+                ))}
+              </select>
+            </label>
+
+            <label className="flex items-center gap-2">
+              <span className="text-sm font-medium text-gray-600">Tahun</span>
+              <select
+                value={year}
+                onChange={(event) => setYear(Number(event.target.value))}
+                className="h-10 rounded-xl border border-gray-300 bg-white px-3 text-sm font-medium text-gray-800 shadow-sm outline-none transition hover:border-blue-500 focus:border-blue-600 focus:ring-4 focus:ring-blue-100"
+              >
+                {years.map((yearItem) => (
+                  <option key={yearItem} value={yearItem}>
+                    {yearItem}
+                  </option>
+                ))}
+              </select>
+            </label>
+          </div>
+        </div>
+      </section>
 
       {perjalananData?.length > 0 && (
         <section className="mb-8">
@@ -155,6 +248,8 @@ export default function PerjalananDinasPage() {
           </div>
         </section>
       )}
+
+      {/* STAT CARDS */}
       <section className="mb-10">
         {isSummaryLoading ? (
           <LoadingState label="Memuat ringkasan dashboard..." />
@@ -196,48 +291,15 @@ export default function PerjalananDinasPage() {
         )}
       </section>
 
+      {/* JADWAL BULANAN */}
       <section className="overflow-hidden rounded-3xl border border-gray-200 bg-white shadow-sm">
-        <div className="flex flex-col gap-5 border-b border-gray-200 bg-gray-50 px-6 py-5 md:flex-row md:items-center md:justify-between">
-          <div>
-            <h2 className="text-lg font-semibold text-gray-900">
-              Jadwal Bulanan
-            </h2>
-            <p className="mt-1 text-sm text-gray-500">
-              Pilih bulan dan tahun untuk melihat daftar perjalanan dinas.
-            </p>
-          </div>
-
-          <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
-            <label className="flex items-center gap-2">
-              <span className="text-sm font-medium text-gray-600">Bulan</span>
-              <select
-                value={month}
-                onChange={(event) => setMonth(Number(event.target.value))}
-                className="h-10 rounded-xl border border-gray-300 bg-white px-3 text-sm font-medium text-gray-800 shadow-sm outline-none transition hover:border-blue-500 focus:border-blue-600 focus:ring-4 focus:ring-blue-100"
-              >
-                {months.map((monthName, index) => (
-                  <option key={monthName} value={index + 1}>
-                    {monthName}
-                  </option>
-                ))}
-              </select>
-            </label>
-
-            <label className="flex items-center gap-2">
-              <span className="text-sm font-medium text-gray-600">Tahun</span>
-              <select
-                value={year}
-                onChange={(event) => setYear(Number(event.target.value))}
-                className="h-10 rounded-xl border border-gray-300 bg-white px-3 text-sm font-medium text-gray-800 shadow-sm outline-none transition hover:border-blue-500 focus:border-blue-600 focus:ring-4 focus:ring-blue-100"
-              >
-                {years.map((yearItem) => (
-                  <option key={yearItem} value={yearItem}>
-                    {yearItem}
-                  </option>
-                ))}
-              </select>
-            </label>
-          </div>
+        <div className="border-b border-gray-200 bg-gray-50 px-6 py-5">
+          <h2 className="text-lg font-semibold text-gray-900">
+            Jadwal Bulanan
+          </h2>
+          <p className="mt-1 text-sm text-gray-500">
+            Daftar perjalanan dinas berdasarkan filter periode dan kantor yang dipilih.
+          </p>
         </div>
 
         <div className="p-6">

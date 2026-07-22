@@ -20,3 +20,4 @@ export const StatusBadge = dynamic(() => import("./StatusBadge"), { ssr: false }
 export const InfoPerjalanan = dynamic(() => import("./InfoPerjalanan"), { ssr: false });
 export const PreviewPDF = dynamic(() => import("./PreviewPDF"), { ssr: false });
 export const DropdownFilter = dynamic(() => import("./DropdownFilter"), { ssr: false });
+export const DaftarNominatifAjuan = dynamic(() => import("./DaftarNominatifAjuan"), { ssr: false });

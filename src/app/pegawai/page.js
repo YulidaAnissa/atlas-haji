@@ -11,7 +11,7 @@ import {
 } from "@/components/elements";
 import PageBase from "@/components/pagebase";
 import { usePathname, useRouter } from "next/navigation";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { FiBriefcase, FiPlus, FiSearch, FiX } from "react-icons/fi";
 import { 
   usePegawai, 
@@ -22,15 +22,21 @@ import {
 import AddPegawaiForm from "@/components/forms/Pegawai";
 import { FaEdit } from "react-icons/fa";
 import { TiEdit, TiDeleteOutline } from "react-icons/ti";
+import { profileStorage } from "@/utils/storage";
 
 export default function DaftarPegawai() {
   const router = useRouter();
   const pathname = usePathname();
-
+  const [profil, setProfil] = useState(null);
   const [search, setSearch] = useState("");
   const [selectedKantor, setSelectedKantor] = useState("");
   const [showEdit, setShowEdit] = useState(null);
   const [deleted, setDeleted] = useState(null);
+
+  useEffect(() => {
+    setProfil(profileStorage.get());
+  }, []);
+
   const [showSnackbar, setShowSnackbar] = useState({
     show: false,
     message: "",
@@ -41,11 +47,15 @@ export default function DaftarPegawai() {
   const { data: dataKantor, isLoading: loadingKantor } = useKantor();
   console.log(selectedKantor, "selected kantor");
 
+  const targetKantor = profil?.idKantor === "1" 
+    ? selectedKantor 
+    : (selectedKantor || profil?.idKantor);
+
   // Fetch data pegawai
   const { data, isLoading, fetch } = usePegawai({
     params: { 
       search,
-      ...(selectedKantor && { idKantor: selectedKantor }),
+      ...(targetKantor && { idKantor: targetKantor })
     },
   });
 
@@ -212,18 +222,19 @@ export default function DaftarPegawai() {
               )}
             </div>
 
-            {/* 💡 Dropdown Filter Kantor Panjang (Flex-1 mengisi sisa ruang) */}
-            <DropdownFilter
-              options={dataKantor ?? []}
-              value={selectedKantor}
-              onChange={setSelectedKantor}
-              placeholder="Semua Kantor"
-              valueKey="idKantor"
-              labelKey="nama"
-              icon={FiBriefcase}
-              loading={loadingKantor}
-              className="w-full sm:flex-1 sm:max-w-md"
-            />
+            {profil?.idKantor === "1" && (
+              <DropdownFilter
+                options={dataKantor ?? []}
+                value={selectedKantor}
+                onChange={setSelectedKantor}
+                placeholder="Semua Kantor"
+                valueKey="idKantor"
+                labelKey="nama"
+                icon={FiBriefcase}
+                loading={loadingKantor}
+                className="w-full sm:flex-1 sm:max-w-md"
+              />
+            )}
           </div>
         </div>
 

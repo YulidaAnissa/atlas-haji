@@ -3,6 +3,8 @@
 import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 import { FaEdit } from "react-icons/fa";
+import { IoDocumentTextOutline } from "react-icons/io5";
+import { FiEye, FiUsers, FiCheckCircle, FiClock } from "react-icons/fi";
 
 import PageBase from "@/components/pagebase";
 import {
@@ -13,23 +15,20 @@ import {
   Snackbar,
   VerifBiayaPerjalanan,
   StatusBadge,
+  DaftarNominatifAjuan,
 } from "@/components/elements";
 import FormModal from "@/components/elements/FormModal";
 import LoadingOverlay from "@/components/elements/LoadingOverlay";
 import ConfirmPembayaran from "@/components/forms/KonfirmPembayaran";
-import { IoDocumentTextOutline } from "react-icons/io5";
 import { useSuratTugas, useUpdateLaporan, useEditSuratTugas, useKabKota } from "@/hooks/useData";
 import { useLoading } from "@/hooks";
 import { calculateTripDuration, formatDate, formatRangeDate } from "@/utils/date";
 import { profileStorage } from "@/utils/storage";
-import { FiEye } from "react-icons/fi";
 import { terbilang } from "@/utils/currency";
 import { capitalize, toUpperCase } from "@/utils/string";
 
 export default function Component() {
   const { id } = useParams();
-
-  console.log('id ', id);
 
   const [showVerifBiayaPerjalanan, setShowVerifBiayaPerjalanan] = useState({
     show: false,
@@ -49,9 +48,8 @@ export default function Component() {
   });
 
   const { updateLaporan } = useUpdateLaporan();
-  const { editSuratTugas, loading: loadingEdit } = useEditSuratTugas();
-  const { data: dataKabKota, isLoading: isLoadingKabKota } = useKabKota();
-  console.log('data kabkota', dataKabKota);
+  const { editSuratTugas } = useEditSuratTugas();
+  const { data: dataKabKota } = useKabKota();
 
   useEffect(() => {
     setProfil(profileStorage.get());
@@ -67,7 +65,6 @@ export default function Component() {
     return duration * uh;
   };
 
-  // Update totalCount untuk mengikutsertakan biaya representatif
   const totalCount = (uh, biayaTrans, biayaPeng, biayaRep = 0) => {
     return (Number(uh) || 0) + (Number(biayaTrans) || 0) + (Number(biayaPeng) || 0) + (Number(biayaRep) || 0);
   };
@@ -76,13 +73,11 @@ export default function Component() {
     let uhPerHari = 0;
     const tipeSurat = data?.surat?.type;
 
-    // 1. Cek tipe surat terlebih dahulu sesuai aturan dinas
     if (tipeSurat === "half_day") {
       uhPerHari = 90000;
     } else if (tipeSurat === "full_board") {
       uhPerHari = 130000;
-    } else if (tipeSurat === "full_day" && tipeSurat === "reguler") {
-      // 2. Jika full_day, cari UH terbesar berdasarkan array/string tujuan
+    } else if (tipeSurat === "full_day" || tipeSurat === "reguler") {
       const daftarTujuan = Array.isArray(item.tujuan) 
         ? item.tujuan 
         : (item.tujuan ? item.tujuan.split(',').map(t => t.trim()) : []);
@@ -90,7 +85,6 @@ export default function Component() {
       let maxUhDaerah = 0;
 
       daftarTujuan.forEach((tujuanPegawai) => {
-        // Cari data daerah yang cocok di master data dataKabKota
         const matchKabKota = dataKabKota?.find(
           (kab) => kab.kabkota?.toLowerCase() === tujuanPegawai.toLowerCase()
         );
@@ -102,7 +96,6 @@ export default function Component() {
           } else if (item.jenisPegawai === "PPPK") {
             rate = Number(matchKabKota.uhPPPK) || 0;
           } else {
-            // Non ASN
             rate = Number(matchKabKota.uhNonASN) || 0;
           }
 
@@ -113,18 +106,12 @@ export default function Component() {
       });
 
       uhPerHari = maxUhDaerah;
-    } else {
-      // Default fallback global
-      uhPerHari = 0;
     }
 
     const isKhusus = item.typePerjalanan === "khusus";
     const uhValue = isKhusus ? 0 : uhPerHari;
-    
-    // Hitung akumulasi total UH
     const totalUangHarian = uhCount(uhValue, item.tglBerangkat, item.tglKembali);
     
-    // 💡 Hitung Biaya Representatif (150rb per hari jika jabatannya mengandung "Kepala Kantor")
     let biayaRepVal = 0;
     const isKepalaKantor = item.jabatan?.toLowerCase().includes("kepala kantor");
     if (isKepalaKantor) {
@@ -158,20 +145,17 @@ export default function Component() {
       nipPPK: item?.nipPPK,
       namaPPK: item?.namaPPK,
       unitPPK: item?.unitPPK,
-      trans: Number(item.biayaTrans || 0) === 0 ? "" : "- Transportasi",
+      trans: Number(item.biayaTrans || 0) === 0 ? "" : "- Transport",
       peng: Number(item.biayaPeng || 0) === 0 ? "" : "- Penginapan",
-      
-      // ⚙️ Integrasi Field Representatif Baru
       repre: Number(biayaRepVal) === 0 ? "" : "- Representatif",
       isRepre: isKepalaKantor ? "Rp" : "",
       biayaRepre: isKepalaKantor ? formatRupiah(biayaRepVal) + ",-" : "",
-      
       terbilang: `${capitalize(terbilang(jumlahTotal))} Rupiah`,
       namaKantor: data?.surat?.namaKantor || " ",
       alamat: data?.surat?.alamat || " ",
       asal: item.kabkota,
       unitKantor: data?.surat?.unitKantor || " ",
-      unitKantorCapital : toUpperCase(data?.surat?.unitKantor)
+      unitKantorCapital: toUpperCase(data?.surat?.unitKantor)
     };
   });
 
@@ -180,7 +164,6 @@ export default function Component() {
 
     try {
       startLoading();
-
       await updateLaporan(idPerjalananPegawai, { status: aksi, catatan });
       await fetch();
 
@@ -212,17 +195,14 @@ export default function Component() {
 
   const formattedData = (data?.pegawai ?? []).map((item) => {
     const canVerify = item.status === "pengajuan" && profil?.role === "finance";
-    const isPerjalananKhusus =
-      String(item?.typePerjalanan ?? "").trim().toLowerCase() === "khusus";
+    const isPerjalananKhusus = String(item?.typePerjalanan ?? "").trim().toLowerCase() === "khusus";
 
     return {
       ...item,
       nama: (
         <div className="flex flex-col gap-1">
-          <span className="font-medium text-gray-900">{item.nama}</span>
-          {item.nip && (
-            <span className="text-xs text-gray-500">{item.nip}</span>
-          )}
+          <span className="font-semibold text-gray-900">{item.nama}</span>
+          {item.nip && <span className="text-xs text-gray-500 font-mono">{item.nip}</span>}
           {isPerjalananKhusus && (
             <span className="inline-flex w-fit items-center rounded-full border border-amber-200 bg-amber-50 px-2.5 py-0.5 text-xs font-semibold text-amber-700">
               Perjalanan Khusus
@@ -230,19 +210,10 @@ export default function Component() {
           )}
         </div>
       ),
-      tanggal: formatRangeDate(
-        item.tglBerangkat,
-        item.tglKembali,
-        "DD MMM YYYY",
-      ),
-      status: (
-        <StatusBadge
-          status={item.status}
-          canVerify={canVerify}
-        />
-      ),
+      tanggal: formatRangeDate(item.tglBerangkat, item.tglKembali, "DD MMM YYYY"),
+      status: <StatusBadge status={item.status} canVerify={canVerify} />,
       aksi: (
-        <div className="flex justify-center gap-2">
+        <div className="flex justify-end gap-2">
           {item?.status !== "verifikasi" ? (
             canVerify && (
               <button
@@ -253,10 +224,10 @@ export default function Component() {
                     data: item.idPerjalananPegawai,
                   })
                 }
-                className="inline-flex items-center gap-2 rounded-lg bg-[#fbf7ec] px-3 py-2 text-sm font-semibold text-brand transition hover:bg-brand hover:text-white"
+                className="inline-flex items-center gap-1.5 rounded-xl bg-amber-50 px-3.5 py-2 text-sm font-semibold text-amber-800 transition-all hover:bg-amber-100 hover:shadow-sm"
               >
                 <FiEye className="h-4 w-4" />
-                Lihat
+                Lihat & Verifikasi
               </button>
             )
           ) : (
@@ -281,40 +252,24 @@ export default function Component() {
   ];
 
   const handleTglPembayaran = async (values) => {
-    console.log("values ", values);
-
     try {
       startLoading();
-
       const formData = new FormData();
 
-      if (values.anggaran.value) {
+      if (values.anggaran?.value) {
         formData.append("anggaran", values.anggaran.value);
       }
-
       if (values.tglPengajuanKppn) {
-        formData.append(
-          "tglKPPN",
-          formatDate(values.tglPengajuanKppn, "YYYY-MM-DD")
-        );
+        formData.append("tglKPPN", formatDate(values.tglPengajuanKppn, "YYYY-MM-DD"));
       }
-
       if (values.tglPembayaran) {
-        formData.append(
-          "tglPembayaran",
-          formatDate(values.tglPembayaran, "YYYY-MM-DD")
-        );
+        formData.append("tglPembayaran", formatDate(values.tglPembayaran, "YYYY-MM-DD"));
       }
-
       if (values.buktiPembayaran) {
         formData.append("buktiPembayaran", values.buktiPembayaran);
       }
 
-      await editSuratTugas({
-        idSurat: id,
-        values: formData,
-      });
-
+      await editSuratTugas({ idSurat: id, values: formData });
       await fetch();
 
       setShowSnackbar({
@@ -334,52 +289,95 @@ export default function Component() {
     }
   };
 
-  const pegawaiVerifikasi =
-    String(profil?.role || "").trim().toLowerCase() === "finance";
+  const pegawaiVerifikasi = String(profil?.role || "").trim().toLowerCase() === "finance";
+
+  // Statistik ringkas
+  const totalPegawai = data?.pegawai?.length ?? 0;
+  const totalVerifikasi = data?.pegawai?.filter(p => p.status === "verifikasi" || p.status === "selesai").length ?? 0;
+  const totalPengajuan = data?.pegawai?.filter(p => p.status === "pengajuan").length ?? 0;
 
   return (
-    <PageBase className="mx-auto max-w-7xl px-6 py-10 lg:px-12">
+    <PageBase className="mx-auto max-w-7xl px-6 py-10 lg:px-12 bg-gray-50/50 min-h-screen">
       <Breadcrumb items={breadcrumbItem} />
 
-      <header className="mb-8 mt-6 flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
+      {/* Header Elegan */}
+      <header className="mb-8 mt-6 flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between border-b border-gray-200/80 pb-6">
         <div>
-          <p className="text-sm font-semibold uppercase tracking-wide text-blue-600">
+          <span className="inline-flex items-center gap-1.5 rounded-full bg-blue-50 px-3 py-1 text-xs font-semibold uppercase tracking-wider text-blue-600 mb-2 border border-blue-100/50">
             Biaya Perjalanan
-          </p>
-          <h1 className="mt-2 text-3xl font-bold tracking-tight text-gray-900 md:text-4xl">
+          </span>
+          <h1 className="text-3xl font-black tracking-tight text-gray-900 md:text-4xl">
             Detail Biaya Perjalanan
           </h1>
-          <p className="mt-3 max-w-2xl text-sm leading-6 text-gray-500">
-            Kelola pengajuan biaya, verifikasi bukti pendukung, dan cetak daftar
-            nominatif perjalanan dinas.
+          <p className="mt-2 max-w-2xl text-sm leading-relaxed text-gray-600">
+            Kelola pengajuan biaya, verifikasi bukti pendukung, dan cetak daftar nominatif perjalanan dinas secara terpusat.
           </p>
         </div>
-        {(data?.pegawai?.length ?? 0) > 0 &&
-          data?.pegawai?.every((item) => item.status === "verifikasi" || item.status === "selesai") && (
-            <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap">
-              <button
-                type="button"
-                className="inline-flex items-center gap-2 justify-center rounded-xl border border-gray-200 bg-white px-5 py-2.5 text-sm font-semibold text-gray-700 shadow-sm transition hover:bg-gray-50"
-              >
-                <IoDocumentTextOutline className="h-4 w-4" />
-                <DaftarNominatif data={data} kabKota={dataKabKota} />
-              </button>
-            </div>
-          )}
 
+        {totalPegawai > 0 && (
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
+            {/* Tombol Cetak Daftar Nominatif Ajuan */}
+            <div className="inline-flex items-center justify-center rounded-xl border border-gray-300 bg-white px-4 py-2.5 text-sm font-semibold text-gray-700 shadow-sm transition-all hover:bg-gray-50 hover:border-gray-400 hover:shadow">
+              <IoDocumentTextOutline className="h-4 w-4 text-blue-600 mr-2 shrink-0" />
+              <DaftarNominatifAjuan data={data} kabKota={dataKabKota} />
+            </div>
+
+            {/* Tombol Cetak Daftar Nominatif Rampung */}
+            {data?.pegawai?.every((item) => item.status === "verifikasi" || item.status === "selesai") && (
+              <div className="inline-flex items-center justify-center rounded-xl bg-brand px-4 py-2.5 text-sm font-semibold text-white shadow-md shadow-brand/20 transition-all hover:bg-brand/90 hover:shadow-lg">
+                <IoDocumentTextOutline className="h-4 w-4 mr-2 shrink-0 text-white" />
+                <DaftarNominatif data={data} kabKota={dataKabKota} />
+              </div>
+            )}
+          </div>
+        )}
       </header>
+
+      {/* Statistik Ringkas */}
+      {totalPegawai > 0 && (
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-3 mb-8">
+          <div className="flex items-center gap-4 rounded-2xl border border-gray-200/80 bg-white p-5 shadow-sm transition-all hover:shadow-md">
+            <div className="grid h-12 w-12 place-items-center rounded-xl bg-blue-50 text-blue-600">
+              <FiUsers className="h-6 w-6" />
+            </div>
+            <div>
+              <p className="text-xs font-semibold uppercase tracking-wider text-gray-400">Total Pegawai</p>
+              <p className="text-2xl font-black text-gray-900 mt-0.5">{totalPegawai}</p>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-4 rounded-2xl border border-gray-200/80 bg-white p-5 shadow-sm transition-all hover:shadow-md">
+            <div className="grid h-12 w-12 place-items-center rounded-xl bg-emerald-50 text-emerald-600">
+              <FiCheckCircle className="h-6 w-6" />
+            </div>
+            <div>
+              <p className="text-xs font-semibold uppercase tracking-wider text-gray-400">Sudah Terverifikasi</p>
+              <p className="text-2xl font-black text-emerald-600 mt-0.5">{totalVerifikasi}</p>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-4 rounded-2xl border border-gray-200/80 bg-white p-5 shadow-sm transition-all hover:shadow-md">
+            <div className="grid h-12 w-12 place-items-center rounded-xl bg-amber-50 text-amber-600">
+              <FiClock className="h-6 w-6" />
+            </div>
+            <div>
+              <p className="text-xs font-semibold uppercase tracking-wider text-gray-400">Menunggu Pengajuan</p>
+              <p className="text-2xl font-black text-amber-600 mt-0.5">{totalPengajuan}</p>
+            </div>
+          </div>
+        </div>
+      )}
 
       <ConfirmPembayaran data={data} canVerify={pegawaiVerifikasi} onSubmit={handleTglPembayaran} />
 
-      <section className="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
-        <div className="mb-5">
-          <h2 className="text-lg font-semibold text-gray-900">
-            Daftar Pegawai
-          </h2>
-          <p className="mt-1 text-sm text-gray-500">
-            Tambahkan biaya perjalanan atau cetak kwitansi untuk pegawai yang
-            sudah terverifikasi.
-          </p>
+      <section className="rounded-2xl border border-gray-200/80 bg-white p-6 shadow-sm mt-6">
+        <div className="mb-6 flex items-center justify-between">
+          <div>
+            <h2 className="text-lg font-bold text-gray-900">Daftar Pegawai</h2>
+            <p className="mt-1 text-sm text-gray-500">
+              Tambahkan biaya perjalanan atau cetak kwitansi untuk pegawai yang sudah terverifikasi.
+            </p>
+          </div>
         </div>
 
         <DataTables
@@ -397,16 +395,11 @@ export default function Component() {
         <VerifBiayaPerjalanan
           data={
             showVerifBiayaPerjalanan?.data
-              ? data?.pegawai?.find(
-                  (p) =>
-                    p.idPerjalananPegawai === showVerifBiayaPerjalanan.data
-                )
+              ? data?.pegawai?.find((p) => p.idPerjalananPegawai === showVerifBiayaPerjalanan.data)
               : {}
           }
           onSubmit={handleConfirmBiaya}
-          onClose={() =>
-            setShowVerifBiayaPerjalanan({ show: false, data: null })
-          }
+          onClose={() => setShowVerifBiayaPerjalanan({ show: false, data: null })}
         />
       </FormModal>
 

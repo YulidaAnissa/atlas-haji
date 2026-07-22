@@ -17,10 +17,13 @@ export default function DaftarPerjalananDinas() {
   const [selectedKantor, setSelectedKantor] = useState("");
   const [profil, setProfil] = useState(null);
 
-  // Tentukan target kantor: utamakan selectedKantor, jika tidak ada gunakan profil?.idKantor
-  const targetKantor = selectedKantor || profil?.idKantor;
+  useEffect(() => {
+    setProfil(profileStorage.get());
+  }, []);
 
-  console.log(selectedKantor, "targetKantor ");
+  const targetKantor = profil?.idKantor === "1" 
+    ? selectedKantor 
+    : (selectedKantor || profil?.idKantor);
 
   const { data, isLoading } = useSuratTugas({
     params: { 
@@ -28,13 +31,8 @@ export default function DaftarPerjalananDinas() {
       ...(targetKantor && { idKantor: targetKantor })
     },
   });
-  
 
   const { data: dataKantor, isLoading: loadingKantor } = useKantor();
-
-  useEffect(() => {
-    setProfil(profileStorage.get());
-  }, []);
 
   const isAdmin =
     String(profil?.role || "").trim().toLowerCase() === "admin";

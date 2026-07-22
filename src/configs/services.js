@@ -21,7 +21,7 @@ const services = {
   SURAT_TUGAS: ({ id } = {}) => {
     return id ? `${SERVICE_BASE}/surat/${id}` : `${SERVICE_BASE}/surat`;
   },
-  DASHBOARD_FILTER: ({ month, year }) => `${SERVICE_BASE}/perjalanan/dashboard/filter/${month}/${year}`,
+  DASHBOARD_FILTER: `${SERVICE_BASE}/perjalanan/dashboard/filter`,
   DASHBOARD_SUMMARY: `${SERVICE_BASE}/perjalanan/dashboard/summary`,
   NOTIFICATIONS: ({ id } = {}) => `${SERVICE_BASE}/users/notif/${id}`,
   KANTOR: `${SERVICE_BASE}/kantor`,

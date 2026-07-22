@@ -1,14 +1,12 @@
 import useSWR from 'swr';
 import { SERVICES } from '@/configs';
-import { fetcher, deleteFetcher, auth, createSwrKey, defaultOptions, getDedupingInterval } from './../utils';
+import { fetcher, createSwrKey, defaultOptions, getDedupingInterval } from './../utils';
 import { accessTokenStorage } from '@/utils/storage';
-import useSWRMutation from "swr/mutation";
-import { useState } from 'react';
 
-export function useDashboardFilter({ dedupingInterval, urlParams = {}} = defaultOptions) {
+export function useDashboardFilter({ dedupingInterval, params = {} } = defaultOptions) {
   const token = accessTokenStorage.get().value;
-  const { data: { data } = [], error, mutate } = useSWR(
-    createSwrKey(SERVICES.DASHBOARD_FILTER(urlParams)), 
+  const { data: { data } = {}, error, mutate } = useSWR(
+    createSwrKey(SERVICES.DASHBOARD_FILTER, { params }), 
     fetcher({ headers: { Authorization: `Bearer ${token}` } }),
     { dedupingInterval: getDedupingInterval(dedupingInterval) }
   );
@@ -17,15 +15,15 @@ export function useDashboardFilter({ dedupingInterval, urlParams = {}} = default
     data: data,
     isLoading: !error && !data,
     error,
-    fetch: mutate
+    fetch: mutate,
   };
 }
 
 
-export function useDashboardSummary({ dedupingInterval } = defaultOptions) {
+export function useDashboardSummary({ dedupingInterval, params = {} } = defaultOptions) {
   const token = accessTokenStorage.get().value;
-  const { data: { data } = [], error, mutate } = useSWR(
-    createSwrKey(SERVICES.DASHBOARD_SUMMARY), 
+  const { data: { data } = {}, error, mutate } = useSWR(
+    createSwrKey(SERVICES.DASHBOARD_SUMMARY, { params }), 
     fetcher({ headers: { Authorization: `Bearer ${token}` } }),
     { dedupingInterval: getDedupingInterval(dedupingInterval) }
   );

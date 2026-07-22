@@ -15,7 +15,15 @@ export default function DaftarLaporanPerjalananDinas() {
   const [profil, setProfil] = useState(null);
   const [search, setSearch] = useState("");
   const [selectedKantor, setSelectedKantor] = useState("");
-  const targetKantor = selectedKantor || profil?.idKantor;
+  
+  useEffect(() => {
+    setProfil(profileStorage.get());
+  }, []);
+
+  const targetKantor = profil?.idKantor === "1" 
+    ? selectedKantor 
+    : (selectedKantor || profil?.idKantor);
+    
   const { data, isLoading } = useSuratTugas({
     params: { 
       search,
@@ -24,9 +32,7 @@ export default function DaftarLaporanPerjalananDinas() {
   });
 
   const { data: dataKantor, isLoading: loadingKantor } = useKantor();
-  useEffect(() => {
-    setProfil(profileStorage.get());
-  }, []);
+  
   const formattedData = (data ?? []).map((item) => ({
     ...item,
     tglSurat: item.tglSurat ? formatDate(item.tglSurat, "DD MMMM YYYY") : "",

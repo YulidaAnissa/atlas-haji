@@ -100,7 +100,7 @@ function CostCard({ title, amount, file, payerName }) {
             <span className="text-[10px] font-bold uppercase tracking-wider text-blue-600">
               Ditanggung Oleh
             </span>
-            <span className="mt-0.5 max-w-[140px] truncate text-xs font-semibold text-blue-900 sm:max-w-[200px]">
+            <span className="mt-0.5 max-w-35 truncate text-xs font-semibold text-blue-900 sm:max-w-50">
               {payerName}
             </span>
           </div>
@@ -127,7 +127,7 @@ function DocumentCard({ title, file }) {
   );
 }
 
-export default function ComponentForm({ data = {}, onSubmit, onClose = false, type = "verifikasi" }) {
+export default function ComponentForm({ data = {}, onSubmit, onClose = false, type = "verifikasi", surat = {} }) {
   const [showAlasan, setShowAlasan] = useState(false);
   const [catatan, setCatatan] = useState("");
 
@@ -139,12 +139,15 @@ export default function ComponentForm({ data = {}, onSubmit, onClose = false, ty
     tglBerangkat: formatDate(data?.tglBerangkat, "DD MMMM YYYY"),
     tglKembali: formatDate(data?.tglKembali, "DD MMMM YYYY"),
     kabkota: data?.tujuan,
-    kegiatan: data?.kegiatan,
+    kegiatan: data?.kegiatan || "",
     hasil: data?.hasil,
     lama: calculateTripDuration(
       data?.tglBerangkat,
       data?.tglKembali
     ),
+    asal: data?.kabkota || "",
+    namaKantor: surat?.namaKantor || "",
+    ...surat
   };
 
   console.log('form data:', data);

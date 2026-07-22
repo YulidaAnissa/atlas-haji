@@ -30,6 +30,7 @@ export default function Component() {
   const EMPTY_MODAL = {
     show: false,
     data: null,
+    surat: null
   };
   const [showLaporan, setShowLaporan] = useState(EMPTY_MODAL);
   const [showAddLaporan, setShowAddLaporan] = useState(false);
@@ -48,6 +49,8 @@ export default function Component() {
   const { data, isLoading, fetch } = useSuratTugas({
     urlParams: { id },
   });
+
+  console.log('use SUrat Tugas', data);
 
   const { updateLaporan } = useUpdateLaporan();
 
@@ -191,6 +194,7 @@ export default function Component() {
                 : setShowLaporan({
                     show: true,
                     data: item,
+                    surat: data?.surat
                   })
             }
             className={`inline-flex items-center gap-2 rounded-lg border px-3 py-2 text-sm font-semibold shadow-sm transition focus:outline-none focus:ring-2 ${
@@ -296,11 +300,11 @@ export default function Component() {
       >
         <VerifBiayaPerjalanan
           data={showLaporan?.data}
-          // onSubmit={handleConfirmBiaya}
           onClose={() =>
             setShowLaporan(EMPTY_MODAL)
           }
           type="laporan"
+          surat={showLaporan?.surat}
         />
       </FormModal>
 
