@@ -28,8 +28,6 @@ export function useUpdateLaporan() {
     setLoading(true);
     setError("");
 
-    console.log("Updating laporan with values:", values);
-
     const isFormData = values instanceof FormData;
 
     try {

@@ -20,7 +20,7 @@ import {
 import FormModal from "@/components/elements/FormModal";
 import LoadingOverlay from "@/components/elements/LoadingOverlay";
 import ConfirmPembayaran from "@/components/forms/KonfirmPembayaran";
-import { useSuratTugas, useUpdateLaporan, useEditSuratTugas, useKabKota } from "@/hooks/useData";
+import { useSuratTugas, useUpdateLaporan, useEditSuratTugas, useKabKota, useNominatifAjuan } from "@/hooks/useData";
 import { useLoading } from "@/hooks";
 import { calculateTripDuration, formatDate, formatRangeDate } from "@/utils/date";
 import { profileStorage } from "@/utils/storage";
@@ -47,6 +47,12 @@ export default function Component() {
   const { data, isLoading, fetch } = useSuratTugas({
     urlParams: { id },
   });
+
+  const { data: nominatifData, isLoading: loadingNominatif } = useNominatifAjuan({
+    urlParams: { id }
+  });
+
+  console.log('nominatif', nominatifData);
 
   const { updateLaporan } = useUpdateLaporan();
   const { editSuratTugas } = useEditSuratTugas();
@@ -278,21 +284,16 @@ export default function Component() {
           </p>
         </div>
 
-        {totalPegawai > 0 && (
+        {totalPegawai > 0 && data?.pegawai?.every((item) => item.status === "verifikasi" || item.status === "selesai") && (
           <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
-            {/* Tombol Cetak Daftar Nominatif Ajuan */}
             <div className="inline-flex items-center justify-center rounded-xl border border-gray-300 bg-white px-4 py-2.5 text-sm font-semibold text-gray-700 shadow-sm transition-all hover:bg-gray-50 hover:border-gray-400 hover:shadow">
               <IoDocumentTextOutline className="h-4 w-4 text-blue-600 mr-2 shrink-0" />
-              <DaftarNominatifAjuan data={data} kabKota={dataKabKota} />
+              <DaftarNominatifAjuan data={nominatifData} surat={data?.surat} kabKota={dataKabKota} />
             </div>
-
-            {/* Tombol Cetak Daftar Nominatif Rampung */}
-            {data?.pegawai?.every((item) => item.status === "verifikasi" || item.status === "selesai") && (
-              <div className="inline-flex items-center justify-center rounded-xl bg-brand px-4 py-2.5 text-sm font-semibold text-white shadow-md shadow-brand/20 transition-all hover:bg-brand/90 hover:shadow-lg">
-                <IoDocumentTextOutline className="h-4 w-4 mr-2 shrink-0 text-white" />
-                <DaftarNominatif data={data} kabKota={dataKabKota} />
-              </div>
-            )}
+            <div className="inline-flex items-center justify-center rounded-xl bg-brand px-4 py-2.5 text-sm font-semibold text-white shadow-md shadow-brand/20 transition-all hover:bg-brand/90 hover:shadow-lg">
+              <IoDocumentTextOutline className="h-4 w-4 mr-2 shrink-0 text-white" />
+              <DaftarNominatif data={data} kabKota={dataKabKota} />
+            </div>
           </div>
         )}
       </header>

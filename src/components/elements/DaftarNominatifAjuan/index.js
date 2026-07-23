@@ -7,11 +7,13 @@ import { useLoading } from "@/hooks";
 import LoadingOverlay from "@/components/elements/LoadingOverlay";
 import { formatDate, calculateTripDuration } from "@/utils/date";
 import { toUpperCase } from "@/utils/string";
+import { calculateUangHarianPerHari } from "@/utils/calculatorsUh";
 
 export default function SuratTugas({ 
   data,
   format = "/nominatif-format.docx",
   file = "daftar-nominatif",
+  surat,
   kabKota = [] // Berisi list master daerah beserta nominal uhPNS, uhPPPK, uhNonASN
 }) {
   const [loading, startLoading, endLoading] = useLoading();
@@ -51,7 +53,7 @@ export default function SuratTugas({
         return num === 0 ? "Rp. -" : formatRupiah(num);
       };
 
-      const tglKembaliTerakhir = data.pegawai.reduce((latest, current) => {
+      const tglKembaliTerakhir = data.reduce((latest, current) => {
         if (!current.tglKembali) return latest;
         if (!latest) return current.tglKembali;
         
@@ -60,46 +62,8 @@ export default function SuratTugas({
           : latest;
       }, null);
 
-      const pegawaiData = data.pegawai.map((item, index) => {
-        let uhPerHari = 0;
-        const tipeSurat = data.surat?.type;
-
-        if (tipeSurat === "half_day") {
-          uhPerHari = 90000;
-        } else if (tipeSurat === "full_board") {
-          uhPerHari = 130000;
-        } else if (tipeSurat === "full_day" || tipeSurat === "reguler") {
-          const daftarTujuan = Array.isArray(item.tujuan) 
-            ? item.tujuan 
-            : (item.tujuan ? item.tujuan.split(',').map(t => t.trim()) : []);
-
-          let maxUhDaerah = 0;
-
-          daftarTujuan.forEach((tujuanPegawai) => {
-            const matchKabKota = kabKota.find(
-              (kab) => kab.kabkota?.toLowerCase() === tujuanPegawai.toLowerCase()
-            );
-
-            if (matchKabKota) {
-              let rate = 0;
-              if (item.jenisPegawai === "PNS") {
-                rate = Number(matchKabKota.uhPNS) || 0;
-              } else if (item.jenisPegawai === "PPPK") {
-                rate = Number(matchKabKota.uhPPPK) || 0;
-              } else {
-                rate = Number(matchKabKota.uhNonASN) || 0;
-              }
-
-              if (rate > maxUhDaerah) {
-                maxUhDaerah = rate;
-              }
-            }
-          });
-
-          uhPerHari = maxUhDaerah;
-        } else {
-          uhPerHari = 0;
-        }
+      const pegawaiData = data.map((item, index) => {
+        const uhPerHari = calculateUangHarianPerHari(item, surat, kabKota)
 
         const isKhusus = item.typePerjalanan === "khusus";
         const uhType = isKhusus ? 0 : uhPerHari;
@@ -123,9 +87,9 @@ export default function SuratTugas({
           nama: item.nama,
           gol: item.gol || "-",
           jabatan: item.jabatan,
-          tujuan: formatTujuan(tujuanTeks),
-          tglBerangkat: formatDate(item.tglBerangkat, "DD MMMM YYYY"),
-          tglKembali: formatDate(item.tglKembali, "DD MMMM YYYY"),
+          tujuan: tujuanTeks ? formatTujuan(tujuanTeks) : "-",
+          tglBerangkat: item.tglBerangkat ? formatDate(item.tglBerangkat, "DD MMMM YYYY") : "-",
+          tglKembali: item.tglKembali ? formatDate(item.tglKembali, "DD MMMM YYYY") : "-",
           uh: uhVal,
           biayaTrans: Number(item.biayaTrans) || 0,
           biayaPeng: Number(item.biayaPeng) || 0,
@@ -157,9 +121,9 @@ export default function SuratTugas({
       );
 
       setDataFile({
-        noSurat: data.surat?.noSurat || "",
-        tglSurat: formatDate(data.surat?.tglSurat, "DD MMMM YYYY") || "",
-        kegiatan: data.surat?.kegiatan || "",
+        noSurat: surat?.noSurat || "",
+        tglSurat: formatDate(surat?.tglSurat, "DD MMMM YYYY") || "",
+        kegiatan: surat?.kegiatan || "",
         pegawai: pegawaiData,
         
         uhTotal: formatOrDash(totals.uhTotal),
@@ -168,13 +132,13 @@ export default function SuratTugas({
         repTotal: formatOrDash(totals.repTotal),
         jumlahAll: formatOrDash(totals.jumlahAll),
         
-        nipPPK: data.surat?.nip || "",
-        namaPPK: data.surat?.nama || "",
-        unitPPK: toUpperCase(data.surat?.unit) || "",
-        tglKPPN: formatDate(data.surat?.tglKPPN, "DD MMMM YYYY") || "",
+        nipPPK: surat?.nip || "",
+        namaPPK: surat?.nama || "",
+        unitPPK: toUpperCase(surat?.unit) || "",
+        tglKPPN: formatDate(surat?.tglKPPN, "DD MMMM YYYY") || "",
         tglKembaliTTD: tglKembaliTerakhir ? formatDate(tglKembaliTerakhir, "DD MMMM YYYY") : "",
         tahun: tglKembaliTerakhir ? formatDate(tglKembaliTerakhir, "YYYY") : "",
-        namaKantor: data?.surat?.namaKantor || ""
+        namaKantor: surat?.namaKantor || ""
       });
     }
   }, [data, kabKota]);

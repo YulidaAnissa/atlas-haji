@@ -27,6 +27,9 @@ const services = {
   KANTOR: ({ id } = {}) => {
     return id ? `${SERVICE_BASE}/kantor/${id}` : `${SERVICE_BASE}/kantor`;
   },
+  NOMINATIF_AJUAN: ({ id } = {}) => {
+    return id ? `${SERVICE_BASE}/laporan/nominatif-ajuan/${id}` : `${SERVICE_BASE}/nominatif-ajuan`;
+  },
 };
 
 export default services;

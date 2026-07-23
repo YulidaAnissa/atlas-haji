@@ -5,3 +5,4 @@ export * from './useLaporan';
 export * from './useSuratTugas';
 export * from './useDashboard';
 export * from './useKantor';
+export * from './useNominatifAjuan'
