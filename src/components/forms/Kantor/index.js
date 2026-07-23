@@ -7,8 +7,17 @@ import { FiSave, FiX } from "react-icons/fi";
 import InputField from "../FormField/InputField";
 import SelectField from "../FormField/SelectField"; 
 import validation from "./validate";
+import CreateableSelect from "../FormField/CreateableSelect";
 
-// Komponen internal untuk menghitung progres kelengkapan data master kantor
+const formatKodeSurat = (inputValue = "") => {
+  if (!inputValue) return "";
+  const cleanInput = inputValue.trim().toUpperCase();
+  const currentYear = new Date().getFullYear();
+  return `ST-XXX/${cleanInput}/${currentYear}`;
+};
+
+const normalizeValue = (val = "") => String(val).trim();
+
 function KantorFormProgress({ values = {} }) {
   const targetFields = [
     "nama",
@@ -54,6 +63,8 @@ export default function KantorForm({
   onClose = () => {},
   type = "add",
   kabKotaOptions = [], 
+  kodeSuratOptions = [], // Prop untuk opsi pilihan kode surat
+  handleKodeSuratChange = () => {}, // Handler jika ada aksi tambahan saat kode surat berubah
 }) {
   const isEdit = type === "edit";
 
@@ -66,17 +77,17 @@ export default function KantorForm({
   // 2. Format initial data sebelum masuk ke Form
   const formattedInitialValues = {
     ...data,
-    // Pastikan tipe data idKabKota disamakan menjadi Number
-    // idKabKota: data?.idKabKota ? Number(data.idKabKota) : undefined,
-    
-    // CATATAN PENTING: 
-    // Jika SelectField Anda menggunakan react-select dan butuh bentuk object,
-    // hapus baris idKabKota di atas, dan gunakan baris di bawah ini:
     idKabKota: formattedKabKotaOptions.find(opt => opt.value === Number(data?.idKabKota)) || null,
+    kodeSurat: data?.kodeSurat 
+      ? { 
+          value: data.kodeSurat.includes("ST-XXX/") ? data.kodeSurat : formatKodeSurat(data.kodeSurat), 
+          label: data.kodeSurat.includes("ST-XXX/") ? data.kodeSurat : formatKodeSurat(data.kodeSurat),
+        } 
+      : null,
   };
 
   // Render form fields yang sama untuk mode Edit dan Add
-  const renderFormFields = () => (
+  const renderFormFields = (form) => (
     <div className="flex flex-col gap-4">
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
         <Field
@@ -129,13 +140,49 @@ export default function KantorForm({
         label="Alamat Lengkap"
         placeholder="Masukkan alamat lengkap kantor"
       />
+
+      <div className="grid gap-5 md:grid-cols-2">
+        {/* --- FIELD KODE SURAT (MENGGANTIKAN NOMOR SURAT) --- */}
+        <Field
+          primary
+          name="kodeSurat"
+          component={CreateableSelect}
+          label="Kode Surat"
+          options={kodeSuratOptions}
+          placeholder="Contoh: Kw.13"
+          className="text-left"
+          formatCreateLabel={(inputValue) =>
+            `Gunakan ${formatKodeSurat(inputValue)}`
+          }
+          getNewOptionData={(inputValue) => {
+            const formattedValue = formatKodeSurat(inputValue);
+            return {
+              value: formattedValue,
+              label: formattedValue,
+            };
+          }}
+          isValidNewOption={(inputValue) => {
+            const formattedValue = formatKodeSurat(inputValue);
+            if (!formattedValue) return false;
+
+            return !kodeSuratOptions.some(
+              (option) =>
+                normalizeValue(option.value).toLowerCase() ===
+                formattedValue.toLowerCase()
+            );
+          }}
+          onChange={(newKode) =>
+            handleKodeSuratChange(newKode, form)
+          }
+        />
+      </div>
     </div>
   );
 
   if (isEdit) {
     return (
       <Form onSubmit={onSubmit} validate={validation} initialValues={formattedInitialValues}>
-        {({ handleSubmit, submitting }) => (
+        {({ handleSubmit, form, submitting }) => (
           <form
             noValidate
             onSubmit={handleSubmit}
@@ -156,7 +203,7 @@ export default function KantorForm({
 
             {/* Content Form Edit */}
             <div className="space-y-5 overflow-y-auto px-6 py-6 sm:px-8">
-              {renderFormFields()}
+              {renderFormFields(form)}
             </div>
 
             {/* Footer Modal Edit */}
@@ -187,7 +234,7 @@ export default function KantorForm({
 
   return (
     <Form onSubmit={onSubmit} validate={validation} initialValues={data}>
-      {({ handleSubmit, values, submitting }) => {
+      {({ handleSubmit, values, form, submitting }) => {
         return (
           <form
             noValidate
@@ -224,7 +271,7 @@ export default function KantorForm({
                     </p>
                   </div>
                   
-                  {renderFormFields()}
+                  {renderFormFields(form)}
                 </section>
               </div>
             </div>

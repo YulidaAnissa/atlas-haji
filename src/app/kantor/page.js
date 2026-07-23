@@ -17,6 +17,7 @@ import AddKantorForm from "@/components/forms/Kantor";
 import { FaEdit } from "react-icons/fa";
 import { FiPlus, FiSearch, FiX } from "react-icons/fi";
 import { TiEdit, TiDeleteOutline } from "react-icons/ti";
+import { extractKodeSurat } from "@/utils/string";
 
 export default function DaftarKantor() {
   const router = useRouter();
@@ -52,7 +53,7 @@ export default function DaftarKantor() {
 
   const handleDelete = async () => {
     try {
-      await deleteKantor({ id: deleted });
+      await deleteKantor({ idKantor: deleted });
       setDeleted(null);
       setShowSnackbar({
         show: true,
@@ -81,6 +82,7 @@ export default function DaftarKantor() {
         callCenter: values?.callCenter?.trim() || null,
         idKabKota: values?.idKabKota?.value ? Number(values.idKabKota?.value) : null,
         unitKantor: values?.unitKantor?.trim() || null,
+        kodeSurat: extractKodeSurat(values?.kodeSurat?.value) || 0
       };
 
       await editKantor(payload, showEdit?.data?.idKantor);
@@ -102,6 +104,7 @@ export default function DaftarKantor() {
     }
   };
 
+  console.log(deleted);
   // 3. Mapping data untuk render tabel dan tombol aksi
   const formattedData = (data ?? []).map((item) => ({
     ...item,

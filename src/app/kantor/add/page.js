@@ -11,6 +11,7 @@ import { useKantor, useAddKantor, useKabKota } from "@/hooks/useData"; // Disesu
 import InfoModal from "@/components/elements/InfoModal";
 import LoadingOverlay from "@/components/elements/LoadingOverlay";
 import Breadcrumb from "@/components/elements/Breadcrumb";
+import { extractKodeSurat } from "@/utils/string";
 
 export default function AddKantor() {
   const [showModalSuccess, setShowModalSuccess] = useState(false);
@@ -33,6 +34,7 @@ export default function AddKantor() {
         callCenter: values?.callCenter?.trim() || null,
         idKabKota: values?.idKabKota?.value ? Number(values.idKabKota?.value) : null,
         unitKantor: values?.unitKantor?.trim() || null,
+        kodeSurat: extractKodeSurat(values?.kodeSurat?.value) || null
       };
       console.log('ini payload ', payload);
 

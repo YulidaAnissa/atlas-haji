@@ -5,10 +5,10 @@ import { fetcher, createSwrKey, defaultOptions, getDedupingInterval } from './..
 import { accessTokenStorage } from '@/utils/storage';
 
 // ✅ Hook Fetch Data Kantor (List & Filter)
-export function useKantor({ dedupingInterval, params = {} } = defaultOptions) {
+export function useKantor({ dedupingInterval, params = {}, urlParams = {} } = defaultOptions) {
   const token = accessTokenStorage.get()?.value;
   const { data: { data } = {}, error, mutate } = useSWR(
-    createSwrKey(SERVICES.KANTOR, { params }), 
+    createSwrKey(SERVICES.KANTOR(urlParams), { params }), 
     fetcher({ headers: { Authorization: `Bearer ${token}` } }),
     { dedupingInterval: getDedupingInterval(dedupingInterval) }
   );
@@ -71,6 +71,7 @@ export function useDeleteKantor() {
   const [error, setError] = useState("");
 
   const deleteKantor = async ({ idKantor }) => {
+    console.log("ini idKantor ", idKantor);
     setLoading(true);
     setError("");
 

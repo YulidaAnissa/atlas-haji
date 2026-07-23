@@ -13,8 +13,5 @@ export default function validation(values) {
     nama: validate(values.nama, [
       { rule: 'required' },
     ]),
-    idKantor: validate(values.idKantor, [
-      { rule: 'required' },
-    ]),
   };
 }

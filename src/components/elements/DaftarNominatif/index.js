@@ -7,6 +7,7 @@ import { useLoading } from "@/hooks";
 import LoadingOverlay from "@/components/elements/LoadingOverlay";
 import { formatDate, calculateTripDuration } from "@/utils/date";
 import { toUpperCase } from "@/utils/string";
+import { calculateUangHarianPerHari } from "@/utils/calculatorsUh";
 
 export default function SuratTugas({ 
   data,
@@ -61,45 +62,7 @@ export default function SuratTugas({
       }, null);
 
       const pegawaiData = data.pegawai.map((item, index) => {
-        let uhPerHari = 0;
-        const tipeSurat = data.surat?.type;
-
-        if (tipeSurat === "half_day") {
-          uhPerHari = 90000;
-        } else if (tipeSurat === "full_board") {
-          uhPerHari = 130000;
-        } else if (tipeSurat === "full_day" || tipeSurat === "reguler") {
-          const daftarTujuan = Array.isArray(item.tujuan) 
-            ? item.tujuan 
-            : (item.tujuan ? item.tujuan.split(',').map(t => t.trim()) : []);
-
-          let maxUhDaerah = 0;
-
-          daftarTujuan.forEach((tujuanPegawai) => {
-            const matchKabKota = kabKota.find(
-              (kab) => kab.kabkota?.toLowerCase() === tujuanPegawai.toLowerCase()
-            );
-
-            if (matchKabKota) {
-              let rate = 0;
-              if (item.jenisPegawai === "PNS") {
-                rate = Number(matchKabKota.uhPNS) || 0;
-              } else if (item.jenisPegawai === "PPPK") {
-                rate = Number(matchKabKota.uhPPPK) || 0;
-              } else {
-                rate = Number(matchKabKota.uhNonASN) || 0;
-              }
-
-              if (rate > maxUhDaerah) {
-                maxUhDaerah = rate;
-              }
-            }
-          });
-
-          uhPerHari = maxUhDaerah;
-        } else {
-          uhPerHari = 0;
-        }
+        const uhPerHari = calculateUangHarianPerHari(item, data?.surat, kabKota);
 
         const isKhusus = item.typePerjalanan === "khusus";
         const uhType = isKhusus ? 0 : uhPerHari;

@@ -144,3 +144,14 @@ export function getExtension(text) {
   const re = /(?:\.([^.]+))?$/;
   return re.exec(text)[1];
 }
+
+export function extractKodeSurat(val = "") {
+  if (!val) return "";
+  const parts = val.split("/");
+  // Jika formatnya memiliki minimal 3 bagian (contoh: ST-XXX, KK.10.1, 2026), ambil bagian ke-2 (index 1)
+  if (parts.length >= 3) {
+    return parts[1].trim();
+  }
+  // Jika formatnya hanya inputan biasa, langsung kembalikan nilai tersebut
+  return val.trim();
+};

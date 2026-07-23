@@ -17,8 +17,12 @@ export default function DaftarBiayaPerjalanan() {
   const [selectedKantor, setSelectedKantor] = useState("");
 
   useEffect(() => {
-      setProfil(profileStorage.get());
-    }, []);
+    const userProfile = profileStorage.get();
+    setProfil(userProfile);
+
+    setSelectedKantor(userProfile.idKantor);
+  }, []);
+  
   const targetKantor = profil?.idKantor === "1" 
     ? selectedKantor 
     : (selectedKantor || profil?.idKantor);

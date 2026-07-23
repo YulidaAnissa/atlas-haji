@@ -22,16 +22,17 @@ export default function ComponentForm({
   onClose = noop,
   type = "edit",
   pegawai = [],
+  pegawaiTf = [],
 }) {
   const isAddMode = type === "add";
 
   // Opsi Pegawai
   const pegawaiOptionsTf = useMemo(() => {
-    return pegawai.map((item) => ({
+    return pegawaiTf.map((item) => ({
       value: item.nip,
       label: `${item.nip} - ${item.nama}`,
     }));
-  }, [pegawai]);
+  }, [pegawaiTf]);
 
   const pegawaiOptions = useMemo(() => {
     if (!isAddMode) return [];

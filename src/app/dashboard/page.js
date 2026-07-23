@@ -66,11 +66,15 @@ export default function PerjalananDinasPage() {
 
   const [month, setMonth] = useState(today.getMonth() + 1);
   const [year, setYear] = useState(today.getFullYear());
-  const [selectedKantor, setSelectedKantor] = useState("");
   const [profil, setProfil] = useState(null);
+  const [selectedKantor, setSelectedKantor] = useState("");
 
+  // Ambil profil dan set default selectedKantor jika bukan admin (idKantor !== "1")
   useEffect(() => {
-    setProfil(profileStorage.get());
+    const userProfile = profileStorage.get();
+    setProfil(userProfile);
+
+    setSelectedKantor(userProfile.idKantor);
   }, []);
 
   // Tentukan target kantor: admin (idKantor === "1") bisa bebas pilih, jika tidak dikunci ke profil user
@@ -86,8 +90,6 @@ export default function PerjalananDinasPage() {
       ...(targetKantor && { idKantor: targetKantor })
     },
   });
-
-  console.log("data jadwal", data);
 
   const { data: summary, isLoading: isSummaryLoading } = useDashboardSummary({
     params: { 
@@ -172,7 +174,7 @@ export default function PerjalananDinasPage() {
                 labelKey="nama"
                 icon={FaBriefcase}
                 loading={loadingKantor}
-                className="w-full sm:w-60"
+                className="w-full sm:w-80"
               />
             )}
 
@@ -257,6 +259,7 @@ export default function PerjalananDinasPage() {
           <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 xl:grid-cols-4">
             <StatCard
               title="Perjalanan"
+            data={summary?.perjalanan ?? 0}
               count={summary?.perjalanan ?? 0}
               subtitle="Sedang berlangsung atau dijadwalkan"
               color="bg-gradient-to-br from-blue-500 to-blue-700"

@@ -13,9 +13,8 @@ export default function FormPerbaikiLaporan({
   onSubmit,
   onClose = false,
   pegawai = [], 
+  pegawaiTf = []
 }) {
-  console.log(pegawai, "ini pegawai ");
-  console.log(data, "ini data ");
 
   // Opsi Pegawai untuk SelectField (DIBUAT LEBIH FLEKSIBEL)
   const pegawaiOptions = useMemo(() => {
@@ -25,6 +24,14 @@ export default function FormPerbaikiLaporan({
       label: `${item.nip} - ${item.nama}`,
     }));
   }, [pegawai]);
+
+  const pegawaiTfOptions = useMemo(() => {
+    return pegawaiTf.map((item) => ({
+      // Prioritaskan ID yang sama dengan saat form tambah/edit awal agar match
+      value: item.nip, 
+      label: `${item.nip} - ${item.nama}`,
+    }));
+  }, [pegawaiTf]);
 
   return (
     <Form
@@ -156,7 +163,7 @@ export default function FormPerbaikiLaporan({
                           name="tfBiayaTrans"
                           component={SelectField}
                           label="Ditanggung Oleh"
-                          options={pegawaiOptions}
+                          options={pegawaiTfOptions}
                           className="text-left"
                         />
                         <Field
@@ -193,7 +200,7 @@ export default function FormPerbaikiLaporan({
                           name="tfBiayaPeng"
                           component={SelectField}
                           label="Ditanggung Oleh"
-                          options={pegawaiOptions}
+                          options={pegawaiTfOptions}
                           className="text-left"
                         />
                         <Field

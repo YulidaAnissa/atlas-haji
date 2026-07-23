@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useParams } from "next/navigation";
 import { FaEdit, FaPlusCircle } from "react-icons/fa";
 import { FiEye } from "react-icons/fi";
@@ -19,10 +19,10 @@ import LoadingOverlay from "@/components/elements/LoadingOverlay";
 import LaporanPerjalanan from "@/components/forms/LaporanPerjalanan";
 import UpdateLaporanPerjalanan from "@/components/forms/UpdateLaporan";
 
-import { useUpdateLaporan, useSuratTugas } from "@/hooks/useData";
+import { useUpdateLaporan, useSuratTugas, usePegawai } from "@/hooks/useData";
 import { useLoading } from "@/hooks";
 import { formatRangeDate } from "@/utils/date";
-
+import { profileStorage } from "@/utils/storage";
 
 export default function Component() {
   const params = useParams();
@@ -41,6 +41,7 @@ export default function Component() {
     message: "",
     type: "",
   });
+  const [profil, setProfil] = useState(null);
 
   console.log('show update laporan', showUpdateLaporan);
 
@@ -49,6 +50,19 @@ export default function Component() {
   const { data, isLoading, fetch } = useSuratTugas({
     urlParams: { id },
   });
+
+  useEffect(() => {
+      const userProfile = profileStorage.get();
+      setProfil(userProfile);
+    }, []);
+
+  const { data: pegawai } = usePegawai({
+    params: {
+      idKantor: profil?.idKantor
+    }
+  })
+
+  console.log("pegawai ", pegawai );
 
   console.log('use SUrat Tugas', data);
 
@@ -277,6 +291,7 @@ export default function Component() {
           onSubmit={handleLaporanPerjalanan}
           onClose={() => setShowAddLaporan(false)}
           type={laporan}
+          pegawaiTf={pegawai}
         />
       </FormModal>
 
@@ -290,6 +305,7 @@ export default function Component() {
           onSubmit={handleUpdateLaporan}
           onClose={() => setShowUpdateLaporan(EMPTY_MODAL)}
           pegawai={data?.pegawai}
+          pegawaiTf={pegawai}
         />
       </FormModal>
 

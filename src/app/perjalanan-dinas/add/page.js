@@ -10,7 +10,7 @@ import InfoModal from "@/components/elements/InfoModal";
 import LoadingOverlay from "@/components/elements/LoadingOverlay";
 import Breadcrumb from "@/components/elements/Breadcrumb";
 
-import { usePegawai } from "@/hooks/useData";
+import { usePegawai, useKantor } from "@/hooks/useData"; // <-- Tambahkan hook kantor jika ada
 import { useAddSuratTugas } from "@/hooks/useData";
 import { formatDate } from "@/utils/date";
 import { profileStorage } from "@/utils/storage";
@@ -24,10 +24,8 @@ const breadcrumbItems = [
   { label: "Tambah Surat Tugas" },
 ];
 
-// Definisikan opsi tipe perjalanan di luar komponen agar tidak di-recreate tiap render
 const typeOptions = [
   { label: "Full Board", value: "full_board" },
-  { label: "Full Day", value: "full_day" },
   { label: "Half Day", value: "half_day" },
   { label: "Reguler", value: "reguler" },
 ];
@@ -45,7 +43,6 @@ function buildSuratTugasFormData(values, profil) {
 
   const nip = getOptionValue(values.nip);
   const noSurat = getOptionValue(values.noSurat);
-  // Ambil nilai tipe jika bertipe objek select option
   const typePerjalanan = getOptionValue(values.type);
 
   if (values.idSurat) {
@@ -60,7 +57,6 @@ function buildSuratTugasFormData(values, profil) {
     formData.append("noSurat", noSurat);
   }
 
-  // Tambahkan field type ke Form Data
   if (typePerjalanan) {
     formData.append("type", typePerjalanan);
   }
@@ -119,12 +115,20 @@ export default function AddPerjalananDinas() {
     },
   });
 
+  // Ambil data kantor (sesuaikan hook / parameter dengan struktur API Anda)
+  const {
+    data: kantor = [],
+    loading: loadingKantor,
+  } = useKantor({
+    urlParams: { id: profil?.idKantor }
+  }); 
+
+  console.log(kantor, "kantor");
+
   const handleSubmit = async (values, form) => {
     try {
       const formData =
         buildSuratTugasFormData(values, profil);
-      
-      // console.log('form data', formData);
 
       const resp = await addSuratTugas(formData);
 
@@ -166,12 +170,15 @@ export default function AddPerjalananDinas() {
   return (
     <PageBase className="mx-auto max-w-5xl px-6 py-10 lg:px-12">
       <Breadcrumb items={breadcrumbItems} />
-      {/* Teruskan opsi tipe ke dalam form melalui props */}
+      
+      {/* Teruskan data kantor ke dalam form melalui props */}
       <AddPerjalananForm
         onSubmit={handleSubmit}
         pejabat={pejabat}
         typeOptions={typeOptions}
+        kantor={kantor} 
       />
+
       <InfoModal
         show={showSuccessModal}
         icon={<FaCheck className="h-6 w-6 text-white" />}
@@ -179,6 +186,7 @@ export default function AddPerjalananDinas() {
         onCancel={() => setShowSuccessModal(false)}
         onConfirm={handleSuccessConfirm}
       />
+      
       <InfoModal
         show={showErrorModal}
         title="Perjalanan Dinas gagal disimpan"
@@ -191,7 +199,7 @@ export default function AddPerjalananDinas() {
       </InfoModal>
 
       <LoadingOverlay
-        show={loading || loadingPejabat}
+        show={loading || loadingPejabat || loadingKantor}
       />
     </PageBase>
   );

@@ -34,7 +34,10 @@ export default function DaftarPegawai() {
   const [deleted, setDeleted] = useState(null);
 
   useEffect(() => {
-    setProfil(profileStorage.get());
+    const userProfile = profileStorage.get();
+    setProfil(userProfile);
+
+    setSelectedKantor(userProfile.idKantor);
   }, []);
 
   const [showSnackbar, setShowSnackbar] = useState({
@@ -263,7 +266,6 @@ export default function DaftarPegawai() {
           onSubmit={handleUpdatePegawai}
           onClose={() => setShowEdit({ show: false, data: null })}
           type="edit"
-          kantorOptions={dataKantor ?? []}
         />
       </FormModal>
 

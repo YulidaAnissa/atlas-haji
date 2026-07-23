@@ -26,6 +26,7 @@ import { calculateTripDuration, formatDate, formatRangeDate } from "@/utils/date
 import { profileStorage } from "@/utils/storage";
 import { terbilang } from "@/utils/currency";
 import { capitalize, toUpperCase } from "@/utils/string";
+import { calculateUangHarianPerHari } from "@/utils/calculatorsUh";
 
 export default function Component() {
   const { id } = useParams();
@@ -70,43 +71,7 @@ export default function Component() {
   };
 
   const dataFilePegawai = data?.pegawai?.map((item, index) => {
-    let uhPerHari = 0;
-    const tipeSurat = data?.surat?.type;
-
-    if (tipeSurat === "half_day") {
-      uhPerHari = 90000;
-    } else if (tipeSurat === "full_board") {
-      uhPerHari = 130000;
-    } else if (tipeSurat === "full_day" || tipeSurat === "reguler") {
-      const daftarTujuan = Array.isArray(item.tujuan) 
-        ? item.tujuan 
-        : (item.tujuan ? item.tujuan.split(',').map(t => t.trim()) : []);
-
-      let maxUhDaerah = 0;
-
-      daftarTujuan.forEach((tujuanPegawai) => {
-        const matchKabKota = dataKabKota?.find(
-          (kab) => kab.kabkota?.toLowerCase() === tujuanPegawai.toLowerCase()
-        );
-
-        if (matchKabKota) {
-          let rate = 0;
-          if (item.jenisPegawai === "PNS") {
-            rate = Number(matchKabKota.uhPNS) || 0;
-          } else if (item.jenisPegawai === "PPPK") {
-            rate = Number(matchKabKota.uhPPPK) || 0;
-          } else {
-            rate = Number(matchKabKota.uhNonASN) || 0;
-          }
-
-          if (rate > maxUhDaerah) {
-            maxUhDaerah = rate;
-          }
-        }
-      });
-
-      uhPerHari = maxUhDaerah;
-    }
+    const uhPerHari = calculateUangHarianPerHari(item, data?.surat, dataKabKota);
 
     const isKhusus = item.typePerjalanan === "khusus";
     const uhValue = isKhusus ? 0 : uhPerHari;
@@ -196,7 +161,7 @@ export default function Component() {
   const formattedData = (data?.pegawai ?? []).map((item) => {
     const canVerify = item.status === "pengajuan" && profil?.role === "finance";
     const isPerjalananKhusus = String(item?.typePerjalanan ?? "").trim().toLowerCase() === "khusus";
-
+    console.log(item?.status);
     return {
       ...item,
       nama: (
@@ -224,10 +189,9 @@ export default function Component() {
                     data: item.idPerjalananPegawai,
                   })
                 }
-                className="inline-flex items-center gap-1.5 rounded-xl bg-amber-50 px-3.5 py-2 text-sm font-semibold text-amber-800 transition-all hover:bg-amber-100 hover:shadow-sm"
+                className="group inline-flex h-10 w-full items-center justify-center gap-2 rounded-xl border border-[#eadfbe] bg-white px-4 text-sm font-bold text-brand shadow-sm transition hover:border-brand hover:bg-brand hover:text-white focus:outline-none focus:ring-4 focus:ring-brand/20 disabled:cursor-not-allowed disabled:opacity-70"
               >
-                <FiEye className="h-4 w-4" />
-                Lihat & Verifikasi
+                <FiEye className="h-4 w-4 transition group-hover:-translate-y-0.5" />
               </button>
             )
           ) : (

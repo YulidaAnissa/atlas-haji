@@ -24,7 +24,9 @@ const services = {
   DASHBOARD_FILTER: `${SERVICE_BASE}/perjalanan/dashboard/filter`,
   DASHBOARD_SUMMARY: `${SERVICE_BASE}/perjalanan/dashboard/summary`,
   NOTIFICATIONS: ({ id } = {}) => `${SERVICE_BASE}/users/notif/${id}`,
-  KANTOR: `${SERVICE_BASE}/kantor`,
+  KANTOR: ({ id } = {}) => {
+    return id ? `${SERVICE_BASE}/kantor/${id}` : `${SERVICE_BASE}/kantor`;
+  },
 };
 
 export default services;

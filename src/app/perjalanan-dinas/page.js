@@ -18,7 +18,10 @@ export default function DaftarPerjalananDinas() {
   const [profil, setProfil] = useState(null);
 
   useEffect(() => {
-    setProfil(profileStorage.get());
+    const userProfile = profileStorage.get();
+    setProfil(userProfile);
+
+    setSelectedKantor(userProfile.idKantor);
   }, []);
 
   const targetKantor = profil?.idKantor === "1" 

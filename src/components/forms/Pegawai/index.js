@@ -128,8 +128,8 @@ function FormProgress({ values }) {
   const isPns = jenisVal === "PNS";
   const isPppk = jenisVal === "PPPK";
 
-  // Field "role" dihapus dari perhitungan kelengkapan data
-  const targetFields = ["jenisPegawai", "nama", "jabatan", "nip", "idKantor"];
+  // idKantor dihapus dari target fields
+  const targetFields = ["jenisPegawai", "nama", "jabatan", "nip"];
   if (isPns) targetFields.push("pangkat", "gol");
   else if (isPppk) targetFields.push("gol");
   if (isPns && values.isPejabat) targetFields.push("unit");
@@ -167,7 +167,7 @@ FormProgress.propTypes = {
   values: PropTypes.object.isRequired,
 };
 
-function PegawaiFields({ values, form, isEdit, formattedKantorOptions }) {
+function PegawaiFields({ values, form, isEdit }) {
   const currentJenis = extractValue(values.jenisPegawai);
   const isPns = currentJenis === "PNS";
   const isPppk = currentJenis === "PPPK";
@@ -177,7 +177,7 @@ function PegawaiFields({ values, form, isEdit, formattedKantorOptions }) {
       <div className="border-b border-slate-100 pb-4">
         <h3 className="text-base font-bold text-slate-900">Informasi Pegawai</h3>
         <p className="mt-1 text-sm leading-6 text-slate-500">
-          Isi identitas, penempatan kantor, kategori kepegawaian, dan jabatan saat ini.
+          Isi identitas, kategori kepegawaian, dan jabatan saat ini.
         </p>
       </div>
 
@@ -193,15 +193,7 @@ function PegawaiFields({ values, form, isEdit, formattedKantorOptions }) {
           />
         </div>
 
-        <div className="col-span-2 sm:col-span-1">
-          <Field
-            name="idKantor"
-            component={SelectField}
-            label="Penempatan Kantor"
-            placeholder="Pilih unit kantor / instansi"
-            options={formattedKantorOptions}
-          />
-        </div>
+        {/* Field Penempatan Kantor (idKantor) telah dihapus dari sini */}
 
         {isPns && (
           <div className="col-span-2 sm:col-span-1">
@@ -210,7 +202,7 @@ function PegawaiFields({ values, form, isEdit, formattedKantorOptions }) {
         )}
 
         {(isPns || isPppk) && (
-          <div className={`col-span-2 ${isPns ? "sm:col-span-1" : ""}`}>
+          <div className="col-span-2 sm:col-span-1">
             <Field
               name="gol"
               component={InputField}
@@ -220,7 +212,7 @@ function PegawaiFields({ values, form, isEdit, formattedKantorOptions }) {
           </div>
         )}
 
-        <div className="col-span-2">
+        <div className="col-span-2 sm:col-span-1">
           <Field
             name="jabatan"
             component={InputField}
@@ -276,7 +268,6 @@ PegawaiFields.propTypes = {
   values: PropTypes.object.isRequired,
   form: PropTypes.object.isRequired,
   isEdit: PropTypes.bool,
-  formattedKantorOptions: PropTypes.array.isRequired,
 };
 
 // --- KOMPONEN UTAMA ---
@@ -286,24 +277,13 @@ export default function AddPegawaiForm({
   data = {},
   onClose = () => {},
   type = "add",
-  kantorOptions = [],
 }) {
   const isEdit = type === "edit";
 
-  // Formatter Opsi Kantor
-  const formattedKantorOptions = useMemo(() => {
-    if (!Array.isArray(kantorOptions)) return [];
-    return kantorOptions.map((item) => ({
-      label: item.nama || item.nama_kantor || item.namaKantor || "",
-      value: String(item.idKantor ?? item.id ?? item.value ?? ""),
-    }));
-  }, [kantorOptions]);
-
-  // Initial Values dengan Default Role 'user'
+  // Initial Values tanpa idKantor
   const initialValues = useMemo(() => {
     const rawJenisStr = normalizeJenisPegawai(data);
     const rawRoleStr = normalizeRole(data);
-    const rawIdKantorStr = String(data.idKantor ?? data.id_kantor ?? "");
 
     return {
       ...data,
@@ -312,9 +292,8 @@ export default function AddPegawaiForm({
       role: rawRoleStr, // Menyimpan string murni: 'user' | 'admin' | 'finance'
       isPejabat: parseIsPejabat(data),
       unit: data.unit || "",
-      idKantor: formattedKantorOptions.find((opt) => opt.value === rawIdKantorStr) || null,
     };
-  }, [data, formattedKantorOptions]);
+  }, [data]);
 
   // Submit Handler
   const handleFormSubmit = (formValues) => {
@@ -322,8 +301,10 @@ export default function AddPegawaiForm({
       ...formValues,
       jenisPegawai: extractValue(formValues.jenisPegawai),
       role: formValues.role || "user",
-      idKantor: extractValue(formValues.idKantor),
     };
+    // idKantor dibersihkan dari payload
+    delete cleanPayload.idKantor;
+    
     onSubmit(cleanPayload);
   };
 
@@ -354,7 +335,6 @@ export default function AddPegawaiForm({
                 values={values}
                 form={form}
                 isEdit={isEdit}
-                formattedKantorOptions={formattedKantorOptions}
               />
             </div>
           </div>
@@ -389,5 +369,4 @@ AddPegawaiForm.propTypes = {
   data: PropTypes.object,
   onClose: PropTypes.func,
   type: PropTypes.oneOf(["add", "edit"]),
-  kantorOptions: PropTypes.array,
 };

@@ -12,6 +12,7 @@ import InfoModal from "@/components/elements/InfoModal";
 import LoadingOverlay from "@/components/elements/LoadingOverlay";
 import Breadcrumb from "@/components/elements/Breadcrumb";
 import { Snackbar } from "@/components/elements";
+import { profileStorage } from "@/utils/storage";
 
 export default function PegawaiPage() {
   const [showModalSuccess, setShowModalSuccess] = useState(false);
@@ -21,6 +22,7 @@ export default function PegawaiPage() {
     type: "",
   });
   const [isMounted, setIsMounted] = useState(false);
+  const [profil, setProfil] = useState(null);
 
   const router = useRouter();
   
@@ -29,6 +31,8 @@ export default function PegawaiPage() {
   const { addPegawai, loading: loadingAdd } = useAddPegawai();
 
   useEffect(() => {
+    const userProfile = profileStorage.get();
+    setProfil(userProfile);
     setIsMounted(true);
   }, []);
 
@@ -37,9 +41,10 @@ export default function PegawaiPage() {
       const payload = {
         ...values,
         status: values.isPejabat ? "eselon" : "pegawai",
+        idKantor: profil?.idKantor || ""
       };
 
-      await addPegawai(payload);
+      // await addPegawai(payload);
       
       if (form && typeof form.reset === "function") {
         form.reset();

@@ -34,27 +34,31 @@ function normalizeValue(value) {
   return String(value || "").trim();
 }
 
-function formatNoSurat(value) {
+function formatNoSurat(value, kode = "XXX") {
   const input = normalizeValue(value);
 
   if (!input) return "";
   if (input.startsWith("ST-")) return input;
 
-  return `ST-${input}/Kw.13/${new Date().getFullYear()}`;
+  return `ST-${input}/${kode}/${new Date().getFullYear()}`;
 }
 
 export default function PerjalananForm({
   data = null,
   pejabat = [],
-  typeOptions = defaulttypeOptions, // Menambahkan props opsi tipe perjalanan dengan fallback
+  typeOptions = defaulttypeOptions,
   onSubmit = () => {},
   onClose,
+  kantor,
 }) {
   const [customSuratOptions, setCustomSuratOptions] =
     useState([]);
 
   // Mendukung data flat dan data nested dari API.
   const suratData = data?.surat || data || {};
+  
+  // Ambil nilai kodeSurat dari objek kantor (fallback ke "XXX" jika belum ada)
+  const kodeSuratKantor = kantor?.kodeSurat || "XXX";
 
   const isEdit = Boolean(
     suratData?.idSurat || suratData?.noSurat
@@ -134,7 +138,6 @@ export default function PerjalananForm({
           }
         : null,
 
-      // Inisialisasi nilai tipe perjalanan untuk mode Edit
       type: suratData?.type
         ? typeOptions.find(
             (option) =>
@@ -152,7 +155,6 @@ export default function PerjalananForm({
 
       kegiatan: suratData?.kegiatan || "",
 
-      // API mengirim nama properti "file".
       fileSurat:
         suratData?.fileSurat ||
         suratData?.file ||
@@ -174,10 +176,10 @@ export default function PerjalananForm({
       ),
 
       noSurat: formatNoSurat(
-        getOptionValue(values.noSurat)
+        getOptionValue(values.noSurat),
+        kodeSuratKantor
       ),
 
-      // Ekstrak nilai string murni dari komponen select untuk tipe perjalanan
       type: normalizeValue(
         getOptionValue(values.type)
       ),
@@ -199,7 +201,8 @@ export default function PerjalananForm({
     }
 
     const formattedNoSurat = formatNoSurat(
-      getOptionValue(newSurat)
+      getOptionValue(newSurat),
+      kodeSuratKantor
     );
 
     const formattedOption = {
@@ -319,12 +322,13 @@ export default function PerjalananForm({
                     className="text-left"
                     formatCreateLabel={(inputValue) =>
                       `Gunakan ${formatNoSurat(
-                        inputValue
+                        inputValue,
+                        kodeSuratKantor
                       )}`
                     }
                     getNewOptionData={(inputValue) => {
                       const formattedNoSurat =
-                        formatNoSurat(inputValue);
+                        formatNoSurat(inputValue, kodeSuratKantor);
 
                       return {
                         value: formattedNoSurat,
@@ -335,7 +339,7 @@ export default function PerjalananForm({
                       inputValue
                     ) => {
                       const formattedNoSurat =
-                        formatNoSurat(inputValue);
+                        formatNoSurat(inputValue, kodeSuratKantor);
 
                       if (!formattedNoSurat) {
                         return false;
@@ -357,7 +361,6 @@ export default function PerjalananForm({
                     }
                   />
 
-                  {/* Field Baru: Tipe Perjalanan */}
                   <Field
                     primary
                     name="type"
