@@ -17,7 +17,7 @@ import { FaBuilding } from "react-icons/fa";
 
 import { profileStorage } from "@/utils/storage";
 
-const ADMIN_MENU_NAMES = ["Pegawai", "Kantor", "Kabupaten / Kota", "Surat Tugas"];
+const ADMIN_MENU_NAMES = ["Pegawai", "Kantor", "Kabupaten / Kota"];
 
 export default function Sidebar({ sidebarOpen, setSidebarOpen }) {
   const router = useRouter();
@@ -69,11 +69,6 @@ export default function Sidebar({ sidebarOpen, setSidebarOpen }) {
                       },
                     ]
                   : []),
-                {
-                  name: "Surat Tugas",
-                  icon: <FiClipboard />,
-                  path: "/surat-tugas",
-                },
               ],
             },
           ]

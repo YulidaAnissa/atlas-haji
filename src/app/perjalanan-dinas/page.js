@@ -1,14 +1,16 @@
 "use client";
 
-import { DataTables, Breadcrumb, DropdownFilter } from "@/components/elements";
+import { DataTables, Breadcrumb, DropdownFilter, Snackbar, InfoModal } from "@/components/elements";
 import PageBase from "@/components/pagebase";
 import { usePathname, useRouter } from "next/navigation";
 import { useState, useEffect } from "react";
-import { useSuratTugas, useKantor } from "@/hooks/useData";
+import { useSuratTugas, useKantor, useDeleteSuratTugas } from "@/hooks/useData";
 import { formatDate } from "@/utils/date";
-import { FiPlus, FiSearch, FiX, FiEye, FiBriefcase  } from "react-icons/fi";
+import { FiPlus, FiSearch, FiX, FiEye, FiBriefcase } from "react-icons/fi";
+import { TiDeleteOutline } from "react-icons/ti";
 import { profileStorage } from "@/utils/storage";
 import { HEAD_CELL } from "@/constants";
+import LoadingOverlay from "@/components/elements/LoadingOverlay";
 
 export default function DaftarPerjalananDinas() {
   const router = useRouter();
@@ -16,19 +18,20 @@ export default function DaftarPerjalananDinas() {
   const [search, setSearch] = useState("");
   const [selectedKantor, setSelectedKantor] = useState("");
   const [profil, setProfil] = useState(null);
+  const [deletedId, setDeletedId] = useState(null);
+  const [showSnackbar, setShowSnackbar] = useState({ show: false, message: "", type: "" });
 
   useEffect(() => {
     const userProfile = profileStorage.get();
     setProfil(userProfile);
-
-    setSelectedKantor(userProfile.idKantor);
+    setSelectedKantor(userProfile?.idKantor || "");
   }, []);
 
   const targetKantor = profil?.idKantor === "1" 
     ? selectedKantor 
     : (selectedKantor || profil?.idKantor);
 
-  const { data, isLoading } = useSuratTugas({
+  const { data, isLoading, fetch } = useSuratTugas({
     params: { 
       search,
       ...(targetKantor && { idKantor: targetKantor })
@@ -36,6 +39,29 @@ export default function DaftarPerjalananDinas() {
   });
 
   const { data: dataKantor, isLoading: loadingKantor } = useKantor();
+  const { deleteSuratTugas, loading } = useDeleteSuratTugas();
+  const handleDelete = async () => {
+    if (!deletedId) return;
+    try {
+      // Sesuaikan fungsi API delete surat tugas Anda di sini
+      await deleteSuratTugas({ idSurat: deletedId });
+      
+      setDeletedId(null);
+      setShowSnackbar({
+        show: true,
+        message: "Perjalanan berhasil dihapus",
+        type: "success",
+      });
+      await fetch();
+    } catch (err) {
+      const errorMessage = err.response?.data?.err || "Gagal menghapus perjalanan dinas";
+      setShowSnackbar({
+        show: true,
+        message: errorMessage,
+        type: "error",
+      });
+    }
+  };
 
   const isAdmin =
     String(profil?.role || "").trim().toLowerCase() === "admin";
@@ -44,14 +70,24 @@ export default function DaftarPerjalananDinas() {
     ...item,
     tglSurat: item.tglSurat ? formatDate(item.tglSurat, "DD MMMM YYYY") : "",
     aksi: (
-      <button
-        type="button"
-        className="inline-flex items-center gap-2 rounded-lg bg-[#fbf7ec] px-3 py-2 text-sm font-semibold text-brand transition hover:bg-brand hover:text-white"
-        onClick={() => router.push(`/perjalanan-dinas/${item.idSurat}`)}
-      >
-        <FiEye className="h-4 w-4" />
-        Lihat
-      </button>
+      <div className="flex items-center gap-2">
+        <button
+          type="button"
+          className="inline-flex items-center gap-2 rounded-lg bg-[#fbf7ec] px-3 py-2 text-sm font-semibold text-brand transition hover:bg-brand hover:text-white"
+          onClick={() => router.push(`/perjalanan-dinas/${item.idSurat}`)}
+        >
+          <FiEye className="h-4 w-4" />
+        </button>
+        {isAdmin && (
+          <button
+            type="button"
+            className="inline-flex items-center gap-2 rounded-lg bg-red-50 px-3 py-2 text-sm font-semibold text-red-700 transition hover:bg-red-100"
+            onClick={() => setDeletedId(item.idSurat)}
+          >
+            <TiDeleteOutline className="h-4 w-4" />
+          </button>
+        )}
+      </div>
     ),
   }));
 
@@ -60,7 +96,6 @@ export default function DaftarPerjalananDinas() {
     { label: "Daftar Perjalanan Dinas" },
   ];
 
-  console.log(profil?.idKantor === "1");
   return (
     <PageBase className="mx-auto p-6 sm:p-8 lg:p-10">
       <div className="mb-8">
@@ -146,6 +181,22 @@ export default function DaftarPerjalananDinas() {
           loading={isLoading}
         />
       </section>
+      <Snackbar
+        show={showSnackbar.show}
+        type={showSnackbar.type}
+        message={showSnackbar.message}
+        onClose={() =>
+          setShowSnackbar({ show: false, message: "", type: "" })
+        }
+      />
+      <InfoModal
+        show={deletedId}
+        onConfirm={handleDelete}
+        onCancel={() => setDeletedId(null)}
+      >
+        <p>Apakah kamu yakin ingin menghapus perjalanan ini?</p>
+      </InfoModal>
+      <LoadingOverlay show={loading}/>
     </PageBase>
   );
 }
