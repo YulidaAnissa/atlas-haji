@@ -147,7 +147,10 @@ export default function ComponentForm({ data = {}, onSubmit, onClose = false, ty
     ),
     asal: data?.kabkota || "",
     namaKantor: surat?.namaKantor || "",
-    ...surat
+    alamat: surat?.alamat || "",
+    callCenter: surat?.callCenter || "",
+    website: surat?.website || "",
+    email: surat?.email || "",
   };
 
   console.log('form data:', data);

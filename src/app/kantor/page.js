@@ -51,6 +51,8 @@ export default function DaftarKantor() {
     { id: "aksi", label: "", numeric: false, width: 150 },
   ];
 
+  console.log(deleted);
+
   const handleDelete = async () => {
     try {
       await deleteKantor({ idKantor: deleted });
@@ -62,9 +64,12 @@ export default function DaftarKantor() {
       });
       await fetch();
     } catch (err) {
+      // Mengambil pesan error dari backend (err.message)
+      const errorMessage = err.message || "Gagal menghapus data kantor";
+      
       setShowSnackbar({
         show: true,
-        message: "Gagal menghapus data kantor",
+        message: errorMessage,
         type: "error",
       });
       console.error("Error:", err);

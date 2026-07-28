@@ -69,11 +69,13 @@ export function useAddKantor() {
 export function useDeleteKantor() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  
 
   const deleteKantor = async ({ idKantor }) => {
-    console.log("ini idKantor ", idKantor);
     setLoading(true);
     setError("");
+
+    console.log(idKantor, "id Kantor ");
 
     try {
       const tokenObj = accessTokenStorage.get();
@@ -84,7 +86,7 @@ export function useDeleteKantor() {
       }
 
       const res = await fetch(
-        `${SERVICES.KANTOR}/${idKantor}`,
+        SERVICES.KANTOR({ id: idKantor }),
         {
           method: "DELETE",
           headers: {
