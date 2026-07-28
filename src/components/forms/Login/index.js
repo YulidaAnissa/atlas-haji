@@ -9,9 +9,7 @@ import { FiArrowRight } from "react-icons/fi";
 
 export default function LoginPage({ onSubmit, helperText }) {
   const [showPassword, setShowPassword] = useState(false);
-
-  console.log(showPassword);
-
+  
   return (
     <Form onSubmit={onSubmit} validate={validation}>
       {({ handleSubmit, submitting }) => (

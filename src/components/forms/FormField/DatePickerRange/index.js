@@ -23,7 +23,6 @@ function toPayload(startDate, endDate) {
 
 export default function DatePickerRange({ input, className = "", minDate }) {
 
-  console.log('minDate ', minDate);
   const today = useMemo(() => {
     const date = new Date();
     date.setHours(0, 0, 0, 0);
@@ -40,8 +39,6 @@ export default function DatePickerRange({ input, className = "", minDate }) {
 
     return date;
   }, [minDate, today]);
-
-  console.log('minimumDate ', minimumDate);
 
   const selection = {
     startDate:

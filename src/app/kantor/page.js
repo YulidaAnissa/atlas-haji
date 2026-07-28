@@ -51,8 +51,6 @@ export default function DaftarKantor() {
     { id: "aksi", label: "", numeric: false, width: 150 },
   ];
 
-  console.log(deleted);
-
   const handleDelete = async () => {
     try {
       await deleteKantor({ idKantor: deleted });
@@ -109,7 +107,6 @@ export default function DaftarKantor() {
     }
   };
 
-  console.log(deleted);
   // 3. Mapping data untuk render tabel dan tombol aksi
   const formattedData = (data ?? []).map((item) => ({
     ...item,

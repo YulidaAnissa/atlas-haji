@@ -34,8 +34,6 @@ function DaftarPerjalananDinasContent() {
     { id: "aksi", label: "", numeric: false },
   ];
 
-  console.log('data di filter ', data);
-
   const formattedData = (data ?? []).map((item) => {
     const isPerjalananKhusus =
       String(item?.typePerjalanan ?? "").trim().toLowerCase() === "khusus";

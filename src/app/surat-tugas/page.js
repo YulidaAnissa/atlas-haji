@@ -75,7 +75,6 @@ export default function DaftarSuratTugas() {
 
   const handleUpdateSuratTugas = async (values) => {
     try {
-      console.log(values, "update surat tugas");
       const formData = new FormData();
 
       if (values.idSurat) formData.append("idSurat", values.idSurat);
@@ -85,8 +84,6 @@ export default function DaftarSuratTugas() {
       }
       if (values.kegiatan) formData.append("kegiatan", values.kegiatan);
       if (values.file) formData.append("file", values.file);
-      console.log([...formData], "form data");
-      console.log(values.idSurat, "idSurat");
       await editSuratTugas({
         idSurat: values.idSurat,
         values: formData

@@ -44,7 +44,6 @@ export default function KabKotaForm({
   type = "add",
 }) {
 
-  console.log("data form kabkota", data);
   const fields = ["kabkota", "uhPNS", "uhPPPK", "uhNonASN"];
   const isEdit = type === "edit";
 

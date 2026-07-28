@@ -52,8 +52,6 @@ export default function Component() {
     urlParams: { id }
   });
 
-  console.log('nominatif', nominatifData);
-
   const { updateLaporan } = useUpdateLaporan();
   const { editSuratTugas } = useEditSuratTugas();
   const { data: dataKabKota } = useKabKota();
@@ -167,7 +165,6 @@ export default function Component() {
   const formattedData = (data?.pegawai ?? []).map((item) => {
     const canVerify = item.status === "pengajuan" && profil?.role === "finance";
     const isPerjalananKhusus = String(item?.typePerjalanan ?? "").trim().toLowerCase() === "khusus";
-    console.log(item?.status);
     return {
       ...item,
       nama: (

@@ -75,8 +75,6 @@ export function useDeleteKantor() {
     setLoading(true);
     setError("");
 
-    console.log(idKantor, "id Kantor ");
-
     try {
       const tokenObj = accessTokenStorage.get();
       const token = tokenObj?.value;

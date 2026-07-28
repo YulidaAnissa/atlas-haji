@@ -20,10 +20,8 @@ export default function AddKantor() {
   const { addKantor, loading } = useAddKantor();
   const router = useRouter();
   const { data: kabkota } = useKabKota();
-  console.log(kabkota);
 
   const handleSubmit = async (values, form) => {
-    console.log(values, "values ");
     try {
       // Menyesuaikan payload dengan struktur tabel di image_5ed85c.png
       const payload = {
@@ -36,7 +34,6 @@ export default function AddKantor() {
         unitKantor: values?.unitKantor?.trim() || null,
         kodeSurat: extractKodeSurat(values?.kodeSurat?.value) || null
       };
-      console.log('ini payload ', payload);
 
       await addKantor(payload);
       form.reset();

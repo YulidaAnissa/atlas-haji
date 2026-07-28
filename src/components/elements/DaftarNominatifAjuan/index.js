@@ -46,8 +46,6 @@ export default function SuratTugas({
     return tujuan;
   };
 
-  console.log('data ajuan', data);
-
   useEffect(() => {
     if (data) {
       const formatOrDash = (value) => {
@@ -159,8 +157,6 @@ export default function SuratTugas({
       const templatePath = adaKepalaKantor 
         ? "/nominatif-format-kakanwil.docx" 
         : format;
-
-      console.log("Menggunakan template:", templatePath);
 
       // 1. Ambil template docx dinamis
       const response = await fetch(templatePath);

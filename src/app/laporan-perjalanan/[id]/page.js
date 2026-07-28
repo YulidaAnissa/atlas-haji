@@ -43,8 +43,6 @@ export default function Component() {
   });
   const [profil, setProfil] = useState(null);
 
-  console.log('show update laporan', showUpdateLaporan);
-
   const [loading, startLoading, endLoading] = useLoading();
 
   const { data, isLoading, fetch } = useSuratTugas({
@@ -61,10 +59,6 @@ export default function Component() {
       idKantor: profil?.idKantor
     }
   })
-
-  console.log("pegawai ", pegawai );
-
-  console.log('use SUrat Tugas', data);
 
   const { updateLaporan } = useUpdateLaporan();
 
@@ -83,7 +77,6 @@ export default function Component() {
       formData.append("hasil", values?.hasil);
       formData.append("tfBiayaPeng", values?.tfBiayaPeng?.value || values?.pegawai?.id);
       formData.append("tfBiayaTrans", values?.tfBiayaTrans?.value || values?.pegawai?.id);
-      console.log("formData ", formData);
       await updateLaporan(idPerjalananPegawai, formData);
       await fetch();
       setShowAddLaporan(false);
@@ -111,8 +104,6 @@ export default function Component() {
     setShowAddLaporan(true);
     setLaporan(type);
   };
-
-  console.log("showUpdateLaporan ", showUpdateLaporan?.data?.nip);
 
   const handleUpdateLaporan = async (values) => {
     const idPerjalananPegawai = values?.idPerjalananPegawai;
@@ -232,8 +223,6 @@ export default function Component() {
     { label: "Daftar Laporan Perjalanan Dinas", href: "/laporan-perjalanan" },
     { label: data?.surat?.kegiatan || "Detail" },
   ];
-
-  console.log("show laporan ", showLaporan?.data);
 
   return (
     <PageBase className="mx-auto max-w-7xl px-6 py-10 lg:px-12">

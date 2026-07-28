@@ -204,8 +204,7 @@ export default function Component() {
   const getJabatanPPT = (pegawaiJabatan, suratJabatan) => {
     const jabatan = String(pegawaiJabatan ?? "").trim().toLowerCase();
     const jabatanSurat = String(suratJabatan ?? "").trim().toLowerCase();
-    console.log("jabatan surat", jabatanSurat);
-    console.log("jabatan", jabatan );
+
     if(jabatanSurat.includes("kepala kantor")) {
       if(jabatan.includes("kepala kantor")) {
         return {
@@ -249,7 +248,6 @@ export default function Component() {
     
     const ppt = getJabatanPPT(item?.jabatan, suratTugas?.surat?.jabatan);
     const isDisabled = isAdmin && item.status === "perjalanan";
-    console.log("item", item);
     return {
       ...item,
       nama: (

@@ -131,8 +131,6 @@ export default function ComponentForm({ data = {}, onSubmit, onClose = false, ty
   const [showAlasan, setShowAlasan] = useState(false);
   const [catatan, setCatatan] = useState("");
 
-  console.log(data, "dataVerify");
-
   const dataFilePreview = {
     nama: data?.nama,
     nip: data?.jenisPegawai === "PNS" ? data?.nip : "-",
@@ -153,7 +151,6 @@ export default function ComponentForm({ data = {}, onSubmit, onClose = false, ty
     email: surat?.email || "",
   };
 
-  console.log('form data:', data);
   return (
     <div className="max-h-[80vh] min-w-0 overflow-y-auto overflow-x-hidden">
       <div className="mb-5">

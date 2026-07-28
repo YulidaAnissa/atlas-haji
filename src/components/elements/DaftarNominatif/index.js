@@ -157,8 +157,6 @@ export default function SuratTugas({
         ? "/nominatif-format-kakanwil.docx" 
         : format;
 
-      console.log("Menggunakan template:", templatePath);
-
       // 1. Ambil template docx dinamis
       const response = await fetch(templatePath);
       const content = await response.arrayBuffer();

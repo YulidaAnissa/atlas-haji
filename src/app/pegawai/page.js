@@ -48,7 +48,6 @@ export default function DaftarPegawai() {
 
   // Fetch daftar kantor untuk opsi dropdown
   const { data: dataKantor, isLoading: loadingKantor } = useKantor();
-  console.log(selectedKantor, "selected kantor");
 
   const targetKantor = profil?.idKantor === "1" 
     ? selectedKantor 
@@ -99,8 +98,6 @@ export default function DaftarPegawai() {
         ...values,
         status: values.isPejabat ? "eselon" : "pegawai",
       };
-
-      console.log(payload, "values");
 
       await editPegawai(payload);
       await fetch();
@@ -159,7 +156,6 @@ export default function DaftarPegawai() {
     { label: "Daftar Pegawai" },
   ];
 
-  console.log(showEdit, "show edit");
   return (
     <PageBase className="mx-auto p-6 sm:p-8 lg:p-10">
       <div className="mb-8">

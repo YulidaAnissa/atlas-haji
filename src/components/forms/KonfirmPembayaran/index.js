@@ -39,9 +39,7 @@ export default function ComponentForm({
   const selectedAnggaran =
     anggaranOptions.find((option) => option.value === data?.surat?.anggaran) ??
     null;
-
-  console.log(data, 'data konfirm pembayaran');
-
+    
   return (
     <Form
       onSubmit={onSubmit}
