@@ -222,20 +222,20 @@ export default function Component() {
       }
     }
     else {
-      if(jabatan.includes("kepala")) {
+      // if(jabatan.includes("kepala")) {
         return {
           an: "An. ",
           pejabatMengetahui: profil?.idKantor === "1" ? "Kepala Kantor Wilayah" : "Kepala Kantor",
           jabatanPPT: capitalize(jabatanSurat),
         };
-      }
-      else {
-        return {
-          an: "",
-          pejabatMengetahui: "",
-          jabatanPPT: capitalize(jabatanSurat),
-        };
-      }
+      // }
+      // else {
+      //   return {
+      //     an: "",
+      //     pejabatMengetahui: "",
+      //     jabatanPPT: capitalize(jabatanSurat),
+      //   };
+      // }
     }
   };
 

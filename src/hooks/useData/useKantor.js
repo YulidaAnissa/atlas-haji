@@ -121,7 +121,7 @@ export function useEditKantor() {
   const editKantor = async (values, idKantor) => {
     setLoading(true);
     setError("");
-
+    const isFormData = values instanceof FormData;
     try {
       const tokenObj = accessTokenStorage.get();
       const token = tokenObj?.value;
@@ -130,15 +130,16 @@ export function useEditKantor() {
         throw new Error("Token tidak tersedia, user belum login");
       }
 
+
       const res = await fetch(
-        `${SERVICES.KANTOR}/${idKantor}`,
+        SERVICES.KANTOR({ id: idKantor }),
         {
           method: "PUT",
           headers: {
-            Authorization: `Bearer ${token}`,
-            "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+            ...(isFormData ? {} : { "Content-Type": "application/json" }),
           },
-          body: JSON.stringify(values),
+          body: isFormData ? values : JSON.stringify(values),
         }
       );
 

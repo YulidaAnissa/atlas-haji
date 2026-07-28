@@ -11,7 +11,7 @@ import CreateableSelect from "../FormField/CreateableSelect";
 
 const formatKodeSurat = (inputValue = "") => {
   if (!inputValue) return "";
-  const cleanInput = inputValue.trim().toUpperCase();
+  const cleanInput = inputValue.trim();
   const currentYear = new Date().getFullYear();
   return `ST-XXX/${cleanInput}/${currentYear}`;
 };
