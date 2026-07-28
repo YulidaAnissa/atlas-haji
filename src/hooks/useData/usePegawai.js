@@ -133,7 +133,7 @@ export function useEditPegawai() {
       }
 
       const res = await fetch(
-        `${SERVICES.PEGAWAI}/${values.nip}`,
+        `${SERVICES.PEGAWAI}/${values.nipAwal}`,
         {
           method: "PUT",
           headers: {

@@ -209,7 +209,7 @@ export default function Component() {
       if(jabatan.includes("kepala kantor")) {
         return {
           an: "An. ",
-          pejabatMengetahui: "Sekretaris Jenderal Kementerian",
+          pejabatMengetahui: "Sekretaris Jenderal Kementerian Haji Dan Umrah",
           jabatanPPT: capitalize(jabatanSurat),
         };
       } else {

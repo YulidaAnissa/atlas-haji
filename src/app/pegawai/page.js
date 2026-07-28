@@ -97,6 +97,8 @@ export default function DaftarPegawai() {
       const payload = {
         ...values,
         status: values.isPejabat ? "eselon" : "pegawai",
+        nipAwal: showEdit?.data?.nip,
+        idKantor: profil?.idKantor || ""
       };
 
       await editPegawai(payload);

@@ -182,7 +182,7 @@ function PegawaiFields({ values, form, isEdit }) {
       </div>
 
       <div className="grid grid-cols-2 gap-x-5 gap-y-4">
-        <EmployeeIdentityFields employeeType={currentJenis} form={form} disabled={isEdit} />
+        <EmployeeIdentityFields employeeType={currentJenis} form={form} />
 
         <div className="col-span-2 sm:col-span-1">
           <Field
