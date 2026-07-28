@@ -365,6 +365,7 @@ export default function Component() {
           }
           onSubmit={handleConfirmBiaya}
           onClose={() => setShowVerifBiayaPerjalanan({ show: false, data: null })}
+          surat={data?.surat}
         />
       </FormModal>
 

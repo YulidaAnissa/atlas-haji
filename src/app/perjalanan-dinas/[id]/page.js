@@ -30,6 +30,7 @@ import {
 import { calculateTripDuration, formatDate, formatRangeDate } from "@/utils/date";
 import { profileStorage } from "@/utils/storage";
 import { TiDeleteOutline, TiEdit } from "react-icons/ti";
+import { capitalize } from "@/utils/string";
 
 const EMPTY_SNACKBAR = {
   show: false,
@@ -202,41 +203,39 @@ export default function Component() {
   };
   const getJabatanPPT = (pegawaiJabatan, suratJabatan) => {
     const jabatan = String(pegawaiJabatan ?? "").trim().toLowerCase();
-    const jabatanSurat = suratJabatan || "-";
-
-    // Condition 2: Jika pegawaiJabatan adalah kepala bidang atau kepala bagian
-    if (jabatan.includes("kepala")) {
-      return {
-        an: "",
-        pejabatMengetahui: "",
-        jabatanPPT: jabatanSurat,
-      };
-    }
-
-    // Condition 3: Jika pegawaiJabatan adalah kepala kantor wilayah (fallback case dari kode lama)
-    if (jabatan.includes("kepala kantor wilayah")) {
-      return {
-        an: "An. ",
-        pejabatMengetahui: "Sekretaris Jenderal Kementerian",
-        jabatanPPT: jabatanSurat,
-      };
-    }
-
+    const jabatanSurat = String(suratJabatan ?? "").trim().toLowerCase();
+    console.log("jabatan surat", jabatanSurat);
+    console.log("jabatan", jabatan );
     if(jabatanSurat.includes("kepala kantor")) {
-      return {
-        an: "",
-        pejabatMengetahui: "",
-        jabatanPPT: jabatanSurat,
-      };
+      if(jabatan.includes("kepala kantor")) {
+        return {
+          an: "An. ",
+          pejabatMengetahui: "Sekretaris Jenderal Kementerian",
+          jabatanPPT: capitalize(jabatanSurat),
+        };
+      } else {
+        return {
+          an: "",
+          pejabatMengetahui: "",
+          jabatanPPT: capitalize(jabatanSurat),
+        };
+      }
     }
-    
-    // Condition 4: Default/Pegawai biasa
     else {
-      return {
-        an: "An. ",
-        pejabatMengetahui: profil?.idKantor === "1" ? "Kepala Kantor Wilayah" : "Kepala Kantor",
-        jabatanPPT: jabatanSurat,
-      };
+      if(jabatan.includes("kepala")) {
+        return {
+          an: "An. ",
+          pejabatMengetahui: profil?.idKantor === "1" ? "Kepala Kantor Wilayah" : "Kepala Kantor",
+          jabatanPPT: capitalize(jabatanSurat),
+        };
+      }
+      else {
+        return {
+          an: "",
+          pejabatMengetahui: "",
+          jabatanPPT: capitalize(jabatanSurat),
+        };
+      }
     }
   };
 

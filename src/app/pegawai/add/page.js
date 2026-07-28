@@ -44,7 +44,7 @@ export default function PegawaiPage() {
         idKantor: profil?.idKantor || ""
       };
 
-      // await addPegawai(payload);
+      await addPegawai(payload);
       
       if (form && typeof form.reset === "function") {
         form.reset();
