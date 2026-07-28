@@ -46,6 +46,8 @@ export default function SuratTugas({
     return tujuan;
   };
 
+  console.log('data ajuan', data);
+
   useEffect(() => {
     if (data) {
       const formatOrDash = (value) => {

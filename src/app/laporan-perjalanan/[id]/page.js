@@ -69,7 +69,6 @@ export default function Component() {
   const { updateLaporan } = useUpdateLaporan();
 
   const handleLaporanPerjalanan = async (values) => {
-    console.log('values laporan', values);
     const idPerjalananPegawai = values?.pegawai?.value;
     try {
       startLoading();
@@ -82,8 +81,9 @@ export default function Component() {
       formData.append("spd", values?.spd); // file object
       formData.append("status", "pengajuan");
       formData.append("hasil", values?.hasil);
-      formData.append("tfBiayaPeng", values?.tfBiayaPeng?.value);
-      formData.append("tfBiayaTrans", values?.tfBiayaTrans?.value);
+      formData.append("tfBiayaPeng", values?.tfBiayaPeng?.value || values?.pegawai?.id);
+      formData.append("tfBiayaTrans", values?.tfBiayaTrans?.value || values?.pegawai?.id);
+      console.log("formData ", formData);
       await updateLaporan(idPerjalananPegawai, formData);
       await fetch();
       setShowAddLaporan(false);
@@ -112,6 +112,8 @@ export default function Component() {
     setLaporan(type);
   };
 
+  console.log("showUpdateLaporan ", showUpdateLaporan?.data?.nip);
+
   const handleUpdateLaporan = async (values) => {
     const idPerjalananPegawai = values?.idPerjalananPegawai;
     try {
@@ -125,8 +127,8 @@ export default function Component() {
       formData.append("spd", values?.spd); // file object
       formData.append("status", "pengajuan");
       formData.append("hasil", values?.hasil);
-      formData.append("tfBiayaPeng", values?.tfBiayaPeng?.value);
-      formData.append("tfBiayaTrans", values?.tfBiayaTrans?.value);
+      formData.append("tfBiayaPeng", values?.tfBiayaPeng?.value || values?.pegawai?.id);
+      formData.append("tfBiayaTrans", values?.tfBiayaTrans?.value || values?.pegawai?.id);
       await updateLaporan(idPerjalananPegawai, formData);
 
       await fetch();

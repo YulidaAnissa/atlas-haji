@@ -42,6 +42,7 @@ export default function ComponentForm({
       .map((item) => ({
         value: item.idPerjalananPegawai,
         label: `${item.nip} | ${item.nama}`,
+        id: item.nip
       }));
   }, [isAddMode, pegawai]);
 
