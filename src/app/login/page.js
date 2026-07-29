@@ -73,7 +73,7 @@ export default function Components() {
         <section className="flex min-h-screen items-center justify-center px-6 py-10 sm:px-10">
           <div className="w-full max-w-md">
             <div className="mb-10 flex justify-center lg:hidden">
-              <div className="grid h-24 w-24 place-items-center rounded-2xl bg-brand shadow-xl shadow-[#c9a961]/25">
+              <div className="grid h-24 w-24 place-items-center rounded-2xl bg-brand shadow-xl shadow-brand/25">
                 <Image
                   src="/logo.png"
                   alt="Garuda Emblem"
