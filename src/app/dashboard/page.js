@@ -10,6 +10,7 @@ import {
   FaCalendarAlt,
   FaBriefcase,
   FaFilter,
+  FaBell,
 } from "react-icons/fa";
 import Box from "@mui/material/Box";
 import CircularProgress from "@mui/material/CircularProgress";
@@ -29,6 +30,7 @@ import {
   useKantor,
 } from "@/hooks/useData";
 import { profileStorage } from "@/utils/storage";
+import { formatDate } from "@/utils/date";
 
 const months = [
   "Januari",
@@ -74,7 +76,7 @@ export default function PerjalananDinasPage() {
     const userProfile = profileStorage.get();
     setProfil(userProfile);
 
-    setSelectedKantor(userProfile.idKantor);
+    setSelectedKantor(userProfile?.idKantor || "");
   }, []);
 
   // Tentukan target kantor: admin (idKantor === "1") bisa bebas pilih, jika tidak dikunci ke profil user
@@ -99,12 +101,50 @@ export default function PerjalananDinasPage() {
     }
   });
   
-  const { data: perjalananData } = usePerjalananPegawai({
+  const { data: perjalananData, total } = usePerjalananPegawai({
     params: { 
       status: "tolak",
-      ...(targetKantor && { idKantor: targetKantor })
+      ...(targetKantor && { idKantor: targetKantor }),
+      page: 1, 
+      size: 3,
+      ...(profil?.role !== "admin" && profil?.nip && { nip: profil.nip })
+    },
+});
+
+  // Ambil data untuk pengingat perjalanan besok
+  const tomorrowDate = new Date(today);
+  tomorrowDate.setDate(today.getDate() + 1);
+  const formattedTomorrowStr = `${String(tomorrowDate.getDate()).padStart(2, '0')} ${months[tomorrowDate.getMonth()]} ${tomorrowDate.getFullYear()}`;
+
+  const { data: pengingatBesok } = usePerjalananPegawai({
+    params: {
+      ...(targetKantor && { idKantor: targetKantor }),
+      page: 1, 
+      size: 5
     },
   });
+
+  console.log('pengingatBesok', pengingatBesok);
+const formattedTargetDate = `${tomorrowDate.getFullYear()}-${String(tomorrowDate.getMonth() + 1).padStart(2, '0')}-${String(tomorrowDate.getDate()).padStart(2, '0')}`;
+
+console.log("Target Tanggal (Besok):", formattedTargetDate);
+console.log("Profil NIP yang login:", profil?.nip);
+
+const filteredBesok = Array.isArray(pengingatBesok) 
+  ? pengingatBesok.filter(item => {
+      const formattedItemDate = formatDate(item.tglBerangkat, "YYYY-MM-DD");
+      console.log(formattedItemDate, formattedTargetDate);
+      const isTomorrow = formattedItemDate === formattedTargetDate;
+      const isForThisUser = profil?.nip ? item.nip === profil.nip : true;
+
+      // Debug tiap item data
+      console.log(`Cek Item -> NIP: ${item.nip}, tglBerangkat asli: ${formatDate(item.tglBerangkat, "YYYY-MMMM-DD")}, tglFormat: ${formattedItemDate}, Match Tanggal: ${isTomorrow}, Match User: ${isForThisUser}`);
+
+      return isTomorrow && isForThisUser;
+    })
+  : [];
+
+  console.log('Hasil filteredBesok:', filteredBesok);
 
   const { data: dataKantor, isLoading: loadingKantor } = useKantor();
 
@@ -149,6 +189,38 @@ export default function PerjalananDinasPage() {
           </div>
         </div>
       </header>
+
+      {/* NOTIFIKASI PENGINGAT PERJALANAN BESOK KHUSUS AKUN PROFIL */}
+      {filteredBesok.length > 0 && (
+        <section className="mb-6 rounded-2xl border border-amber-200 bg-amber-50/70 p-5 shadow-sm">
+          <div className="flex items-start gap-3">
+            <div className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-amber-500 text-white shadow-sm">
+              <FaBell className="text-base animate-bounce" />
+            </div>
+            <div className="flex-1">
+              <h2 className="text-sm font-bold text-amber-900">
+                Pengingat Jadwal Perjalanan Dinas Anda
+              </h2>
+              <p className="mt-1 text-xs text-amber-700">
+                Halo <span className="font-semibold">{profil?.nama || "Pegawai"}</span>, besok tanggal <span className="font-semibold">{formattedTomorrowStr}</span> Anda memiliki agenda perjalanan baru ke:
+              </p>
+              <div className="mt-3 flex flex-wrap gap-2">
+                {filteredBesok.map((item, idx) => (
+                  <div key={idx} className="inline-flex items-center gap-2 rounded-xl bg-white border border-amber-200 px-3 py-1.5 text-xs font-medium text-amber-900 shadow-xs">
+                    <span className="font-bold text-brand">Tujuan: {item.tujuan}</span>
+                    {item.catatan && (
+                      <>
+                        <span className="text-gray-400">|</span>
+                        <span className="text-gray-600">{item.catatan}</span>
+                      </>
+                    )}
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        </section>
+      )}
 
       {/* FILTER BAR DI ATAS STAT CARD */}
       <section className="mb-6 rounded-2xl border border-gray-200 bg-white p-5 shadow-sm">
@@ -223,7 +295,7 @@ export default function PerjalananDinasPage() {
               </div>
 
               <p className="mt-1 text-sm text-gray-500">
-                {perjalananData.length} perjalanan perlu ditinjau
+                {total} perjalanan perlu ditinjau
               </p>
             </div>
 
@@ -259,7 +331,7 @@ export default function PerjalananDinasPage() {
           <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 xl:grid-cols-4">
             <StatCard
               title="Perjalanan"
-            data={summary?.perjalanan ?? 0}
+              data={summary?.perjalanan ?? 0}
               count={summary?.perjalanan ?? 0}
               subtitle="Sedang berlangsung atau dijadwalkan"
               color="bg-gradient-to-br from-blue-500 to-blue-700"

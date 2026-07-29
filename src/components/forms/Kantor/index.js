@@ -99,11 +99,7 @@ export default function KantorForm({
         } 
       : null,
   };
-
-  console.log("formattedInitialValues", formattedInitialValues);
-  console.log("pegawaiOptions", pegawaiOptions);
-  console.log("data", data);
-
+  
   // Render form fields yang sama untuk mode Edit dan Add
   const renderFormFields = (form) => (
     <div className="flex flex-col gap-4">

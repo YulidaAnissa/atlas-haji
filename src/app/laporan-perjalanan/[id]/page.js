@@ -14,6 +14,7 @@ import {
   StatusBadge,
   VerifBiayaPerjalanan,
   InfoPerjalanan,
+  SearchBar
 } from "@/components/elements";
 import LoadingOverlay from "@/components/elements/LoadingOverlay";
 import LaporanPerjalanan from "@/components/forms/LaporanPerjalanan";
@@ -32,6 +33,7 @@ export default function Component() {
     data: null,
     surat: null
   };
+  const [search, setSearch] = useState("");
   const [showLaporan, setShowLaporan] = useState(EMPTY_MODAL);
   const [showAddLaporan, setShowAddLaporan] = useState(false);
   const [showUpdateLaporan, setShowUpdateLaporan] = useState(EMPTY_MODAL);
@@ -42,17 +44,19 @@ export default function Component() {
     type: "",
   });
   const [profil, setProfil] = useState(null);
-
+  useEffect(() => {
+    const userProfile = profileStorage.get();
+    setProfil(userProfile);
+  }, []);
   const [loading, startLoading, endLoading] = useLoading();
 
   const { data, isLoading, fetch } = useSuratTugas({
     urlParams: { id },
+    params: {
+      search,
+      ...(profil?.role !== "admin" && profil?.nip && { nip: profil.nip })
+    }
   });
-
-  useEffect(() => {
-      const userProfile = profileStorage.get();
-      setProfil(userProfile);
-    }, []);
 
   const { data: pegawai } = usePegawai({
     params: {
@@ -255,13 +259,25 @@ export default function Component() {
       <InfoPerjalanan data={data?.surat} className="mb-8" />
 
       <section className="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
-        <div className="mb-5">
-          <h2 className="text-lg font-semibold text-gray-900">
-            Daftar Pegawai
-          </h2>
-          <p className="mt-1 text-sm text-gray-500">
-            Cetak laporan perjalanan berdasarkan pegawai.
-          </p>
+        <div className="mb-5 flex flex-col gap-3 sm:flex-row sm:items-center justify-between w-full">
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-center w-full justify-between">
+            <div>
+              <h2 className="text-lg font-semibold text-gray-900">
+                Daftar Pegawai
+              </h2>
+              <p className="mt-1 text-sm text-gray-500">
+                Cetak laporan perjalanan berdasarkan pegawai.
+              </p>
+            </div>
+            
+            <div>
+              <SearchBar
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                placeholder="Cari Pegawai..."
+              />
+            </div>
+          </div>
         </div>
 
         <DataTables

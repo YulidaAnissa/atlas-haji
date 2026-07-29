@@ -1,7 +1,5 @@
 import {
-  FaCalendarAlt,
   FaExclamationTriangle,
-  FaUser,
 } from "react-icons/fa";
 
 export default function NotificationCard({
@@ -36,14 +34,6 @@ export default function NotificationCard({
             Lihat Detail
           </button>
         </div>
-          <div className="mt-5 rounded-xl border border-red-100 bg-red-50 px-4 py-3">
-            <p className="text-xs font-semibold uppercase tracking-wide text-red-500">
-              Catatan
-            </p>
-            <p className="mt-1 text-sm leading-6 text-red-800">
-              {data?.catatan}
-            </p>
-          </div>
       </div>
     </div>
   );

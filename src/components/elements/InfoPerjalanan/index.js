@@ -36,7 +36,7 @@ export default function InformasiPerjalanan({
     },
     {
       label: "Kegiatan",
-      value: data?.kegiatan,
+      value: data?.ringKegiatan || data?.kegiatan,
     },
     {
       label: "File Surat Tugas",

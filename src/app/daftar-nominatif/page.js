@@ -30,7 +30,8 @@ export default function DaftarBiayaPerjalanan() {
   const { data, isLoading } = useSuratTugas({
     params: { 
       search,
-      ...(targetKantor && { idKantor: targetKantor })
+      ...(targetKantor && { idKantor: targetKantor }),
+      ...(profil?.role !== "admin" && profil?.nip && { nip: profil.nip })
     }
   });
 

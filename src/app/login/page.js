@@ -38,25 +38,31 @@ export default function Components() {
               />
             </div>
 
-<div className="max-w-xl text-center">
-  <p className="mb-4 text-xs font-bold uppercase tracking-[0.36em] text-white/70">
-    Digital Governance
-  </p>
+            <div className="max-w-xl text-center">
+              {/* Bagian yang diperbagus */}
+              <div className="mb-6 space-y-1.5">
+                <p className="text-[11px] font-bold uppercase tracking-[0.25em] text-white/75">
+                  Kantor Wilayah Kementerian Haji dan Umrah
+                </p>
+                <p className="text-xs font-black uppercase tracking-[0.35em] text-white">
+                  Provinsi Jawa Barat
+                </p>
+              </div>
 
-  <h1 className="text-7xl font-black tracking-wide text-white drop-shadow-md">
-    ATLAS
-  </h1>
+              <h1 className="text-7xl font-black tracking-wide text-white drop-shadow-md">
+                ATLAS
+              </h1>
 
-  <div className="mx-auto mt-5 flex w-32 items-center justify-center gap-2">
-    <span className="h-px flex-1 bg-white/40" />
-    <span className="h-1.5 w-1.5 rounded-full bg-white/70" />
-    <span className="h-px flex-1 bg-white/40" />
-  </div>
+              <div className="mx-auto mt-5 flex w-32 items-center justify-center gap-2">
+                <span className="h-px flex-1 bg-white/40" />
+                <span className="h-1.5 w-1.5 rounded-full bg-white/70" />
+                <span className="h-px flex-1 bg-white/40" />
+              </div>
 
-  <p className="mx-auto mt-6 max-w-lg text-lg font-medium leading-8 text-white/85">
-    Menghadirkan tata kelola perjalanan dinas yang lebih terstruktur, terukur, akuntabel dan sistematis
-  </p>
-</div>
+              <p className="mx-auto mt-6 max-w-lg text-lg font-medium leading-8 text-white/85">
+                Menghadirkan tata kelola perjalanan dinas yang lebih terstruktur, terukur, akuntabel dan sistematis
+              </p>
+            </div>
           </div>
 
           <div className="relative z-10 flex items-center justify-between text-sm text-white/70">
@@ -80,9 +86,15 @@ export default function Components() {
 
             <div className="rounded-[28px] border border-[#eadfbe] bg-white px-7 py-9 shadow-[0_24px_80px_rgba(201,169,97,0.18)] sm:px-10">
               <div className="mb-8 text-center">
-                <p className="mb-3 text-xs font-bold uppercase tracking-[0.28em] text-brand">
-                  Selamat Datang
-                </p>
+                {/* Penyesuaian juga pada bagian kartu login mobile/kanan */}
+                <div className="mb-3 space-y-1">
+                  <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-brand/80">
+                    Kanwil Kementerian Haji dan Umrah
+                  </p>
+                  <p className="text-[11px] font-extrabold uppercase tracking-[0.25em] text-brand">
+                    Provinsi Jawa Barat
+                  </p>
+                </div>
 
                 <h1 className="text-5xl font-black tracking-wide text-slate-950 sm:text-6xl">
                   ATLAS

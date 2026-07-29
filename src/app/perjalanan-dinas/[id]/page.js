@@ -31,6 +31,7 @@ import { calculateTripDuration, formatDate, formatRangeDate } from "@/utils/date
 import { profileStorage } from "@/utils/storage";
 import { TiDeleteOutline, TiEdit } from "react-icons/ti";
 import { capitalize } from "@/utils/string";
+import SearchBar from "@/components/elements/SearchBar";
 
 const EMPTY_SNACKBAR = {
   show: false,
@@ -48,7 +49,7 @@ const HEAD_CELLS = [
 export default function Component() {
   const { id } = useParams();
   const router = useRouter();
-
+  const [search, setSearch] = useState("");
   const [profil, setProfil] = useState(null);
   const [deletedPegawai, setDeletedPegawai] = useState(null);
   const [showAddPegawai, setShowAddPegawai] = useState(false);
@@ -56,21 +57,25 @@ export default function Component() {
   const [showUpdatePerjalanan, setShowUpdatePerjalanan] = useState(false);
   const [snackbar, setSnackbar] = useState(EMPTY_SNACKBAR);
   const [loading, startLoading, endLoading] = useLoading();
-
+  useEffect(() => {
+    setProfil(profileStorage.get());
+  }, []);
   const { data: pejabat } = usePegawai({ params: { status: "eselon" } });
   const { data: pegawai } = usePegawai();
   const { data: kabkota } = useKabKota();
   const { data: suratTugas, fetch: fetchSuratTugas } = useSuratTugas({
     urlParams: { id },
+    params: {
+      search,
+      ...(profil?.role !== "admin" && profil?.nip && { nip: profil.nip })
+    }
   });
+
   const { editSuratTugas } = useEditSuratTugas();
   const { postPegawai } = useAddPegawaiPerjalanan();
   const { deletePegawaiPerjalanan } = useDeletePegawaiPerjalanan();
   const { updatePegawai } = useUpdatePegawaiPerjalanan();
-  useEffect(() => {
-    setProfil(profileStorage.get());
-  }, []);
-
+  
   const isAdmin =
     String(profil?.role ?? "").trim().toLowerCase() === "admin";
 
@@ -221,20 +226,11 @@ export default function Component() {
       }
     }
     else {
-      // if(jabatan.includes("kepala")) {
-        return {
-          an: "An. ",
-          pejabatMengetahui: profil?.idKantor === "1" ? "Kepala Kantor Wilayah" : "Kepala Kantor",
-          jabatanPPT: capitalize(jabatanSurat),
-        };
-      // }
-      // else {
-      //   return {
-      //     an: "",
-      //     pejabatMengetahui: "",
-      //     jabatanPPT: capitalize(jabatanSurat),
-      //   };
-      // }
+      return {
+        an: "An. ",
+        pejabatMengetahui: profil?.idKantor === "1" ? "Kepala Kantor Wilayah" : "Kepala Kantor",
+        jabatanPPT: capitalize(jabatanSurat),
+      };
     }
   };
 
@@ -323,7 +319,7 @@ export default function Component() {
   const breadcrumbItems = [
     { label: "Home", href: "/" },
     { label: "Daftar Perjalanan Dinas", href: "/perjalanan-dinas" },
-    { label: suratTugas?.surat?.kegiatan || "Detail" },
+    { label: suratTugas?.surat?.ringKegiatan || suratTugas?.surat?.kegiatan || "Detail" },
   ];
 
   return (
@@ -370,10 +366,20 @@ export default function Component() {
       <InfoPerjalanan data={suratTugas?.surat} className="mb-8" />
 
       <section className="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
-        <div className="mb-5">
-          <h2 className="text-lg font-semibold text-gray-900">
-            Daftar Pegawai
-          </h2>
+        <div className="mb-5 flex flex-col gap-3 sm:flex-row sm:items-center justify-between w-full">
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-center w-full justify-between">
+            <h2 className="text-lg font-semibold text-gray-900">
+              Daftar Pegawai
+            </h2>
+            <div>
+              <SearchBar
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                placeholder="Cari Pegawai..."
+              />
+            </div>
+          </div>
+          
         </div>
 
         <DataTables headCells={HEAD_CELLS} data={formattedData} />

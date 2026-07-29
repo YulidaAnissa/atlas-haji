@@ -9,6 +9,7 @@ import { Field, Form } from "react-final-form";
 
 import {
   DatePicker,
+  TextArea,
   UploadFile,
 } from "@/components/forms/FormField";
 
@@ -16,6 +17,7 @@ import CreateableSelect from "../FormField/CreateableSelect";
 import InputField from "../FormField/InputField";
 import SelectField from "../FormField/SelectField";
 import validation from "./validate";
+import TextareaField from "../FormField/TextAreaField";
 
 // Definisikan opsi tipe perjalanan secara statis
 const defaulttypeOptions = [
@@ -154,6 +156,8 @@ export default function PerjalananForm({
         : null,
 
       kegiatan: suratData?.kegiatan || "",
+
+      ringkasanKegiatan: suratData?.ringkasanKegiatan || "",
 
       fileSurat:
         suratData?.fileSurat ||
@@ -390,9 +394,20 @@ export default function PerjalananForm({
 
                 <Field
                   name="kegiatan"
-                  component={InputField}
+                  component={TextareaField}
                   label="Kegiatan"
                   placeholder="Masukkan nama kegiatan"
+                  multiline
+                  rows={3}
+                />
+
+                <Field
+                  name="ringKegiatan"
+                  component={InputField}
+                  label="Ringkasan Kegiatan"
+                  placeholder="Masukkan ringkasan kegiatan"
+                  multiline
+                  rows={4}
                 />
               </div>
             </section>

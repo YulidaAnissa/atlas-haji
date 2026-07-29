@@ -1,12 +1,12 @@
 "use client";
 
-import { DataTables, Breadcrumb, DropdownFilter, Snackbar, InfoModal } from "@/components/elements";
+import { DataTables, SearchBar, Breadcrumb, DropdownFilter, Snackbar, InfoModal } from "@/components/elements";
 import PageBase from "@/components/pagebase";
 import { usePathname, useRouter } from "next/navigation";
 import { useState, useEffect } from "react";
 import { useSuratTugas, useKantor, useDeleteSuratTugas } from "@/hooks/useData";
 import { formatDate } from "@/utils/date";
-import { FiPlus, FiSearch, FiX, FiEye, FiBriefcase } from "react-icons/fi";
+import { FiPlus, FiEye, FiBriefcase } from "react-icons/fi";
 import { TiDeleteOutline } from "react-icons/ti";
 import { profileStorage } from "@/utils/storage";
 import { HEAD_CELL } from "@/constants";
@@ -34,7 +34,8 @@ export default function DaftarPerjalananDinas() {
   const { data, isLoading, fetch } = useSuratTugas({
     params: { 
       search,
-      ...(targetKantor && { idKantor: targetKantor })
+      ...(targetKantor && { idKantor: targetKantor }),
+      ...(profil?.role !== "admin" && profil?.nip && { nip: profil.nip })
     },
   });
 
@@ -69,6 +70,7 @@ export default function DaftarPerjalananDinas() {
   const formattedData = (data ?? []).map((item) => ({
     ...item,
     tglSurat: item.tglSurat ? formatDate(item.tglSurat, "DD MMMM YYYY") : "",
+    kegiatan: item?.ringKegiatan || item?.kegiatan,
     aksi: (
       <div className="flex items-center gap-2">
         <button
@@ -135,29 +137,12 @@ export default function DaftarPerjalananDinas() {
       <section className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
         <div className="mb-5 flex flex-col gap-3 sm:flex-row sm:items-center justify-between w-full">
           <div className="flex flex-col gap-3 sm:flex-row sm:items-center w-full">
-            <div className="flex h-11 w-full sm:w-72 md:w-80 shrink-0 items-center rounded-xl border border-slate-200 bg-slate-50 px-3.5 transition focus-within:border-brand focus-within:bg-white focus-within:ring-4 focus-within:ring-brand/15 md:max-w-sm">
-              <FiSearch className="mr-3 h-4 w-4 shrink-0 text-slate-400" />
-
-              <input
-                type="text"
-                placeholder="Cari data perjalanan..."
-                id="search"
-                name="search"
+            <div>
+              <SearchBar
                 value={search}
-                onChange={(event) => setSearch(event.target.value)}
-                className="min-w-0 flex-1 bg-transparent text-sm font-medium text-slate-800 outline-none placeholder:text-slate-400"
+                onChange={(e) => setSearch(e.target.value)}
+                placeholder="Cari data perjalanan..."
               />
-
-              {search && (
-                <button
-                  type="button"
-                  aria-label="Hapus pencarian"
-                  className="ml-2 grid h-7 w-7 place-items-center rounded-full text-slate-400 transition hover:bg-slate-200 hover:text-slate-700"
-                  onClick={() => setSearch("")}
-                >
-                  <FiX className="h-4 w-4" />
-                </button>
-              )}
             </div>
             {profil?.idKantor === "1" && (
               <DropdownFilter

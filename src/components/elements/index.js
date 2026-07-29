@@ -21,3 +21,4 @@ export const InfoPerjalanan = dynamic(() => import("./InfoPerjalanan"), { ssr: f
 export const PreviewPDF = dynamic(() => import("./PreviewPDF"), { ssr: false });
 export const DropdownFilter = dynamic(() => import("./DropdownFilter"), { ssr: false });
 export const DaftarNominatifAjuan = dynamic(() => import("./DaftarNominatifAjuan"), { ssr: false });
+export const SearchBar = dynamic(() => import("./SearchBar"), { ssr: false });

@@ -4,6 +4,7 @@ import { fetcher, deleteFetcher, auth, createSwrKey, defaultOptions, getDeduping
 import { accessTokenStorage } from '@/utils/storage';
 import useSWRMutation from "swr/mutation";
 import { useState } from 'react';
+import { pagination } from '@heroui/react';
 
 export function usePerjalanan({ dedupingInterval, urlParams = {}, params = {} } = defaultOptions) {
   const token = accessTokenStorage.get().value;
@@ -23,14 +24,15 @@ export function usePerjalanan({ dedupingInterval, urlParams = {}, params = {} } 
 
 export function usePerjalananPegawai({ dedupingInterval, urlParams = {}, params = {} } = defaultOptions) {
   const token = accessTokenStorage.get().value;
-  const { data: { data } = [], error, mutate } = useSWR(
+  const { data: { data, pagination } = [], error, mutate } = useSWR(
     createSwrKey(SERVICES.PERJALANAN_PEGAWAI, { params }), 
     fetcher({ headers: { Authorization: `Bearer ${token}` } }),
     { dedupingInterval: getDedupingInterval(dedupingInterval) }
   );
-
+  
   return {
     data: data,
+    total: pagination?.totalData,
     isLoading: !error && !data,
     error,
     fetch: mutate

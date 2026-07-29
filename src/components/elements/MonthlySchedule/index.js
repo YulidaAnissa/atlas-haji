@@ -35,40 +35,32 @@ export default function MonthlySchedule({ data = [], month, year }) {
 
   const parseDateOnly = (dateString) => {
     if (!dateString) return null;
+    // Buat objek Date dari string database
+    const date = new Date(dateString);
+    if (isNaN(date.getTime())) return null;
 
-    let cleanDateStr = dateString;
+    // Ambil tahun, bulan, dan tanggal lokal agar sesuai dengan tampilan kalender
+    const y = date.getFullYear();
+    const m = String(date.getMonth() + 1).padStart(2, "0");
+    const d = String(date.getDate()).padStart(2, "0");
 
-    if (cleanDateStr.includes("T")) {
-      cleanDateStr = cleanDateStr.split("T")[0];
-    }
-
-    if (cleanDateStr.includes("-") || cleanDateStr.includes("/")) {
-      const separator = cleanDateStr.includes("-") ? "-" : "/";
-      const parts = cleanDateStr.split(separator);
-      
-      if (parts[0].length === 2 && parts[2]?.length === 4) {
-        cleanDateStr = `${parts[2]}-${parts[1]}-${parts[0]}`;
-      }
-    }
-
-    const date = new Date(cleanDateStr);
-    date.setHours(0, 0, 0, 0);
-    return isNaN(date.getTime()) ? null : date;
+    return `${y}-${m}-${d}`;
   };
 
   const getAllTravelsByDay = (person, day) => {
-    const current = new Date(year, month - 1, day);
-    current.setHours(0, 0, 0, 0);
+    // Bentuk string tanggal target untuk kolom hari ini
+    const currentStr = `${year}-${String(month).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
 
     if (!person.perjalanan) return [];
 
     return person.perjalanan.filter((item) => {
-      const start = parseDateOnly(item.tglBerangkat);
-      const end = parseDateOnly(item.tglKembali);
+      const startStr = parseDateOnly(item.tglBerangkat);
+      const endStr = parseDateOnly(item.tglKembali);
 
-      if (!start || !end) return false;
+      if (!startStr || !endStr) return false;
 
-      return current >= start && current <= end;
+      // Bandingkan secara langsung menggunakan string 'YYYY-MM-DD' yang sudah disesuaikan ke lokal
+      return currentStr >= startStr && currentStr <= endStr;
     });
   };
 
@@ -84,7 +76,7 @@ export default function MonthlySchedule({ data = [], month, year }) {
       <div className="rounded-2xl border border-dashed border-gray-200 bg-white px-6 py-12 text-center shadow-xs">
         <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-gray-50 text-gray-400 mb-3">
           <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round5" strokeWidth={1.5} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
           </svg>
         </div>
         <p className="text-sm font-medium text-gray-800">
@@ -177,7 +169,7 @@ export default function MonthlySchedule({ data = [], month, year }) {
                         ? activeTravels
                             .map((t, i) => {
                               const st = statusStyles[normalizeStatus(t.status)];
-                              return `${i + 1}. ${st?.label ?? t.status} (${formatDate(t.tglBerangkat, "DD MMMM YYYY")} - ${formatDate(t.tglKembali, "DD MMMM YYYY")})`;
+                              return `${i + 1}. ${st?.label ?? t.status} (${formatDate(t.tglBerangkat, "YYYY-MM-DD")} - ${formatDate(t.tglKembali, "YYYY-MM-DD")})`;
                             })
                             .join("\n")
                         : "";

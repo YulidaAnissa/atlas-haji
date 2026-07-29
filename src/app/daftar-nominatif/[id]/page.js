@@ -168,8 +168,6 @@ export default function Component() {
     { id: "aksi", label: "", numeric: false, align: "right" },
   ];
 
-  console.log(data?.surat);
-
   const formattedData = (data?.pegawai ?? []).map((item) => {
     const canVerify = item.status === "pengajuan" && profil?.role === "finance";
     const isPerjalananKhusus = String(item?.typePerjalanan ?? "").trim().toLowerCase() === "khusus";

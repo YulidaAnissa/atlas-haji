@@ -16,16 +16,20 @@ function DaftarPerjalananDinasContent() {
 
   const [search, setSearch] = useState("");
   const [profil, setProfil] = useState(null);
+  useEffect(() => {
+    setProfil(profileStorage.get());
+  }, []);
 
   const status = searchParams.get("status") ?? "";
 
   const { data, isLoading } = usePerjalananPegawai({
-    params: { search, status },
+    params: { 
+      search, 
+      status, 
+      ...(profil?.role !== "admin" && profil?.nip && { nip: profil.nip }) },
   });
 
-  useEffect(() => {
-    setProfil(profileStorage.get());
-  }, []);
+  
 
   const headCells = [
     { id: "nama", label: "Nama Pegawai", numeric: false },

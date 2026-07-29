@@ -75,6 +75,13 @@ function buildSuratTugasFormData(values, profil) {
     );
   }
 
+   if (values.ringKegiatan) {
+    formData.append(
+      "ringKegiatan",
+      String(values.ringKegiatan).trim()
+    );
+  }
+
   if (values.fileSurat) {
     formData.append("fileSurat", values.fileSurat);
   }
