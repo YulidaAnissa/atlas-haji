@@ -133,7 +133,11 @@ export default function SuratTugas({
         tglKPPN: formatDate(surat?.tglKPPN, "DD MMMM YYYY") || "",
         tglKembaliTTD: tglKembaliTerakhir ? formatDate(tglKembaliTerakhir, "DD MMMM YYYY") : "",
         tahun: tglKembaliTerakhir ? formatDate(tglKembaliTerakhir, "YYYY") : "",
-        namaKantor: surat?.namaKantor || ""
+        namaKantor: surat?.namaKantor || "",
+        nipBendahara: String(surat?.anggaran || "").toLowerCase() === "dipa" 
+          ? surat?.nipDipa : surat?.nipPkoh,
+        namaBendahara: String(surat?.anggaran || "").toLowerCase() === "dipa" 
+          ? surat?.namaDipa : surat?.namaPkoh
       });
     }
   }, [data, kabKota]);

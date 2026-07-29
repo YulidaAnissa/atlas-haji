@@ -6,7 +6,6 @@ import { SERVICES } from "@/configs";
 import { useLoading } from "@/hooks";
 import LoadingOverlay from "@/components/elements/LoadingOverlay";
 import { formatDate, calculateTripDuration } from "@/utils/date";
-import { toUpperCase } from "@/utils/string";
 import { calculateUangHarianPerHari } from "@/utils/calculatorsUh";
 
 export default function SuratTugas({ 
@@ -128,11 +127,15 @@ export default function SuratTugas({
         jumlahAll: formatOrDash(totals.jumlahAll),
         
         nipPpk: data?.surat?.nipPpk || "",
-          namaPpk: data?.surat?.namaPpk || "",
+        namaPpk: data?.surat?.namaPpk || "",
         tglKPPN: formatDate(data.surat?.tglKPPN, "DD MMMM YYYY") || "",
         tglKembaliTTD: tglKembaliTerakhir ? formatDate(tglKembaliTerakhir, "DD MMMM YYYY") : "",
         tahun: tglKembaliTerakhir ? formatDate(tglKembaliTerakhir, "YYYY") : "",
-        namaKantor: data?.surat?.namaKantor || ""
+        namaKantor: data?.surat?.namaKantor || "",
+        nipBendahara: String(data?.surat?.anggaran || "").toLowerCase() === "dipa" 
+          ? data?.surat?.nipDipa : data?.surat?.nipPkoh,
+        namaBendahara: String(data?.surat?.anggaran || "").toLowerCase() === "dipa" 
+          ? data?.surat?.namaDipa : data?.surat?.namaPkoh
       });
     }
   }, [data, kabKota]);

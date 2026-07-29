@@ -111,9 +111,8 @@ export default function Component() {
       jumlahTotal: formatRupiah(jumlahTotal),
       image: item.buktiTrans,
       buktiPeng: item.buktiPeng,
-      nipPPK: item?.nipPPK,
-      namaPPK: item?.namaPPK,
-      unitPPK: item?.unitPPK,
+      nipPpk: data?.surat?.nipPpk || "",
+      namaPpk: data?.surat?.namaPpk || "",
       trans: Number(item.biayaTrans || 0) === 0 ? "" : "- Transport",
       peng: Number(item.biayaPeng || 0) === 0 ? "" : "- Penginapan",
       repre: Number(biayaRepVal) === 0 ? "" : "- Representatif",
@@ -124,7 +123,14 @@ export default function Component() {
       alamat: data?.surat?.alamat || " ",
       asal: item.kabkota,
       unitKantor: data?.surat?.unitKantor || " ",
-      unitKantorCapital: toUpperCase(data?.surat?.unitKantor)
+      unitKantorCapital: toUpperCase(data?.surat?.unitKantor),
+      nipBendahara: String(data?.surat?.anggaran || "").toLowerCase() === "dipa" 
+        ? data?.surat?.nipDipa 
+        : data?.surat?.nipPkoh,
+
+      namaBendahara: String(data?.surat?.anggaran || "").toLowerCase() === "dipa" 
+        ? data?.surat?.namaDipa 
+        : data?.surat?.namaPkoh
     };
   });
 
@@ -161,6 +167,8 @@ export default function Component() {
     { id: "status", label: "Status", numeric: false },
     { id: "aksi", label: "", numeric: false, align: "right" },
   ];
+
+  console.log(data?.surat);
 
   const formattedData = (data?.pegawai ?? []).map((item) => {
     const canVerify = item.status === "pengajuan" && profil?.role === "finance";
@@ -281,7 +289,7 @@ export default function Component() {
           </p>
         </div>
 
-        {totalPegawai > 0 && data?.pegawai?.every((item) => item.status === "verifikasi" || item.status === "selesai") && (
+        {totalPegawai > 0 && data?.pegawai?.every((item) => item.status === "verifikasi" || item.status === "selesai") && data?.surat?.anggaran && (
           <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
             <div className="inline-flex items-center justify-center rounded-xl border border-gray-300 bg-white px-4 py-2.5 text-sm font-semibold text-gray-700 shadow-sm transition-all hover:bg-gray-50 hover:border-gray-400 hover:shadow">
               <IoDocumentTextOutline className="h-4 w-4 text-blue-600 mr-2 shrink-0" />
