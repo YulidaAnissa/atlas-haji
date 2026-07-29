@@ -3,7 +3,7 @@ import validate from '../../../utils/validator';
 export default function validation(values) {
   
   return {
-    pegawai: validate(values.pegawai.values, [
+    pegawai: validate(values.pegawai, [
       { rule: 'required' },
     ]),
     spd: validate(values.spd, [
