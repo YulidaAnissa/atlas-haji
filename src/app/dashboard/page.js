@@ -192,28 +192,111 @@ const filteredBesok = Array.isArray(pengingatBesok)
 
       {/* NOTIFIKASI PENGINGAT PERJALANAN BESOK KHUSUS AKUN PROFIL */}
       {filteredBesok.length > 0 && (
-        <section className="mb-6 rounded-2xl border border-amber-200 bg-amber-50/70 p-5 shadow-sm">
-          <div className="flex items-start gap-3">
-            <div className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-amber-500 text-white shadow-sm">
-              <FaBell className="text-base animate-bounce" />
+        <section className="mb-6 overflow-hidden rounded-2xl border border-amber-200/80 bg-gradient-to-r from-amber-50/90 via-orange-50/40 to-amber-50/90 p-5 shadow-sm backdrop-blur-md transition-all duration-300 hover:shadow-md">
+          <div className="flex items-start gap-4">
+            {/* Icon Container dengan efek pulse halus */}
+            <div className="relative flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-amber-500 to-orange-600 text-white shadow-md shadow-amber-500/20">
+              <span className="absolute -top-1 -right-1 flex h-3.5 w-3.5">
+                <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-amber-400 opacity-75"></span>
+                <span className="relative inline-flex h-3.5 w-3.5 rounded-full bg-amber-500"></span>
+              </span>
+              <FaBell className="text-lg animate-bounce" />
             </div>
+
+            {/* Konten Teks & Informasi */}
             <div className="flex-1">
-              <h2 className="text-sm font-bold text-amber-900">
-                Pengingat Jadwal Perjalanan Dinas Anda
-              </h2>
-              <p className="mt-1 text-xs text-amber-700">
-                Halo <span className="font-semibold">{profil?.nama || "Pegawai"}</span>, besok tanggal <span className="font-semibold">{formattedTomorrowStr}</span> Anda memiliki agenda perjalanan baru ke:
+              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between">
+                <h2 className="text-base font-bold tracking-wide text-amber-950">
+                  Pengingat Jadwal Perjalanan Dinas
+                </h2>
+                <span className="inline-flex w-fit items-center gap-1.5 rounded-full bg-amber-100/90 px-3 py-1 text-xs font-bold text-amber-900 border border-amber-200/80 mt-1.5 sm:mt-0 shadow-2xs">
+                  📅 Besok, {formattedTomorrowStr}
+                </span>
+              </div>
+
+              <p className="mt-1.5 text-sm text-amber-900/80 leading-relaxed">
+                Halo <span className="font-bold text-amber-950">{profil?.nama || "Pegawai"}</span>, Anda memiliki agenda perjalanan dinas aktif untuk esok hari dengan detail berikut:
               </p>
-              <div className="mt-3 flex flex-wrap gap-2">
+
+              {/* Daftar Tujuan Perjalanan */}
+              <div className="mt-4 flex flex-col gap-2.5">
                 {filteredBesok.map((item, idx) => (
-                  <div key={idx} className="inline-flex items-center gap-2 rounded-xl bg-white border border-amber-200 px-3 py-1.5 text-xs font-medium text-amber-900 shadow-xs">
-                    <span className="font-bold text-brand">Tujuan: {item.tujuan}</span>
+                  <div 
+                    key={idx} 
+                    className="group flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 rounded-xl bg-white/90 border border-amber-200/70 px-4.5 py-3 text-sm shadow-2xs transition-all hover:bg-white hover:border-amber-300 hover:shadow-sm"
+                  >
+                    <div className="flex items-center gap-2.5">
+                      <span className="flex h-2.5 w-2.5 rounded-full bg-amber-500"></span>
+                      <span className="font-semibold text-gray-900">
+                        Tujuan: <span className="text-amber-800 font-bold">{item.tujuan}</span>
+                      </span>
+                    </div>
+
                     {item.catatan && (
-                      <>
-                        <span className="text-gray-400">|</span>
-                        <span className="text-gray-600">{item.catatan}</span>
-                      </>
+                      <div className="flex items-center gap-2 text-gray-600 bg-amber-50/70 px-3 py-1.5 rounded-lg border border-amber-100 w-fit">
+                        <span className="font-semibold text-xs text-amber-900">Catatan:</span>
+                        <span className="italic text-xs text-gray-700">{item.catatan}</span>
+                      </div>
                     )}
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        </section>
+      )}
+
+            {perjalananData?.length > 0 && (
+        <section className="mb-8 overflow-hidden rounded-2xl border border-red-200/80 bg-gradient-to-r from-red-50/90 via-rose-50/40 to-red-50/90 p-5 shadow-sm backdrop-blur-md transition-all duration-300 hover:shadow-md">
+          <div className="flex items-start gap-4">
+            {/* Icon Container dengan badge merah */}
+            <div className="relative flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-red-500 to-rose-600 text-white shadow-md shadow-red-500/20">
+              <span className="absolute -top-1 -right-1 flex h-3.5 w-3.5">
+                <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-red-400 opacity-75"></span>
+                <span className="relative inline-flex h-3.5 w-3.5 rounded-full bg-red-500"></span>
+              </span>
+              <span className="text-lg font-bold">!</span>
+            </div>
+
+            {/* Konten Teks & Informasi */}
+            <div className="flex-1">
+              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between">
+                <h2 className="text-base font-bold tracking-wide text-red-950">
+                  Pengajuan Ditolak
+                </h2>
+                
+                <button
+                  type="button"
+                  onClick={() => router.push("/perjalanan-dinas/filter?status=tolak")}
+                  className="inline-flex w-fit items-center gap-1.5 rounded-full bg-red-100/90 px-3 py-1 text-xs font-bold text-red-900 border border-red-200/80 mt-1.5 sm:mt-0 transition hover:bg-red-200"
+                >
+                  Lihat Semua &rarr;
+                </button>
+              </div>
+
+              <p className="mt-1.5 text-sm text-red-900/80 leading-relaxed">
+                Terdapat <span className="font-bold text-red-950">{total} perjalanan</span> yang memerlukan peninjauan kembali akibat pengajuan ditolak:
+              </p>
+
+              {/* Daftar Item Perjalanan Ditolak */}
+              <div className="mt-4 flex flex-col gap-2.5">
+                {perjalananData.map((item, index) => (
+                  <div 
+                    key={index}
+                    onClick={() => router.push(`/laporan-perjalanan/${item.idSurat}`)}
+                    className="group cursor-pointer flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 rounded-xl bg-white/90 border border-red-200/70 px-4.5 py-3 text-sm shadow-2xs transition-all hover:bg-white hover:border-red-300 hover:shadow-sm"
+                  >
+                    <div className="flex items-center gap-2.5">
+                      <span className="flex h-2.5 w-2.5 rounded-full bg-red-500"></span>
+                      <span className="font-semibold text-gray-900">
+                        {/* Menampilkan nama pegawai dan detail tujuannya */}
+                        {item.namaPegawai || item.nama || "Pegawai"}: <span className="text-red-800 font-bold">{item.tujuan || item.kegiatan || "Detail Perjalanan"}</span>
+                      </span>
+                    </div>
+
+                    <span className="text-xs font-medium text-red-600 group-hover:underline">
+                      Tinjau Detail &rarr;
+                    </span>
                   </div>
                 ))}
               </div>
@@ -282,46 +365,6 @@ const filteredBesok = Array.isArray(pengingatBesok)
           </div>
         </div>
       </section>
-
-      {perjalananData?.length > 0 && (
-        <section className="mb-8">
-          <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-            <div>
-              <div className="flex items-center gap-2">
-                <span className="h-2 w-2 rounded-full bg-red-500" />
-                <h2 className="text-base font-semibold text-gray-900">
-                  Pengajuan Ditolak
-                </h2>
-              </div>
-
-              <p className="mt-1 text-sm text-gray-500">
-                {total} perjalanan perlu ditinjau
-              </p>
-            </div>
-
-            <button
-              type="button"
-              onClick={() => router.push("/perjalanan-dinas/filter?status=tolak")}
-              className="text-sm font-medium text-gray-500 transition hover:text-red-600"
-            >
-              Lihat Semua
-            </button>
-          </div>
-
-          <div className="space-y-3">
-            {perjalananData.map((item, index) => (
-              <NotificationDashboard
-                key={index}
-                data={item}
-                type="danger"
-                onDetail={() =>
-                  router.push(`/laporan-perjalanan/${item.idSurat}`)
-                }
-              />
-            ))}
-          </div>
-        </section>
-      )}
 
       {/* STAT CARDS */}
       <section className="mb-10">
