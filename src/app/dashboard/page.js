@@ -192,10 +192,10 @@ const filteredBesok = Array.isArray(pengingatBesok)
 
       {/* NOTIFIKASI PENGINGAT PERJALANAN BESOK KHUSUS AKUN PROFIL */}
       {filteredBesok.length > 0 && (
-        <section className="mb-6 overflow-hidden rounded-2xl border border-amber-200/80 bg-gradient-to-r from-amber-50/90 via-orange-50/40 to-amber-50/90 p-5 shadow-sm backdrop-blur-md transition-all duration-300 hover:shadow-md">
+        <section className="mb-6 overflow-hidden rounded-2xl border border-amber-200/80 bg-linear-to-r from-amber-50/90 via-orange-50/40 to-amber-50/90 p-5 shadow-sm backdrop-blur-md transition-all duration-300 hover:shadow-md">
           <div className="flex items-start gap-4">
             {/* Icon Container dengan efek pulse halus */}
-            <div className="relative flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-amber-500 to-orange-600 text-white shadow-md shadow-amber-500/20">
+            <div className="relative flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-linear-to-br from-amber-500 to-orange-600 text-white shadow-md shadow-amber-500/20">
               <span className="absolute -top-1 -right-1 flex h-3.5 w-3.5">
                 <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-amber-400 opacity-75"></span>
                 <span className="relative inline-flex h-3.5 w-3.5 rounded-full bg-amber-500"></span>
@@ -247,10 +247,10 @@ const filteredBesok = Array.isArray(pengingatBesok)
       )}
 
             {perjalananData?.length > 0 && (
-        <section className="mb-8 overflow-hidden rounded-2xl border border-red-200/80 bg-gradient-to-r from-red-50/90 via-rose-50/40 to-red-50/90 p-5 shadow-sm backdrop-blur-md transition-all duration-300 hover:shadow-md">
+        <section className="mb-8 overflow-hidden rounded-2xl border border-red-200/80 bg-linear-to-r from-red-50/90 via-rose-50/40 to-red-50/90 p-5 shadow-sm backdrop-blur-md transition-all duration-300 hover:shadow-md">
           <div className="flex items-start gap-4">
             {/* Icon Container dengan badge merah */}
-            <div className="relative flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-red-500 to-rose-600 text-white shadow-md shadow-red-500/20">
+            <div className="relative flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-linear-to-br from-red-500 to-rose-600 text-white shadow-md shadow-red-500/20">
               <span className="absolute -top-1 -right-1 flex h-3.5 w-3.5">
                 <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-red-400 opacity-75"></span>
                 <span className="relative inline-flex h-3.5 w-3.5 rounded-full bg-red-500"></span>
