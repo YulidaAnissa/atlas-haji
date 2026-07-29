@@ -10,10 +10,18 @@ export default function validation(values) {
     ]),
     callCenter: validate(values.callCenter, [
       { rule: 'required' },
-      // Catatan: Jika validator Anda mendukung pengecekan format telepon khusus, Anda bisa menambahkannya di sini.
-      // Saya tidak menyertakan 'isNumber' karena nomor telepon seringkali diinput menggunakan tanda hubung (contoh: 021-12345678) atau kode negara (+62).
-      // Jika Anda mewajibkan hanya angka, Anda bisa membuka komentar di bawah ini:
-      // { rule: 'isNumber' }, 
+    ]),
+    kodeSurat: validate(values.kodeSurat, [
+      { rule: 'required' },
+    ]),
+    ppk: validate(values.ppk, [
+      { rule: 'required' },
+    ]),
+    pkoh: validate(values.pkoh, [
+      { rule: 'required' },
+    ]),
+    dipa: validate(values.dipa, [
+      { rule: 'required' },
     ]),
   };
 }

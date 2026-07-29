@@ -100,10 +100,6 @@ export default function SuratTugas({
           biayaPengFormat: formatOrDash(item.biayaPeng),
           biayaRepresentatifFormat: formatOrDash(biayaRepVal) || 0,
           jumlahFormat: formatOrDash(totalPegawai),
-          
-          nipPPK: item?.nipPPK,
-          namaPPK: item?.namaPPK,
-          unitPPK: item?.unitPPK,
         };
       });
 
@@ -131,9 +127,8 @@ export default function SuratTugas({
         repTotal: formatOrDash(totals.repTotal),
         jumlahAll: formatOrDash(totals.jumlahAll),
         
-        nipPPK: data.surat?.nip || "",
-        namaPPK: data.surat?.nama || "",
-        unitPPK: toUpperCase(data.surat?.unit) || "",
+        nipPpk: data?.surat?.nipPpk || "",
+          namaPpk: data?.surat?.namaPpk || "",
         tglKPPN: formatDate(data.surat?.tglKPPN, "DD MMMM YYYY") || "",
         tglKembaliTTD: tglKembaliTerakhir ? formatDate(tglKembaliTerakhir, "DD MMMM YYYY") : "",
         tahun: tglKembaliTerakhir ? formatDate(tglKembaliTerakhir, "YYYY") : "",

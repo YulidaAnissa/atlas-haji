@@ -166,7 +166,7 @@ export default function DaftarPerjalananDinas() {
                 onChange={setSelectedKantor}
                 placeholder="Semua Kantor"
                 valueKey="idKantor"
-                labelKey="nama"
+                labelKey="unitKantor"
                 icon={FiBriefcase}
                 loading={loadingKantor}
                 className="w-full sm:flex-1 sm:max-w-md"

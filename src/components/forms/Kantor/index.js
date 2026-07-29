@@ -27,6 +27,9 @@ function KantorFormProgress({ values = {} }) {
     "callCenter",
     "idKabKota",
     "unitKantor",
+    "ppk",
+    "pkoh",
+    "dipa",
   ];
 
   const filledFields = targetFields.filter((field) => {
@@ -50,7 +53,7 @@ function KantorFormProgress({ values = {} }) {
           />
         </div>
         <p className="mt-1 text-xs leading-relaxed text-slate-500">
-          Pastikan seluruh informasi operasional dan rincian kontak kantor sudah terisi penuh.
+          Pastikan seluruh informasi operasional, pejabat, dan kontak kantor sudah terisi penuh.
         </p>
       </div>
     </aside>
@@ -59,25 +62,36 @@ function KantorFormProgress({ values = {} }) {
 
 export default function KantorForm({
   onSubmit = () => {},
+  pegawai = [],
   data = {},
   onClose = () => {},
   type = "add",
   kabKotaOptions = [], 
-  kodeSuratOptions = [], // Prop untuk opsi pilihan kode surat
-  handleKodeSuratChange = () => {}, // Handler jika ada aksi tambahan saat kode surat berubah
+  kodeSuratOptions = [], 
+  handleKodeSuratChange = () => {}, 
 }) {
   const isEdit = type === "edit";
 
-  // 1. Pastikan value options dipaksa menjadi Number agar konsisten
+  // 1. Format options Kabupaten/Kota
   const formattedKabKotaOptions = (kabKotaOptions || []).map((item) => ({
     value: item.idKabKota ? Number(item.idKabKota) : "", 
     label: item.kabkota || item.nama || "",
   }));
 
-  // 2. Format initial data sebelum masuk ke Form
+  // 2. Format options Pegawai untuk PPK, PKOH, dan DIPA
+  // Menampilkan Nama dan NIP agar mudah dibedakan
+  const pegawaiOptions = (pegawai || []).map((p) => ({
+    value: p.nip,
+    label: `${p.nip} | ${p.nama}`,
+  }));
+
+  // 3. Format initial data sebelum masuk ke Form
   const formattedInitialValues = {
     ...data,
     idKabKota: formattedKabKotaOptions.find(opt => opt.value === Number(data?.idKabKota)) || null,
+    ppk: pegawaiOptions.find(opt => opt.value === data?.nipPpk) || null,
+    pkoh: pegawaiOptions.find(opt => opt.value === data?.nipPkoh) || null,
+    dipa: pegawaiOptions.find(opt => opt.value === data?.nipDipa) || null,
     kodeSurat: data?.kodeSurat 
       ? { 
           value: data.kodeSurat.includes("ST-XXX/") ? data.kodeSurat : formatKodeSurat(data.kodeSurat), 
@@ -85,6 +99,10 @@ export default function KantorForm({
         } 
       : null,
   };
+
+  console.log("formattedInitialValues", formattedInitialValues);
+  console.log("pegawaiOptions", pegawaiOptions);
+  console.log("data", data);
 
   // Render form fields yang sama untuk mode Edit dan Add
   const renderFormFields = (form) => (
@@ -103,46 +121,14 @@ export default function KantorForm({
           placeholder="Contoh: Kantor Wilayah Provinsi Jawa Barat"
         />
       </div>
-
-      <Field
-        name="idKabKota"
-        component={SelectField}
-        label="Kabupaten / Kota"
-        placeholder="Pilih Kabupaten / Kota"
-        options={formattedKabKotaOptions} 
-      />
-
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
         <Field
-          name="email"
-          component={InputField}
-          label="Email"
-          placeholder="Contoh: info@kantor.com"
-          type="email"
+          name="idKabKota"
+          component={SelectField}
+          label="Kabupaten / Kota"
+          placeholder="Pilih Kabupaten / Kota"
+          options={formattedKabKotaOptions} 
         />
-        <Field
-          name="callCenter"
-          component={InputField}
-          label="Call Center"
-          placeholder="Contoh: 1500123"
-        />
-        <Field
-          name="website"
-          component={InputField}
-          label="Website"
-          placeholder="Contoh: www.kantor.com"
-        />
-      </div>
-
-      <Field
-        name="alamat"
-        component={InputField}
-        label="Alamat Lengkap"
-        placeholder="Masukkan alamat lengkap kantor"
-      />
-
-      <div className="grid gap-5 md:grid-cols-2">
-        {/* --- FIELD KODE SURAT (MENGGANTIKAN NOMOR SURAT) --- */}
         <Field
           primary
           name="kodeSurat"
@@ -176,6 +162,62 @@ export default function KantorForm({
           }
         />
       </div>
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+        <Field
+          name="email"
+          component={InputField}
+          label="Email"
+          placeholder="Contoh: info@kantor.com"
+          type="email"
+        />
+        <Field
+          name="callCenter"
+          component={InputField}
+          label="Call Center"
+          placeholder="Contoh: 1500123"
+        />
+        <Field
+          name="website"
+          component={InputField}
+          label="Website"
+          placeholder="Contoh: www.kantor.com"
+        />
+      </div>
+
+      <Field
+        name="alamat"
+        component={InputField}
+        label="Alamat Lengkap"
+        placeholder="Masukkan alamat lengkap kantor"
+      />
+
+      <div className="grid gap-5 md:grid-cols-2">
+        
+      </div>
+      {/* --- SECTION PEJABAT & PENGELOLA (PPK, PKOH, DIPA) --- */}
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+        <Field
+          name="ppk"
+          component={SelectField}
+          label="Pejabat Pembuat Komitmen"
+          placeholder="Pilih PPK"
+          options={pegawaiOptions}
+        />
+        <Field
+          name="pkoh"
+          component={SelectField}
+          label="PKOH / Bendahara"
+          placeholder="Pilih PKOH"
+          options={pegawaiOptions}
+        />
+        <Field
+          name="dipa"
+          component={SelectField}
+          label="DIPA / Pengelola Anggaran"
+          placeholder="Pilih DIPA"
+          options={pegawaiOptions}
+        />
+      </div>
     </div>
   );
 
@@ -197,7 +239,7 @@ export default function KantorForm({
                 Perbarui Data Kantor
               </h2>
               <p className="mt-1 text-sm text-slate-500">
-                Ubah informasi nama, alamat, atau rincian kontak kantor.
+                Ubah informasi nama, alamat, pejabat, atau rincian kontak kantor.
               </p>
             </div>
 
@@ -250,7 +292,7 @@ export default function KantorForm({
                 Form Kantor
               </h2>
               <p className="mt-1 text-sm text-slate-500">
-                Lengkapi informasi detail operasional cabang dan alamat lengkap perusahaan.
+                Lengkapi informasi detail operasional cabang, pejabat, dan alamat lengkap perusahaan.
               </p>
             </div>
 
@@ -264,10 +306,10 @@ export default function KantorForm({
                 <section className="space-y-4">
                   <div>
                     <h3 className="text-base font-bold text-slate-900">
-                      Informasi Kantor
+                      Informasi Kantor & Pejabat
                     </h3>
                     <p className="mt-0.5 text-xs text-slate-400">
-                      Tentukan detail lokasi dan kontak pusat layanan.
+                      Tentukan detail lokasi, penanggung jawab, dan kontak pusat layanan.
                     </p>
                   </div>
                   

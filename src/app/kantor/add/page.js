@@ -7,7 +7,7 @@ import { FiBriefcase } from "react-icons/fi"; // Menggunakan FiBriefcase untuk r
 
 import PageBase from "@/components/pagebase";
 import AddKantorForm from "@/components/forms/Kantor"; // Disesuaikan dengan form Kantor
-import { useKantor, useAddKantor, useKabKota } from "@/hooks/useData"; // Disesuaikan dengan hooks Kantor
+import { useKantor, useAddKantor, useKabKota, usePegawai } from "@/hooks/useData"; // Disesuaikan dengan hooks Kantor
 import InfoModal from "@/components/elements/InfoModal";
 import LoadingOverlay from "@/components/elements/LoadingOverlay";
 import Breadcrumb from "@/components/elements/Breadcrumb";
@@ -20,19 +20,28 @@ export default function AddKantor() {
   const { addKantor, loading } = useAddKantor();
   const router = useRouter();
   const { data: kabkota } = useKabKota();
+  const { data: pegawai } = usePegawai();
 
   const handleSubmit = async (values, form) => {
     try {
-      // Menyesuaikan payload dengan struktur tabel di image_5ed85c.png
+      // Helper aman untuk string trim
+      const safeTrim = (val) => (val !== undefined && val !== null ? String(val).trim() : null);
+
+      // Menyesuaikan payload dengan struktur tabel kantor
       const payload = {
-        nama: values?.nama?.trim() || null,
-        alamat: values?.alamat?.trim() || null,
-        email: values?.email?.trim() || null,
-        website: values?.website?.trim() || null,
-        callCenter: values?.callCenter?.trim() || null,
+        nama: safeTrim(values?.nama),
+        alamat: safeTrim(values?.alamat),
+        email: safeTrim(values?.email),
+        website: safeTrim(values?.website),
+        callCenter: safeTrim(values?.callCenter),
         idKabKota: values?.idKabKota?.value ? Number(values.idKabKota?.value) : null,
-        unitKantor: values?.unitKantor?.trim() || null,
-        kodeSurat: extractKodeSurat(values?.kodeSurat?.value) || null
+        unitKantor: safeTrim(values?.unitKantor),
+        kodeSurat: values?.kodeSurat?.value ? extractKodeSurat(values.kodeSurat.value) : (safeTrim(values?.kodeSurat) || null),
+
+        // Penanganan aman untuk PPK, PKOH, dan DIPA
+        ppk: values?.ppk?.value !== undefined ? safeTrim(values.ppk.value) : safeTrim(values?.ppk),
+        pkoh: values?.pkoh?.value !== undefined ? safeTrim(values.pkoh.value) : safeTrim(values?.pkoh),
+        dipa: values?.dipa?.value !== undefined ? safeTrim(values.dipa.value) : safeTrim(values?.dipa),
       };
 
       await addKantor(payload);
@@ -81,7 +90,7 @@ export default function AddKantor() {
 
       {/* FORM CONTAINER */}
       <section className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm sm:p-8">
-        <AddKantorForm onSubmit={handleSubmit} kabKotaOptions={kabkota}/>
+        <AddKantorForm onSubmit={handleSubmit} kabKotaOptions={kabkota} pegawai={pegawai}/>
       </section>
 
       {/* MODAL SUCCESS */}

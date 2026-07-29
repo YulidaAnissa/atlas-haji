@@ -308,7 +308,9 @@ export default function Component() {
               alamat: suratTugas?.surat?.alamat || "-",
               email: suratTugas?.surat?.email || "-",
               website: suratTugas?.surat?.website || "-",
-              asal: item.kabkota
+              asal: item.kabkota,
+              namaPpk: suratTugas?.surat?.namaPpk,
+              nipPpk: suratTugas?.surat?.nipPpk,
             }}
             format="/spd-format.docx"
             file={`spd-${item.nip}`}

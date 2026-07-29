@@ -12,7 +12,7 @@ import PageBase from "@/components/pagebase";
 import { usePathname, useRouter } from "next/navigation";
 import { useState } from "react";
 // Tambahkan useKabKota untuk mengambil data options dropdown
-import { useDeleteKantor, useEditKantor, useKantor, useKabKota } from "@/hooks/useData";
+import { useDeleteKantor, useEditKantor, useKantor, useKabKota, usePegawai } from "@/hooks/useData";
 import AddKantorForm from "@/components/forms/Kantor";
 import { FaEdit } from "react-icons/fa";
 import { FiPlus, FiSearch, FiX } from "react-icons/fi";
@@ -39,7 +39,7 @@ export default function DaftarKantor() {
   
   // Ambil data referensi Kabupaten/Kota untuk dropdown di form edit
   const { data: kabKotaData } = useKabKota(); 
-
+  const { data: pegawai } = usePegawai();
   const { deleteKantor, loading } = useDeleteKantor();
   const { editKantor, loading: loadingEdit } = useEditKantor();
 
@@ -85,7 +85,10 @@ export default function DaftarKantor() {
         callCenter: values?.callCenter?.trim() || null,
         idKabKota: values?.idKabKota?.value ? Number(values.idKabKota?.value) : null,
         unitKantor: values?.unitKantor?.trim() || null,
-        kodeSurat: extractKodeSurat(values?.kodeSurat?.value) || 0
+        kodeSurat: extractKodeSurat(values?.kodeSurat?.value) || 0,
+        ppk: values?.ppk?.value?.trim() || null,
+        pkoh: values?.pkoh?.value?.trim() || null,
+        dipa: values?.dipa?.value?.trim() || null,
       };
 
       await editKantor(payload, showEdit?.data?.idKantor);
@@ -221,6 +224,7 @@ export default function DaftarKantor() {
           onSubmit={handleUpdateKantor}
           onClose={() => setShowEdit({ show: false, data: null })}
           type="edit"
+          pegawai={pegawai}
           kabKotaOptions={kabKotaData} // Oper data Kabupaten/Kota ke form untuk render select options
         />
       </FormModal>

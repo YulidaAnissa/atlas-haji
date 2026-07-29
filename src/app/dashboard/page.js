@@ -171,7 +171,7 @@ export default function PerjalananDinasPage() {
                 onChange={setSelectedKantor}
                 placeholder="Semua Kantor"
                 valueKey="idKantor"
-                labelKey="nama"
+                labelKey="unitKantor"
                 icon={FaBriefcase}
                 loading={loadingKantor}
                 className="w-full sm:w-80"

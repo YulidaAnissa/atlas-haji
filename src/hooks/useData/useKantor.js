@@ -38,7 +38,7 @@ export function useAddKantor() {
         throw new Error("Token tidak tersedia, user belum login");
       }
 
-      const res = await fetch(SERVICES.KANTOR, {
+      const res = await fetch(SERVICES.ADD_KANTOR, {
         method: "POST",
         headers: {
           Authorization: `Bearer ${token}`,
