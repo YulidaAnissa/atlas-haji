@@ -212,3 +212,49 @@ export function useUpdatePerjalanan() {
   
   return { updatePerjalanan, loading, error };
 }
+
+
+export function useUpdateRead() {
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+
+  const updateRead = async ({ nip, idPerjalananPegawai }) => {
+    setLoading(true);
+    setError("");
+
+    try {
+      const tokenObj = accessTokenStorage.get();
+      const token = tokenObj?.value;
+
+      if (!token) {
+        throw new Error("Token tidak tersedia, user belum login");
+      }
+
+      const res = await fetch(
+        `${SERVICES.PERJALANAN_PEGAWAI}/read`,
+        {
+          method: "PUT",
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ nip, idPerjalananPegawai }),
+        }
+      );
+
+      if (!res.ok) {
+        throw new Error("Gagal memperbarui status baca notifikasi");
+      }
+
+      const data = await res.json();
+      return data;
+    } catch (err) {
+      setError(err.message);
+      throw err;
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return { updateRead, loading, error };
+}

@@ -124,27 +124,17 @@ export default function PerjalananDinasPage() {
     },
   });
 
-  console.log('pengingatBesok', pengingatBesok);
-const formattedTargetDate = `${tomorrowDate.getFullYear()}-${String(tomorrowDate.getMonth() + 1).padStart(2, '0')}-${String(tomorrowDate.getDate()).padStart(2, '0')}`;
+  const formattedTargetDate = `${tomorrowDate.getFullYear()}-${String(tomorrowDate.getMonth() + 1).padStart(2, '0')}-${String(tomorrowDate.getDate()).padStart(2, '0')}`;
 
-console.log("Target Tanggal (Besok):", formattedTargetDate);
-console.log("Profil NIP yang login:", profil?.nip);
-
-const filteredBesok = Array.isArray(pengingatBesok) 
-  ? pengingatBesok.filter(item => {
-      const formattedItemDate = formatDate(item.tglBerangkat, "YYYY-MM-DD");
-      console.log(formattedItemDate, formattedTargetDate);
-      const isTomorrow = formattedItemDate === formattedTargetDate;
-      const isForThisUser = profil?.nip ? item.nip === profil.nip : true;
-
-      // Debug tiap item data
-      console.log(`Cek Item -> NIP: ${item.nip}, tglBerangkat asli: ${formatDate(item.tglBerangkat, "YYYY-MMMM-DD")}, tglFormat: ${formattedItemDate}, Match Tanggal: ${isTomorrow}, Match User: ${isForThisUser}`);
-
-      return isTomorrow && isForThisUser;
-    })
-  : [];
-
-  console.log('Hasil filteredBesok:', filteredBesok);
+  const filteredBesok = Array.isArray(pengingatBesok) 
+    ? pengingatBesok.filter(item => {
+        const formattedItemDate = formatDate(item.tglBerangkat, "YYYY-MM-DD");
+        const isTomorrow = formattedItemDate === formattedTargetDate;
+        const isForThisUser = profil?.nip ? item.nip === profil.nip : true;
+        
+        return isTomorrow && isForThisUser;
+      })
+    : [];
 
   const { data: dataKantor, isLoading: loadingKantor } = useKantor();
 

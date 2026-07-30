@@ -15,21 +15,7 @@ dayjsModule.extend(isTomorrow);
 dayjsModule.extend(relativeTime);
 dayjsModule.locale('id');
 dayjsModule.extend(updateLocale);
-dayjsModule.updateLocale('id', {
-  relativeTime: {
-    s: 'beberapa detik yang lalu',
-    m: '1 menit yang lalu',
-    mm: '%d menit yang lalu',
-    h: 'sejam yang lalu',
-    hh: '%d jam yang lalu',
-    d: '1 hari yang lalu',
-    dd: '%d hari yang lalu',
-    M: 'date',
-    MM: 'date',
-    y: 'date',
-    yy: 'date'
-  }
-});
+
 export const dayjs = dayjsModule;
 export const formatDate = (date, format = 'DD-MM-YYYY') => dayjsModule(new Date(date)).format(format);
 export const formatRangeDate = (start, end) => {
@@ -55,13 +41,27 @@ export const formatRangeDate = (start, end) => {
   return `${startDateFormated} s.d. ${endDateFormated}`;
 
 };
-export const dateIsToday = (date) => dayjsModule(new Date(date)).isToday();
-export const dateIsTomorrow = (date) => dayjsModule(new Date(date)).isTomorrow();
+export const dateIsToday = (date) => dayjs(new Date(date)).isToday();
+export const dateIsTomorrow = (date) => dayjs(new Date(date)).isTomorrow();
 export const getDistance = (date, format = 'D MMMM YYYY') => {
-  const times = dayjs(new Date(date)).fromNow(true);
-  const daysAgo = parseInt(times.split(' ')[0]);
-  if(daysAgo && daysAgo <= 7) return '1 minggu yang lalu';
-  if(daysAgo && daysAgo >= 8 && daysAgo <= 14) return '2 minggu yang lalu';
+  const targetDate = dayjs(date);
+  const now = dayjs();
+  
+  // Menghitung selisih dalam hari secara presisi
+  const diffInDays = now.diff(targetDate, 'day');
+
+  if (diffInDays === 0) {
+    return targetDate.fromNow(); // Contoh: "beberapa jam yang lalu"
+  } else if (diffInDays > 0 && diffInDays <= 7) {
+    return '1 minggu yang lalu';
+  } else if (diffInDays >= 8 && diffInDays <= 14) {
+    return '2 minggu yang lalu';
+  } else if (diffInDays >= 15 && diffInDays <= 21) {
+    return '3 minggu yang lalu';
+  } else if (diffInDays >= 22 && diffInDays <= 30) {
+    return '1 bulan yang lalu';
+  }
+  
   return formatDate(date, format);
 };
 
@@ -181,5 +181,3 @@ export const calculateTripDuration = (
   // Kalau tidak, cukup angka
   return totalDays;
 };
-
-

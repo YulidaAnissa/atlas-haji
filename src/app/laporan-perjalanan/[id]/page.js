@@ -79,6 +79,7 @@ export default function Component() {
       formData.append("spd", values?.spd); // file object
       formData.append("status", "pengajuan");
       formData.append("hasil", values?.hasil);
+      formData.append("isRead", TRUE);
       formData.append("tfBiayaPeng", values?.tfBiayaPeng?.value || values?.pegawai?.id);
       formData.append("tfBiayaTrans", values?.tfBiayaTrans?.value || values?.pegawai?.id);
       await updateLaporan(idPerjalananPegawai, formData);
