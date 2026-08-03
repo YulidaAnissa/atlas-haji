@@ -157,7 +157,7 @@ export default function PerjalananForm({
 
       kegiatan: suratData?.kegiatan || "",
 
-      ringkasanKegiatan: suratData?.ringkasanKegiatan || "",
+      ringKegiatan: suratData?.ringKegiatan || "",
 
       fileSurat:
         suratData?.fileSurat ||
@@ -166,6 +166,8 @@ export default function PerjalananForm({
     }),
     [suratData, pejabatOptions, typeOptions]
   );
+
+  console.log(suratData, "suratData");
 
   const handleFormSubmit = (values, form) => {
     const payload = {

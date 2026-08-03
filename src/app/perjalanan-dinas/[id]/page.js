@@ -101,6 +101,7 @@ export default function Component() {
       formData.append("noSurat", values.noSurat);
       formData.append("tglSurat", formatDate(values.tglSurat, "YYYY-MM-DD"));
       formData.append("kegiatan", values.kegiatan ?? "");
+      formData.append("ringKegiatan", values.ringKegiatan ?? "");
       formData.append("type", values.type ?? ""); // Menambahkan field type ke Form Data
       if (values.fileSurat) {
         formData.append("fileSurat", values.fileSurat);
