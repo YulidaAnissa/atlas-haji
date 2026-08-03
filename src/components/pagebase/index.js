@@ -18,7 +18,6 @@ export default function DashboardPage({ children, className = "" }) {
   const { data: notif, isLoading, fetch } = usePerjalananPegawai({
     params: {
       nip: profil?.nip,
-      status: "perjalanan",
     },
     enabled: !!profil?.nip, // Pastikan fetch berjalan setelah NIP tersedia
   });

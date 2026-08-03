@@ -40,7 +40,7 @@ export default function HeaderPage({ sidebarOpen, setSidebarOpen, data, handleIs
 
   const handleViewAll = () => {
     setOpenNotif(false);
-    router.push("/perjalanan-dinas/filter?status=perjalanan");
+    router.push("/perjalanan-dinas/filter");
   };
 
   const handleLogout = () => {
@@ -96,7 +96,7 @@ export default function HeaderPage({ sidebarOpen, setSidebarOpen, data, handleIs
               ATLAS
             </p>
             <p className="mt-1 hidden text-[10px] font-bold uppercase tracking-[0.18em] text-brand xs:block sm:block">
-              Travel & Itinerary
+              Aplikasi Tata Kelola Administrasi Perjalanan Dinas
             </p>
           </div>
         </div>
