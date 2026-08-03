@@ -52,13 +52,17 @@ export const getDistance = (date, format = 'D MMMM YYYY') => {
 
   if (diffInDays === 0) {
     return targetDate.fromNow(); // Contoh: "beberapa jam yang lalu"
-  } else if (diffInDays > 0 && diffInDays <= 7) {
+  } else if (diffInDays === 1) {
+    return 'kemarin';
+  } else if (diffInDays > 1 && diffInDays < 7) {
+    return `${diffInDays} hari yang lalu`; // 2 - 6 hari yang lalu
+  } else if (diffInDays >= 7 && diffInDays <= 13) {
     return '1 minggu yang lalu';
-  } else if (diffInDays >= 8 && diffInDays <= 14) {
+  } else if (diffInDays >= 14 && diffInDays <= 20) {
     return '2 minggu yang lalu';
-  } else if (diffInDays >= 15 && diffInDays <= 21) {
+  } else if (diffInDays >= 21 && diffInDays <= 27) {
     return '3 minggu yang lalu';
-  } else if (diffInDays >= 22 && diffInDays <= 30) {
+  } else if (diffInDays >= 28 && diffInDays <= 30) {
     return '1 bulan yang lalu';
   }
   
