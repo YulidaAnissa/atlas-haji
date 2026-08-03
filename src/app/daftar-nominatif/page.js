@@ -31,7 +31,7 @@ export default function DaftarBiayaPerjalanan() {
     params: { 
       search,
       ...(targetKantor && { idKantor: targetKantor }),
-      ...(profil?.role !== "admin" && profil?.nip && { nip: profil.nip })
+      ...(!["admin", "finance"].includes(profil?.role) && profil?.nip && { nip: profil.nip })
     }
   });
 
