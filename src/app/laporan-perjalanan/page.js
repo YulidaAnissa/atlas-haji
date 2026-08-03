@@ -40,6 +40,7 @@ export default function DaftarLaporanPerjalananDinas() {
   const formattedData = (data ?? []).map((item) => ({
     ...item,
     tglSurat: item.tglSurat ? formatDate(item.tglSurat, "DD MMMM YYYY") : "",
+    kegiatan: item?.ringKegiatan || item?.kegiatan,
     aksi: (
       <button
         type="button"
