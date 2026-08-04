@@ -97,7 +97,8 @@ export default function PerjalananDinasPage() {
     params: { 
       month, 
       year,
-      ...(targetKantor && { idKantor: targetKantor }) 
+      ...(targetKantor && { idKantor: targetKantor }),
+      ...(profil?.role !== "admin" && profil?.nip && { nip: profil.nip })
     }
   });
   

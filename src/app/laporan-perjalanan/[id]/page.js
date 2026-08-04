@@ -83,7 +83,6 @@ export default function Component() {
       formData.append("tfBiayaPeng", values?.tfBiayaPeng?.value || values?.pegawai?.id);
       formData.append("tfBiayaTrans", values?.tfBiayaTrans?.value || values?.pegawai?.id);
       await updateLaporan(idPerjalananPegawai, formData);
-      console.log("formData", formData);
       await fetch();
       setShowAddLaporan(false);
       setShowSnackbar({

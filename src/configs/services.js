@@ -31,6 +31,7 @@ const services = {
   NOMINATIF_AJUAN: ({ id } = {}) => {
     return id ? `${SERVICE_BASE}/laporan/nominatif-ajuan/${id}` : `${SERVICE_BASE}/nominatif-ajuan`;
   },
+  REFRESH_TOKEN: `${SERVICE_BASE}/login/refresh-token`,
 };
 
 export default services;

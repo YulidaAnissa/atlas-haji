@@ -2,7 +2,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { SERVICES } from "@/configs";
-import { accessTokenStorage, profileStorage } from "@/utils/storage";
+import { accessTokenStorage, profileStorage, refreshTokenStorage } from "@/utils/storage";
 
 export function useAuth() {
   const [loading, setLoading] = useState(false);
@@ -22,30 +22,42 @@ export function useAuth() {
         body: JSON.stringify({ username, password }),
       });
 
+      const data = await res.json();
+
       if (!res.ok) {
-        const errorData = await res.json();
         setError("Autentikasi gagal. Periksa kembali username dan password Anda.");
-        return;
+        return data;
       }
 
-      const data = await res.json();
+      console.log("refreshTokenStorage.get():", data?.refreshToken);
+      // Simpan data sesi
       localStorage.setItem("activeMenu", "Dashboard");
       accessTokenStorage.set(
         data.token,
         { expires: new Date(data.expiredAt) }
       );
+      refreshTokenStorage.set(
+        data.refreshToken,
+        { expires: new Date(data.refreshExpiredAt) }
+      );
       profileStorage.set(data?.profile);
       
+      // Refresh cache router Next.js agar status sesi terbaca, lalu pindah halaman
+      router.refresh();
       router.push("/dashboard");
+      
     } catch (err) {
-      setError(err.message);
+      console.error("Login Error:", err);
+      setError(err.message || "Terjadi kesalahan pada sistem.");
     } finally {
       setLoading(false);
     }
   };
 
   const logout = () => {
-    localStorage.removeItem("token");
+    accessTokenStorage.remove();
+    refreshTokenStorage.remove();
+    profileStorage.remove();
     router.push("/login");
   };
 

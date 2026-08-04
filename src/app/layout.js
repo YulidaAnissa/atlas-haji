@@ -1,6 +1,7 @@
 import "./global.css";
 import { Geist, Geist_Mono } from "next/font/google";
-
+import Providers from "@/components/elements/Provider";
+import { accessTokenStorage } from "@/utils/storage";
 
 // Load Google fonts
 const geistSans = Geist({
@@ -13,19 +14,19 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
-// Metadata for the app
 export const metadata = {
-  title: "ATLAS - Aplikasi Tatakelola Administrasi Perjalanan Dinas",
-  description: "Login and administration system for official travel",
+  title: "ATLAS",
+  description: "Aplikasi Tata Kelola Administrasi Perjalanan Dinas",
 };
 
 export default function RootLayout({ children }) {
+  console.log("access token:", accessTokenStorage.get().value);
   return (
     <html lang="en">
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased bg-white text-gray-800`}
       >
-        {children}
+        <Providers>{children}</Providers>
       </body>
     </html>
   );
