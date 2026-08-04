@@ -42,10 +42,6 @@ export async function postRefreshToken(ctx) {
       expires: newExpiredDate 
     });
 
-    // if (typeof window !== "undefined") {
-    //   window.location.reload();
-    // }
-
     return data;
   } catch (error) {
     console.error("Gagal melakukan post refresh token:", error);
@@ -94,7 +90,7 @@ export function autoRefreshToken(ctx) {
 }
 
 function startPeriodicRefresh(ctx) {
-  const refreshTokenInterval = 1000 * 60 * 1; // Interval tiap 5 menit (sesuaikan kebutuhan)
+  const refreshTokenInterval = 1000 * 60 * 9; // Interval tiap 9 menit (sesuaikan kebutuhan)
   
   setInterval(async () => {
     const tokenData = accessTokenStorage.get(ctx);
