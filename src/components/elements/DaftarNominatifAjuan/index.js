@@ -6,18 +6,19 @@ import { SERVICES } from "@/configs";
 import { useLoading } from "@/hooks";
 import LoadingOverlay from "@/components/elements/LoadingOverlay";
 import { formatDate, calculateTripDuration } from "@/utils/date";
-import { toUpperCase } from "@/utils/string";
 import { calculateUangHarianPerHari } from "@/utils/calculatorsUh";
 
 export default function SuratTugas({ 
   data,
-  format = "/nominatif-format.docx",
+  format = "/nominatif-format-ajuan.docx",
   file = "daftar-nominatif",
   surat,
   kabKota = [] // Berisi list master daerah beserta nominal uhPNS, uhPPPK, uhNonASN
 }) {
   const [loading, startLoading, endLoading] = useLoading();
   const [dataFile, setDataFile] = useState();
+  console.log("data", data);
+  console.log("surat", surat);
 
   const formatRupiah = (angka) => {
     if (!angka) return "Rp. 0";
@@ -101,6 +102,9 @@ export default function SuratTugas({
           biayaPengFormat: formatOrDash(item.biayaPeng),
           biayaRepresentatifFormat: formatOrDash(biayaRepVal) || 0,
           jumlahFormat: formatOrDash(totalPegawai),
+          noRek: item.noRek || "-",
+          bank: item.bank || "-",
+          namaRek: item.namaRek || "-",
         };
       });
 
@@ -154,7 +158,7 @@ export default function SuratTugas({
 
       // Jika ada Kepala Kantor, gunakan template khusus kakanwil, jika tidak gunakan template default props "format"
       const templatePath = adaKepalaKantor 
-        ? "/nominatif-format-kakanwil.docx" 
+        ? "/nominatif-format-ajuan-kakanwil.docx" 
         : format;
 
       // 1. Ambil template docx dinamis

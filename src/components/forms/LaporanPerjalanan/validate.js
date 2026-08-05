@@ -1,8 +1,12 @@
 import validate from '../../../utils/validator';
 
 export default function validation(values) {
-  // Aturan dasar untuk biaya (wajib jika adaBiayaPerjalanan true, opsional jika false)
-  const biayaRules = values.adaBiayaPerjalanan
+  // Aturan dasar untuk biaya (wajib jika adaBiayaTrans true, opsional jika false)
+  const biayaTransRules = values.adaBiayaTrans
+    ? [{ rule: 'required' }, { rule: 'isNumber' }]
+    : [{ rule: 'isNumber' }];
+
+  const biayaPengRules = values.adaBiayaTrans
     ? [{ rule: 'required' }, { rule: 'isNumber' }]
     : [{ rule: 'isNumber' }];
 
@@ -17,22 +21,19 @@ export default function validation(values) {
       { rule: 'required' },
     ]),
 
-    // Validasi biayaTrans berdasarkan kondisi adaBiayaPerjalanan
-    biayaTrans: values.adaBiayaPerjalanan || values.biayaTrans 
-      ? validate(values.biayaTrans, biayaRules) 
-      : undefined,
-      
-    // Validasi biayaPeng berdasarkan kondisi adaBiayaPerjalanan
-    biayaPeng: values.adaBiayaPerjalanan || values.biayaPeng 
-      ? validate(values.biayaPeng, biayaRules) 
+    biayaTrans: values.adaBiayaTrans || values.biayaTrans 
+      ? validate(values.biayaTrans, biayaTransRules) 
       : undefined,
 
-    buktiTrans: values.adaBiayaPerjalanan || values.buktiTrans 
+    buktiTrans: values.adaBiayaTrans || values.buktiTrans 
       ? validate(values.buktiTrans, [{ rule: 'required' }]) 
       : undefined,
       
-    // Validasi buktiPeng berdasarkan kondisi adaBiayaPerjalanan
-    buktiPeng: values.adaBiayaPerjalanan || values.buktiPeng 
+    biayaPeng: values.adaBiayaPeng || values.biayaPeng 
+      ? validate(values.biayaPeng, biayaPengRules) 
+      : undefined,
+
+    buktiPeng: values.adaBiayaPeng || values.buktiPeng 
       ? validate(values.buktiPeng, [{ rule: 'required' }]) 
       : undefined,
   };

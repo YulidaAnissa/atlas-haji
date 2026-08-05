@@ -24,15 +24,11 @@ import { useUpdateLaporan, useSuratTugas, usePegawai } from "@/hooks/useData";
 import { useLoading } from "@/hooks";
 import { formatRangeDate } from "@/utils/date";
 import { profileStorage } from "@/utils/storage";
+import { EMPTY_MODAL } from "@/constants";
 
 export default function Component() {
   const params = useParams();
   const { id } = params;
-  const EMPTY_MODAL = {
-    show: false,
-    data: null,
-    surat: null
-  };
   const [search, setSearch] = useState("");
   const [showLaporan, setShowLaporan] = useState(EMPTY_MODAL);
   const [showAddLaporan, setShowAddLaporan] = useState(false);

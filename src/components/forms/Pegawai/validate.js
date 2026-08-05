@@ -13,5 +13,8 @@ export default function validation(values) {
     nama: validate(values.nama, [
       { rule: 'required' },
     ]),
+    noRek: validate(values.noRek, [
+      { rule: 'isNumber' },
+    ]),
   };
 }

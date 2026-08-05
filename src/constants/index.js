@@ -5,3 +5,9 @@ export const HEAD_CELL = [
   { id: "jabatan", label: "Pejabat Pemberi Tugas", numeric: false },
   { id: "aksi", label: "", numeric: false, width: 100 },
 ];
+
+export const EMPTY_MODAL = {
+  show: false,
+  data: null,
+  surat: null
+};

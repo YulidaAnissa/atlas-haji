@@ -20,13 +20,16 @@ import {
 import FormModal from "@/components/elements/FormModal";
 import LoadingOverlay from "@/components/elements/LoadingOverlay";
 import ConfirmPembayaran from "@/components/forms/KonfirmPembayaran";
-import { useSuratTugas, useUpdateLaporan, useEditSuratTugas, useKabKota, useNominatifAjuan } from "@/hooks/useData";
+import { useSuratTugas, useUpdateLaporan, useEditSuratTugas, useKabKota, useNominatifAjuan, usePegawai } from "@/hooks/useData";
 import { useLoading } from "@/hooks";
 import { calculateTripDuration, formatDate, formatRangeDate } from "@/utils/date";
 import { profileStorage } from "@/utils/storage";
 import { terbilang } from "@/utils/currency";
 import { capitalize, toUpperCase } from "@/utils/string";
 import { calculateUangHarianPerHari } from "@/utils/calculatorsUh";
+import { TiEdit } from "react-icons/ti";
+import { EMPTY_MODAL } from "@/constants";
+import UpdateLaporanPerjalanan from "@/components/forms/UpdateLaporan";
 
 export default function Component() {
   const { id } = useParams();
@@ -41,6 +44,7 @@ export default function Component() {
     type: "",
   });
   const [profil, setProfil] = useState(null);
+  const [showEdit, setShowEdit] = useState(EMPTY_MODAL);
 
   const [loading, startLoading, endLoading] = useLoading();
 
@@ -51,6 +55,12 @@ export default function Component() {
   const { data: nominatifData, isLoading: loadingNominatif } = useNominatifAjuan({
     urlParams: { id }
   });
+
+  const { data: pegawai } = usePegawai({
+    params: {
+      idKantor: profil?.idKantor
+    }
+  })
 
   const { updateLaporan } = useUpdateLaporan();
   const { editSuratTugas } = useEditSuratTugas();
@@ -187,7 +197,7 @@ export default function Component() {
       tanggal: formatRangeDate(item.tglBerangkat, item.tglKembali, "DD MMM YYYY"),
       status: <StatusBadge status={item.status} canVerify={canVerify} />,
       aksi: (
-        <div className="flex justify-end gap-2">
+        <div className="flex gap-2">
           {item?.status !== "verifikasi" ? (
             canVerify && (
               <button
@@ -198,20 +208,31 @@ export default function Component() {
                     data: item.idPerjalananPegawai,
                   })
                 }
-                className="group inline-flex h-10 w-full items-center justify-center gap-2 rounded-xl border border-[#eadfbe] bg-white px-4 text-sm font-bold text-brand shadow-sm transition hover:border-brand hover:bg-brand hover:text-white focus:outline-none focus:ring-4 focus:ring-brand/20 disabled:cursor-not-allowed disabled:opacity-70"
+                className="group inline-flex h-10 items-center justify-center gap-2 rounded-xl border border-[#eadfbe] bg-white px-4 text-sm font-bold text-brand shadow-sm transition hover:border-brand hover:bg-brand hover:text-white focus:outline-none focus:ring-4 focus:ring-brand/20 disabled:cursor-not-allowed disabled:opacity-70"
               >
                 <FiEye className="h-4 w-4 transition group-hover:-translate-y-0.5" />
               </button>
             )
           ) : (
-            <div title={!data?.surat?.anggaran ? "Anggaran belum ditentukan" : "Cetak Dokumen"}>
-              <PrintButton
-                data={dataFilePegawai?.find((p) => p.nama === item.nama) || {}}
-                format="/spd-rampung-kwitansi-format.docx"
-                file={`spd-rampung-kwitansi-format-${item.nip}`}
-                disabled={!data?.surat?.anggaran}
-              />
-            </div>
+            <>
+              <div title={!data?.surat?.anggaran ? "Anggaran belum ditentukan" : "Cetak Dokumen"}>
+                <PrintButton
+                  data={dataFilePegawai?.find((p) => p.nama === item.nama) || {}}
+                  format="/spd-rampung-kwitansi-format.docx"
+                  file={`spd-rampung-kwitansi-format-${item.nip}`}
+                  disabled={!data?.surat?.anggaran}
+                />
+              </div>
+              {profil?.role === "finance" && (
+                <button
+                  type="button"
+                  className="inline-flex items-center justify-center rounded-xl border px-3 py-2 text-sm font-semibold border-blue-200 bg-blue-50 text-blue-700 transition hover:bg-blue-100"
+                  onClick={() => setShowEdit({ show: true, data: item })}
+                >
+                  <TiEdit className="h-6 w-6" />
+                </button>
+              )}
+            </>
           )}
         </div>
       ),
@@ -268,6 +289,45 @@ export default function Component() {
   const totalPegawai = data?.pegawai?.length ?? 0;
   const totalVerifikasi = data?.pegawai?.filter(p => p.status === "verifikasi" || p.status === "selesai").length ?? 0;
   const totalPengajuan = data?.pegawai?.filter(p => p.status === "pengajuan").length ?? 0;
+
+  const handleUpdateLaporan = async (values) => {
+    const idPerjalananPegawai = values?.idPerjalananPegawai;
+    try {
+      startLoading();
+
+      const formData = new FormData();
+      formData.append("biayaPeng", values?.biayaPeng);
+      formData.append("biayaTrans", values?.biayaTrans);
+      formData.append("buktiPeng", values?.buktiPeng); // file object
+      formData.append("buktiTrans", values?.buktiTrans); // file object
+      formData.append("spd", values?.spd); // file object
+      formData.append("status", "pengajuan");
+      formData.append("hasil", values?.hasil);
+      formData.append("tfBiayaPeng", values?.tfBiayaPeng?.value || values?.pegawai?.id);
+      formData.append("tfBiayaTrans", values?.tfBiayaTrans?.value || values?.pegawai?.id);
+      await updateLaporan(idPerjalananPegawai, formData);
+
+      await fetch();
+      setShowEdit(EMPTY_MODAL);
+      setShowSnackbar({
+        show: true,
+        message: "Laporan berhasil diperbarui",
+        type: "success",
+      });
+    } catch (err) {
+      // 💡 Menangkap pesan error spesifik dari backend
+      const errorMessage = err?.message || "Gagal memperbarui laporan";
+
+      setShowSnackbar({
+        show: true,
+        message: errorMessage,
+        type: "error",
+      });
+      return err;
+    } finally {
+      endLoading();
+    }
+  };
 
   return (
     <PageBase className="mx-auto max-w-7xl px-6 py-10 lg:px-12 bg-gray-50/50 min-h-screen">
@@ -378,6 +438,20 @@ export default function Component() {
         message={showSnackbar.message}
         onClose={() => setShowSnackbar({ show: false, message: "", type: "" })}
       />
+      <FormModal
+        className="w-3xl"
+        icon={<FaEdit className="h-6 w-6 text-white" />}
+        show={showEdit.show}
+      >
+        <UpdateLaporanPerjalanan
+          data={showEdit.data}
+          onSubmit={handleUpdateLaporan}
+          onClose={() => setShowEdit(EMPTY_MODAL)}
+          pegawai={data?.pegawai}
+          pegawaiTf={pegawai}
+        />
+      </FormModal>
+
 
       <LoadingOverlay show={loading} />
     </PageBase>

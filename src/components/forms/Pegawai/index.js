@@ -128,8 +128,8 @@ function FormProgress({ values }) {
   const isPns = jenisVal === "PNS";
   const isPppk = jenisVal === "PPPK";
 
-  // idKantor dihapus dari target fields
-  const targetFields = ["jenisPegawai", "nama", "jabatan", "nip"];
+  // Target fields untuk kalkulasi progress kelengkapan data
+  const targetFields = ["jenisPegawai", "nama", "jabatan", "nip", "noRek", "namaRek", "bank"];
   if (isPns) targetFields.push("pangkat", "gol");
   else if (isPppk) targetFields.push("gol");
   if (isPns && values.isPejabat) targetFields.push("unit");
@@ -193,8 +193,6 @@ function PegawaiFields({ values, form, isEdit }) {
           />
         </div>
 
-        {/* Field Penempatan Kantor (idKantor) telah dihapus dari sini */}
-
         {isPns && (
           <div className="col-span-2 sm:col-span-1">
             <Field name="pangkat" component={InputField} label="Pangkat" placeholder="Contoh: Penata" />
@@ -255,6 +253,32 @@ function PegawaiFields({ values, form, isEdit }) {
           </>
         )}
 
+        {/* --- INFORMASI REKENING BANK --- */}
+        <div className="col-span-2 mt-4 border-t border-slate-100 pt-5">
+          <h4 className=" font-bold text-slate-900 mb-4">Informasi Rekening Bank</h4>
+
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            <Field
+              name="bank"
+              component={InputField}
+              label="Nama Bank"
+              placeholder="Contoh: Bank Mandiri / BSI"
+            />
+            <Field
+              name="noRek"
+              component={InputField}
+              label="Nomor Rekening"
+              placeholder="Masukkan nomor rekening"
+            />
+            <Field
+              name="namaRek"
+              component={InputField}
+              label="Nama Pemilik Rekening"
+              placeholder="Sesuai buku tabungan"
+            />
+          </div>
+        </div>
+
         {/* --- FIELD ROLE PENGGUNA (PALING BAWAH - RADIO GROUP) --- */}
         <div className="col-span-2 mt-4 border-t border-slate-100 pt-5">
           <Field name="role" component={RadioField} />
@@ -280,7 +304,7 @@ export default function AddPegawaiForm({
 }) {
   const isEdit = type === "edit";
 
-  // Initial Values tanpa idKantor
+  // Initial Values dengan tambahan field rekening
   const initialValues = useMemo(() => {
     const rawJenisStr = normalizeJenisPegawai(data);
     const rawRoleStr = normalizeRole(data);
@@ -292,6 +316,9 @@ export default function AddPegawaiForm({
       role: rawRoleStr, // Menyimpan string murni: 'user' | 'admin' | 'finance'
       isPejabat: parseIsPejabat(data),
       unit: data.unit || "",
+      bank: data.bank || "",
+      noRek: data.noRek || data.no_rek || "",
+      namaRek: data.namaRek || data.nama_rek || "",
     };
   }, [data]);
 
