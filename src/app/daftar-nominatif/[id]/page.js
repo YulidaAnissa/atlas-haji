@@ -16,6 +16,7 @@ import {
   VerifBiayaPerjalanan,
   StatusBadge,
   DaftarNominatifAjuan,
+  SearchBar
 } from "@/components/elements";
 import FormModal from "@/components/elements/FormModal";
 import LoadingOverlay from "@/components/elements/LoadingOverlay";
@@ -45,11 +46,12 @@ export default function Component() {
   });
   const [profil, setProfil] = useState(null);
   const [showEdit, setShowEdit] = useState(EMPTY_MODAL);
-
+  const [search, setSearch] = useState("");
   const [loading, startLoading, endLoading] = useLoading();
 
   const { data, isLoading, fetch } = useSuratTugas({
     urlParams: { id },
+    params: { search },
   });
 
   const { data: nominatifData, isLoading: loadingNominatif } = useNominatifAjuan({
@@ -399,13 +401,20 @@ export default function Component() {
       <ConfirmPembayaran data={data} canVerify={pegawaiVerifikasi} onSubmit={handleTglPembayaran} />
 
       <section className="rounded-2xl border border-gray-200/80 bg-white p-6 shadow-sm mt-6">
-        <div className="mb-6 flex items-center justify-between">
-          <div>
-            <h2 className="text-lg font-bold text-gray-900">Daftar Pegawai</h2>
-            <p className="mt-1 text-sm text-gray-500">
-              Tambahkan biaya perjalanan atau cetak kwitansi untuk pegawai yang sudah terverifikasi.
-            </p>
+        <div className="mb-5 flex flex-col gap-3 sm:flex-row sm:items-center justify-between w-full">
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-center w-full justify-between">
+            <h2 className="text-lg font-semibold text-gray-900">
+              Daftar Pegawai
+            </h2>
+            <div>
+              <SearchBar
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                placeholder="Cari Pegawai..."
+              />
+            </div>
           </div>
+          
         </div>
 
         <DataTables

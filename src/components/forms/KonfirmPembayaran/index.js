@@ -141,7 +141,7 @@ export default function ComponentForm({
 
               <DetailItem 
                 label="Kegiatan" 
-                value={data?.surat?.kegiatan} 
+                value={data?.surat?.ringKegiatan || data?.surat?.kegiatan} 
               />
 
               {canVerify ? (
