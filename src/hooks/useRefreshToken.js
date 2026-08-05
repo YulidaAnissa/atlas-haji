@@ -1,7 +1,8 @@
 import { SERVICES } from "@/configs";
 import { accessTokenStorage, refreshTokenStorage } from "@/utils/storage";
 
-let refreshTimer = null; // Untuk mencegah duplikasi timer/interval
+let refreshTimer = null; 
+let periodicTimer = null; // Diubah agar interval bisa di-clear untuk mencegah memory leak
 
 export async function postRefreshToken(ctx) {
   const refreshTokenObj = refreshTokenStorage.get(ctx);
@@ -32,15 +33,16 @@ export async function postRefreshToken(ctx) {
     const data = await response.json();
     console.log("Token berhasil diperbarui dari server:", data);
 
-    // PASTIKAN KEY OBJECT SESUAI DENGAN YANG DIBACA OLEH storage ANDA
-    // Jika helper storage Anda menggunakan 'expire', sesuaikan menjadi expire: ...
     const newExpiredDate = new Date(data.expiredAt);
     
     accessTokenStorage.set(data.token, { 
       ctx: ctx,
-      expire: newExpiredDate, // Sesuaikan ke 'expire' atau 'expires' tergantung helper storage.js Anda
+      expire: newExpiredDate, 
       expires: newExpiredDate 
     });
+
+    // Panggil kembali autoRefreshToken agar siklus timer refresh berikutnya terjadwal ulang
+    autoRefreshToken(ctx);
 
     return data;
   } catch (error) {
@@ -50,15 +52,13 @@ export async function postRefreshToken(ctx) {
 }
 
 export function autoRefreshToken(ctx) {
-  // Bersihkan timer lama jika fungsi dipanggil berulang kali (misal saat router-change / scroll)
+  // Bersihkan timer lama untuk mencegah duplikasi
   if (refreshTimer) {
     clearTimeout(refreshTimer);
     refreshTimer = null;
   }
 
   const tokenData = accessTokenStorage.get(ctx);
-  console.log("Mengecek auto refresh token...", tokenData);
-
   const accessTokenExpire = tokenData?.expire || tokenData?.expires;
 
   if (!accessTokenExpire) {
@@ -67,9 +67,16 @@ export function autoRefreshToken(ctx) {
   }
 
   const expireDistance = getExpireDistance(accessTokenExpire);
-  console.log(`Jarak waktu kadaluarsa token: ${expireDistance} ms`);
 
-  // Jika token sudah kadaluarsa atau hampir habis (< 70 detik)
+  // Jika token sudah mati total
+  if (expireDistance <= 0) {
+    console.log("Token sudah kadaluarsa.");
+    accessTokenStorage.remove(ctx);
+    refreshTokenStorage.remove(ctx);
+    return;
+  }
+
+  // Jika waktu kurang dari 70 detik, langsung refresh sekarang
   if (expireDistance < 70 * 1000) {
     postRefreshToken(ctx).catch(() => {});
     return;
@@ -81,22 +88,33 @@ export function autoRefreshToken(ctx) {
   refreshTimer = setTimeout(async () => {
     try {
       await postRefreshToken(ctx);
-      // Setelah berhasil refresh pertama, jadwalkan ulang secara berkala (misal tiap 5-9 menit)
-      startPeriodicRefresh(ctx);
+      console.log("Token berhasil diperpanjang otomatis.");
     } catch (e) {
-      console.error("Auto refresh berkala gagal:", e);
+      console.error("Auto refresh gagal:", e);
     }
   }, timeoutDelay);
+
+  // Jalankan periodic refresh untuk pengaman berkala (pastikan dibersihkan dulu)
+  startPeriodicRefresh(ctx);
 }
 
 function startPeriodicRefresh(ctx) {
-  const refreshTokenInterval = 1000 * 60 * 9; // Interval tiap 9 menit (sesuaikan kebutuhan)
+  // Bersihkan interval lama jika sudah ada
+  if (periodicTimer) {
+    clearInterval(periodicTimer);
+    periodicTimer = null;
+  }
+
+  const refreshTokenInterval = 1000 * 60 * 9; // Interval tiap 9 menit
   
-  setInterval(async () => {
+  periodicTimer = setInterval(async () => {
     const tokenData = accessTokenStorage.get(ctx);
     const expireTime = tokenData?.expire || tokenData?.expires;
 
-    if (!expireTime) return;
+    if (!expireTime) {
+      clearInterval(periodicTimer);
+      return;
+    }
 
     const expireDistance = getExpireDistance(expireTime);
     console.log('Cek berkala jarak waktu token (ms):', expireDistance);
