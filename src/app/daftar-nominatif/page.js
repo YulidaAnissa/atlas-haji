@@ -48,7 +48,6 @@ export default function DaftarBiayaPerjalanan() {
         onClick={() => router.push(`/daftar-nominatif/${item.idSurat}`)}
       >
         <FiEye className="h-4 w-4" />
-        Lihat
       </button>
     ),
   }));

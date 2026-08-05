@@ -48,7 +48,6 @@ export default function DaftarLaporanPerjalananDinas() {
         onClick={() => router.push(`/laporan-perjalanan/${item.idSurat}`)}
       >
         <FiEye className="h-4 w-4" />
-        Lihat
       </button>
     ),
   }));
