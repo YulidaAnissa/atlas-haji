@@ -41,9 +41,6 @@ export async function postRefreshToken(ctx) {
       expires: newExpiredDate 
     });
 
-    // Panggil kembali autoRefreshToken agar siklus timer refresh berikutnya terjadwal ulang
-    autoRefreshToken(ctx);
-
     return data;
   } catch (error) {
     console.error("Gagal melakukan post refresh token:", error);
