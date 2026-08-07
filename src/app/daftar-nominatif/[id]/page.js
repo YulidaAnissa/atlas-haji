@@ -15,8 +15,8 @@ import {
   Snackbar,
   VerifBiayaPerjalanan,
   StatusBadge,
-  DaftarNominatifAjuan,
-  SearchBar
+  SearchBar,
+  ListNominatifAjuan
 } from "@/components/elements";
 import FormModal from "@/components/elements/FormModal";
 import LoadingOverlay from "@/components/elements/LoadingOverlay";
@@ -54,7 +54,7 @@ export default function Component() {
     params: { search },
   });
 
-  const { data: nominatifData, isLoading: loadingNominatif } = useNominatifAjuan({
+  const { data: nominatifData, fetch: fetchNominatifAjuan } = useNominatifAjuan({
     urlParams: { id }
   });
 
@@ -153,6 +153,7 @@ export default function Component() {
       startLoading();
       await updateLaporan(idPerjalananPegawai, { status: aksi, catatan });
       await fetch();
+      await fetchNominatifAjuan();
 
       setShowVerifBiayaPerjalanan({ show: false, data: null });
       setShowSnackbar({
@@ -267,6 +268,7 @@ export default function Component() {
 
       await editSuratTugas({ idSurat: id, values: formData });
       await fetch();
+      await fetchNominatifAjuan();
 
       setShowSnackbar({
         show: true,
@@ -294,6 +296,7 @@ export default function Component() {
 
   const handleUpdateLaporan = async (values) => {
     const idPerjalananPegawai = values?.idPerjalananPegawai;
+    console.log("values", values);
     try {
       startLoading();
 
@@ -305,11 +308,12 @@ export default function Component() {
       formData.append("spd", values?.spd); // file object
       formData.append("status", "pengajuan");
       formData.append("hasil", values?.hasil);
-      formData.append("tfBiayaPeng", values?.tfBiayaPeng?.value || values?.pegawai?.id);
-      formData.append("tfBiayaTrans", values?.tfBiayaTrans?.value || values?.pegawai?.id);
+      formData.append("tfBiayaPeng", values?.tfBiayaPeng?.value || values?.nip);
+      formData.append("tfBiayaTrans", values?.tfBiayaTrans?.value || values?.nip);
       await updateLaporan(idPerjalananPegawai, formData);
 
       await fetch();
+      await fetchNominatifAjuan();
       setShowEdit(EMPTY_MODAL);
       setShowSnackbar({
         show: true,
@@ -349,18 +353,19 @@ export default function Component() {
           </p>
         </div>
 
-        {totalPegawai > 0 && data?.pegawai?.every((item) => item.status === "verifikasi" || item.status === "selesai") && data?.surat?.anggaran && (
+        {/* {totalPegawai > 0 && data?.pegawai?.every((item) => item.status === "verifikasi" || item.status === "selesai") && data?.surat?.anggaran && ( */}
           <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
             <div className="inline-flex items-center justify-center rounded-xl border border-gray-300 bg-white px-4 py-2.5 text-sm font-semibold text-gray-700 shadow-sm transition-all hover:bg-gray-50 hover:border-gray-400 hover:shadow">
               <IoDocumentTextOutline className="h-4 w-4 text-blue-600 mr-2 shrink-0" />
-              <DaftarNominatifAjuan data={nominatifData} surat={data?.surat} kabKota={dataKabKota} />
+              {/* <DaftarNominatifAjuan data={nominatifData} surat={data?.surat} kabKota={dataKabKota} /> */}
+              <ListNominatifAjuan data={nominatifData} dataPegawai={data?.pegawai} surat={data?.surat} kabKota={dataKabKota} />
             </div>
             <div className="inline-flex items-center justify-center rounded-xl bg-brand px-4 py-2.5 text-sm font-semibold text-white shadow-md shadow-brand/20 transition-all hover:bg-brand/90 hover:shadow-lg">
               <IoDocumentTextOutline className="h-4 w-4 mr-2 shrink-0 text-white" />
               <DaftarNominatif data={data} kabKota={dataKabKota} />
             </div>
           </div>
-        )}
+        {/* )} */}
       </header>
 
       {/* Statistik Ringkas */}

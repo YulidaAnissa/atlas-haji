@@ -13,6 +13,7 @@ export default function SuratTugas({
   format = "/nominatif-format-ajuan.docx",
   file = "daftar-nominatif",
   surat,
+  dataPegawai,
   kabKota = [] // Berisi list master daerah beserta nominal uhPNS, uhPPPK, uhNonASN
 }) {
   const [loading, startLoading, endLoading] = useLoading();
@@ -64,7 +65,14 @@ export default function SuratTugas({
       }, null);
 
       const pegawaiData = data.map((item, index) => {
-        const uhPerHari = calculateUangHarianPerHari(item, surat, kabKota)
+        // Cek apakah pegawai ada di dalam dataPegawai (misalnya dicocokkan berdasarkan NIP atau Nama)
+        // Sesuaikan properti kecocokan, contoh di sini menggunakan 'nip' atau 'nama'
+        const isRegistered = dataPegawai?.some(
+          (peg) => peg.nip === item.nip || peg.nama === item.nama
+        );
+
+        // Jika tidak ada di dataPegawai, uhPerHari diset 0
+        const uhPerHari = isRegistered ? calculateUangHarianPerHari(item, surat, kabKota) : 0;
 
         const isKhusus = item.typePerjalanan === "khusus";
         const uhType = isKhusus ? 0 : uhPerHari;
@@ -214,7 +222,7 @@ export default function SuratTugas({
         }}
         className="inline-flex cursor-pointer items-center justify-center text-sm font-semibold"
       >
-        Daftar Nominatif Ajuan
+        Cetak / Tampilkan
       </span>
       <LoadingOverlay show={loading} />
     </>
