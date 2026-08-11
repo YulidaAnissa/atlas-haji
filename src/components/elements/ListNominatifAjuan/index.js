@@ -17,9 +17,10 @@ export default function ListNominatifAjuan({ data, surat, kabKota, dataPegawai }
   const [isOpen, setIsOpen] = useState(false);
   const [selectedKeys, setSelectedKeys] = useState([]); // Menyimpan array key tim yang dicentang
 
-  // 1. Kelompokkan pegawai berdasarkan kombinasi: tglBerangkat, tglKembali, dan tujuan
+  // 1. Kelompokkan pegawai berdasarkan kombinasi: tglBerangkat, tglKembali, dan tujuan (sekaligus handle double & sum biayaPeng/biayaTrans)
   const groupedTeams = (data || []).reduce((acc, item) => {
     const key = `${item.tglBerangkat}_${item.tglKembali}_${JSON.stringify(item.tujuan)}`;
+    
     if (!acc[key]) {
       acc[key] = {
         tglBerangkat: item.tglBerangkat,
@@ -28,9 +29,31 @@ export default function ListNominatifAjuan({ data, surat, kabKota, dataPegawai }
         pegawaiList: []
       };
     }
-    acc[key].pegawaiList.push(item);
+
+    // Tentukan pengenal unik pegawai (misal: nip, id, atau nama)
+    const uniqueId = item.nip || item.id || item.nama;
+
+    // Cek apakah pegawai dengan NIP tersebut sudah ada di pegawaiList pada tim ini
+    const existingPegawai = acc[key].pegawaiList.find(
+      (p) => (p.nip || p.id || p.nama) === uniqueId
+    );
+
+    if (existingPegawai) {
+      // Jika sudah ada, loop semua properti untuk menjumlahkan apa pun yang berawalan "biayaPeng" atau "biayaTrans"
+      Object.keys(item).forEach((prop) => {
+        if (prop.startsWith("biayaPeng") || prop.startsWith("biayaTrans")) {
+          existingPegawai[prop] = (Number(existingPegawai[prop]) || 0) + (Number(item[prop]) || 0);
+        }
+      });
+    } else {
+      // Jika belum ada, masukkan sebagai data baru (gunakan spread agar tidak mengubah referensi asli)
+      acc[key].pegawaiList.push({ ...item });
+    }
+
     return acc;
   }, {});
+
+  console.log("groupedTeams", groupedTeams);
 
   const groupKeys = Object.keys(groupedTeams);
 
@@ -66,7 +89,7 @@ export default function ListNominatifAjuan({ data, surat, kabKota, dataPegawai }
 
   const filteredData = getFilteredPegawai();
   const isAllSelected = groupKeys.length > 0 && selectedKeys.length === groupKeys.length;
-  console.log("data", data);
+  
   return (
     <>
       {/* Tombol Pemicu Modal */}
