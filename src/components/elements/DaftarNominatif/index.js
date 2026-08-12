@@ -208,7 +208,7 @@ export default function SuratTugas({
         }}
         className="inline-flex cursor-pointer items-center justify-center text-sm font-semibold"
       >
-        Daftar Nominatif SPJ
+        Nominatif SPJ
       </span>
       <LoadingOverlay show={loading} />
     </>

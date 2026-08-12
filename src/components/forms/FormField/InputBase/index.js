@@ -87,10 +87,10 @@ const InputBase = forwardRef(function InputBase(props, ref) {
           "border-success ring-1 ring-success/10":
             !error && succes && !disabled,
 
-          "border-brand ring-4 ring-[#c9a961]/20":
+          "border-brand ring-4 ring-brand/20":
             focused && !error && !disabled,
 
-          "border-gray-300 bg-white hover:border-[#c9a961]":
+          "border-gray-300 bg-white hover:border-brand":
             !focused && !error && !succes && !disabled,
         },
         className
