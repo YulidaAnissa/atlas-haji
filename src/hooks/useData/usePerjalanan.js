@@ -43,7 +43,7 @@ export function useDeletePegawaiPerjalanan() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
-  const deletePegawaiPerjalanan = async ({ idSurat, nip }) => {
+  const deletePegawaiPerjalanan = async ({ idPerjalananPegawai }) => {
     setLoading(true);
     setError("");
 
@@ -56,7 +56,7 @@ export function useDeletePegawaiPerjalanan() {
       }
 
       const res = await fetch(
-        `${SERVICES.PERJALANAN_PEGAWAI}?idSurat=${idSurat}&nip=${nip}`,
+        `${SERVICES.PERJALANAN_PEGAWAI}?idPerjalananPegawai=${idPerjalananPegawai}`,
         {
           method: "DELETE",
           headers: {
