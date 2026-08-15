@@ -131,7 +131,7 @@ export default function Component() {
       isRepre: isKepalaKantor ? "Rp" : "",
       biayaRepre: isKepalaKantor ? formatRupiah(biayaRepVal) + ",-" : "",
       terbilang: `${capitalize(terbilang(jumlahTotal))} Rupiah`,
-      namaKantor: data?.surat?.namaKantor || " ",
+      namaKantor: `${capitalize(data?.surat?.namaKantor || " ")}`,
       alamat: data?.surat?.alamat || " ",
       asal: item.kabkota,
       unitKantor: data?.surat?.unitKantor || " ",

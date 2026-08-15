@@ -300,6 +300,7 @@ export default function Component() {
               gol: item.gol || "-",
               nip: item.jenisPegawai === "PNS" || item.jenisPegawai === "PPPK" ? item.nip : "-",
               namaKantor: suratTugas?.surat?.namaKantor || "-",
+              namaKantor: capitalize(suratTugas?.surat?.namaKantor || "-"),
               callCenter: suratTugas?.surat?.callCenter || "-",
               unitKantor: suratTugas?.surat?.unitKantor || " ",
               alamat: suratTugas?.surat?.alamat || "-",
