@@ -30,7 +30,7 @@ import {
 import { calculateTripDuration, formatDate, formatRangeDate } from "@/utils/date";
 import { profileStorage } from "@/utils/storage";
 import { TiDeleteOutline, TiEdit } from "react-icons/ti";
-import { capitalize } from "@/utils/string";
+import { capitalize, toUpperCase } from "@/utils/string";
 import SearchBar from "@/components/elements/SearchBar";
 
 const EMPTY_SNACKBAR = {
@@ -299,8 +299,8 @@ export default function Component() {
               pejabatMengetahui: ppt.pejabatMengetahui,
               gol: item.gol || "-",
               nip: item.jenisPegawai === "PNS" || item.jenisPegawai === "PPPK" ? item.nip : "-",
-              namaKantor: suratTugas?.surat?.namaKantor || "-",
               namaKantor: capitalize(suratTugas?.surat?.namaKantor || "-"),
+              namaKantorUpper: toUpperCase(suratTugas?.surat?.namaKantor || "-"),
               callCenter: suratTugas?.surat?.callCenter || "-",
               unitKantor: suratTugas?.surat?.unitKantor || " ",
               alamat: suratTugas?.surat?.alamat || "-",

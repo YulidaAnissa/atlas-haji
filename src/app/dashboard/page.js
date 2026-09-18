@@ -140,7 +140,7 @@ export default function PerjalananDinasPage() {
   const { data: dataKantor, isLoading: loadingKantor } = useKantor();
 
   const handlePerjalananClick = (status) => {
-    router.push(`/perjalanan-dinas/filter?status=${status}`);
+    router.push(`/perjalanan-dinas/filter?status=${status}&month=${month}&year=${year}`);
   };
 
   return (

@@ -296,7 +296,6 @@ export default function Component() {
 
   const handleUpdateLaporan = async (values) => {
     const idPerjalananPegawai = values?.idPerjalananPegawai;
-    console.log("values", values);
     try {
       startLoading();
 

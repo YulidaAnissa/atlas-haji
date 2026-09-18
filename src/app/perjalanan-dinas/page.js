@@ -31,11 +31,13 @@ export default function DaftarPerjalananDinas() {
     ? selectedKantor 
     : (selectedKantor || profil?.idKantor);
 
+  const isAdmin = String(profil?.role ?? "").trim().toLowerCase() === "admin";
+
   const { data, isLoading, fetch } = useSuratTugas({
     params: { 
       search,
       ...(targetKantor && { idKantor: targetKantor }),
-      ...(profil?.role !== "admin" && profil?.nip && { nip: profil.nip })
+      ...(!isAdmin && profil?.nip && { nip: profil.nip })
     },
   });
 
@@ -63,9 +65,6 @@ export default function DaftarPerjalananDinas() {
       });
     }
   };
-
-  const isAdmin =
-    String(profil?.role || "").trim().toLowerCase() === "admin";
 
   const formattedData = (data ?? []).map((item) => ({
     ...item,

@@ -54,14 +54,11 @@ export default function Sidebar({ sidebarOpen, setSidebarOpen }) {
               icon: <FiDatabase />,
               children: [
                 { name: "Pegawai", icon: <FiUsers />, path: "/pegawai" },
-                // Menu Kantor & Kabupaten / Kota hanya muncul jika idKantor === "1"
+                // Menu Kantor dimunculkan untuk semua Admin
+                { name: "Kantor", icon: <FaBuilding />, path: "/kantor" },
+                // Menu Kabupaten / Kota hanya untuk Super Admin (idKantor === "1")
                 ...(isSuperAdmin
                   ? [
-                      {
-                        name: "Kantor",
-                        icon: <FaBuilding />,
-                        path: "/kantor",
-                      },
                       {
                         name: "Kabupaten / Kota",
                         icon: <FiMapPin />,
@@ -110,8 +107,7 @@ export default function Sidebar({ sidebarOpen, setSidebarOpen }) {
       return;
     }
 
-    // Jika bukan superadmin tapi mencoba mengakses menu khusus superadmin dari cache
-    if (!isSuperAdmin && (savedMenu === "Kantor" || savedMenu === "Kabupaten / Kota")) {
+    if (!isSuperAdmin && savedMenu === "Kabupaten / Kota") {
       localStorage.removeItem("activeMenu");
       setActiveMenu(null);
       setOpenDropdown(null);

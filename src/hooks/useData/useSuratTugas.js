@@ -6,7 +6,6 @@ import { accessTokenStorage } from '@/utils/storage';
 
 export function useSuratTugas({ dedupingInterval, params = {}, urlParams = {} } = defaultOptions) {
   const token = accessTokenStorage.get().value;
-  console.log(accessTokenStorage.get());
   const { data: { data } = {}, error, mutate } = useSWR(
     createSwrKey(SERVICES.SURAT_TUGAS(urlParams), { params }), 
     fetcher({ headers: { Authorization: `Bearer ${token}` } }),

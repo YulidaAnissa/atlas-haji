@@ -49,8 +49,6 @@ export function useUpdateLaporan() {
 
       // 💡 Coba parse JSON dari respon backend
       const data = await res.json().catch(() => null);
-      // console.log("Response from updateLaporan:", data);
-
       if (!res.ok) {
         // 💡 Ambil pesan error dari backend jika ada, kalau tidak ada gunakan status text / default
         const errorMessage =

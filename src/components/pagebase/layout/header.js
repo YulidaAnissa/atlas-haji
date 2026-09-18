@@ -212,10 +212,10 @@ export default function HeaderPage({ sidebarOpen, setSidebarOpen, data, handleIs
 
             <div className="hidden max-w-40 text-left md:block">
               <p className="truncate text-sm font-bold text-slate-800">
-                {profil?.nama ?? "Traveler"}
+                {profil?.nama ?? " "}
               </p>
               <p className="truncate text-xs text-slate-400">
-                {profil?.jabatan ?? "Jelajah Nusantara"}
+                {profil?.jabatan ?? " "}
               </p>
             </div>
 
@@ -230,10 +230,10 @@ export default function HeaderPage({ sidebarOpen, setSidebarOpen, data, handleIs
             <div className="absolute right-0 mt-3 w-[calc(100vw-1.5rem)] max-w-64 overflow-hidden rounded-2xl border border-[#eadfbe] bg-white shadow-[0_18px_50px_rgba(15,23,42,0.14)] sm:w-64">
               <div className="bg-[#fbf7ec] px-4 py-4">
                 <p className="truncate text-sm font-bold text-slate-900">
-                  {profil?.nama ?? "Traveler"}
+                  {profil?.nama ?? " "}
                 </p>
                 <p className="mt-1 truncate text-xs text-slate-500">
-                  {profil?.jabatan ?? "Jelajah Nusantara"}
+                  {profil?.jabatan ?? " "}
                 </p>
               </div>
 

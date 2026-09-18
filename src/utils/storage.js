@@ -72,8 +72,6 @@ export const accessTokenStorage = {
     } else {
       delete finalOptions.domain;
     }
-
-    console.log('Setting access token:', value);
     // Teruskan finalOptions ke method set cookie storage
     this._value.set(value, finalOptions);
     

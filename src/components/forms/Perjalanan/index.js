@@ -167,8 +167,6 @@ export default function PerjalananForm({
     [suratData, pejabatOptions, typeOptions]
   );
 
-  console.log(suratData, "suratData");
-
   const handleFormSubmit = (values, form) => {
     const payload = {
       ...values,

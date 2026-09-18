@@ -98,7 +98,7 @@ export default function DaftarPegawai() {
         ...values,
         status: values.isPejabat ? "eselon" : "pegawai",
         nipAwal: showEdit?.data?.nip,
-        idKantor: profil?.idKantor || ""
+        // idKantor: profil?.idKantor || ""
       };
 
       await editPegawai(payload);

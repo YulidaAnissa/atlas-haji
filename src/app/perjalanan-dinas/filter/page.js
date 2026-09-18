@@ -16,16 +16,30 @@ function DaftarPerjalananDinasContent() {
 
   const [search, setSearch] = useState("");
   const [profil, setProfil] = useState(null);
+  const [selectedKantor, setSelectedKantor] = useState("");
+  
   useEffect(() => {
-    setProfil(profileStorage.get());
+    const userProfile = profileStorage.get();
+    setProfil(userProfile);
+
+    setSelectedKantor(userProfile?.idKantor || "");
   }, []);
 
+  const targetKantor = profil?.idKantor === "1" 
+    ? selectedKantor 
+    : (selectedKantor || profil?.idKantor);
+
   const status = searchParams.get("status") ?? "";
+  const month = searchParams.get("month") ?? "";
+  const year = searchParams.get("year") ?? "";
 
   const { data, isLoading } = usePerjalananPegawai({
     params: { 
       search, 
-      status, 
+      status,
+      month,
+      year,
+      ...(targetKantor && { idKantor: targetKantor }), 
       ...(profil?.role !== "admin" && profil?.nip && { nip: profil.nip }) },
   });
 

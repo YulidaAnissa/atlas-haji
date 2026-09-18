@@ -18,6 +18,7 @@ import { FaEdit } from "react-icons/fa";
 import { FiPlus, FiSearch, FiX } from "react-icons/fi";
 import { TiEdit, TiDeleteOutline } from "react-icons/ti";
 import { extractKodeSurat } from "@/utils/string";
+import { profileStorage } from "@/utils/storage";
 
 export default function DaftarKantor() {
   const router = useRouter();
@@ -31,10 +32,20 @@ export default function DaftarKantor() {
     message: "",
     type: "",
   });
+  const [profil, setProfil] = useState(null);
+
+  // Ambil data profil user dari localStorage
+  useState(() => {
+    const userProfile = profileStorage.get();
+    setProfil(userProfile);
+  }, []);
+
+
+  const targetKantorId = profil?.idKantor === "1" ? undefined : profil?.idKantor;
 
   // Ambil data daftar kantor
   const { data, isLoading, fetch } = useKantor({
-    params: { search },
+    params: { search, idKantor: targetKantorId },
   });
   
   // Ambil data referensi Kabupaten/Kota untuk dropdown di form edit
@@ -115,13 +126,15 @@ export default function DaftarKantor() {
     ...item,
     aksi: (
       <div className="flex gap-2">
-        <button
-          type="button"
-          className="inline-flex items-center gap-2 rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm font-semibold text-red-700 transition hover:bg-red-100"
-          onClick={() => setDeleted(item.idKantor)} 
-        >
-          <TiDeleteOutline className="h-6 w-6" />
-        </button>
+        {!targetKantorId && (
+          <button
+            type="button"
+            className="inline-flex items-center gap-2 rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm font-semibold text-red-700 transition hover:bg-red-100"
+            onClick={() => setDeleted(item.idKantor)} 
+          >
+            <TiDeleteOutline className="h-6 w-6" />
+          </button>
+        )}
         <button
           type="button"
           className="inline-flex items-center justify-center rounded-xl border border-blue-200 bg-blue-50 px-3 py-2 text-sm font-semibold text-blue-700 transition hover:bg-blue-100"
@@ -159,15 +172,16 @@ export default function DaftarKantor() {
               Kelola informasi cabang, lokasi fisik, alamat, dan rincian kontak operasional perusahaan.
             </p>
           </div>
-
-          <button
-            type="button"
-            className="inline-flex h-11 items-center justify-center gap-2 rounded-xl bg-brand px-5 text-sm font-bold text-white shadow-lg shadow-brand/25 transition hover:bg-[#b5964f] focus:outline-none focus:ring-4 focus:ring-brand/25"
-            onClick={() => router.push(`${pathname}/add`)}
-          >
-            <FiPlus className="h-4 w-4" />
-            Tambah Kantor
-          </button>
+          {!targetKantorId && (
+            <button
+              type="button"
+              className="inline-flex h-11 items-center justify-center gap-2 rounded-xl bg-brand px-5 text-sm font-bold text-white shadow-lg shadow-brand/25 transition hover:bg-[#b5964f] focus:outline-none focus:ring-4 focus:ring-brand/25"
+              onClick={() => router.push(`${pathname}/add`)}
+            >
+              <FiPlus className="h-4 w-4" />
+              Tambah Kantor
+            </button>
+          )}
         </div>
       </section>
 

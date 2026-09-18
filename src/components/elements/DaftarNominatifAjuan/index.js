@@ -18,8 +18,6 @@ export default function SuratTugas({
 }) {
   const [loading, startLoading, endLoading] = useLoading();
   const [dataFile, setDataFile] = useState();
-  console.log("data", data);
-  console.log("surat", surat);
 
   const formatRupiah = (angka) => {
     if (!angka) return "Rp. 0";
