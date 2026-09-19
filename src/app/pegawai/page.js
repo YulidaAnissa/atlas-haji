@@ -189,7 +189,10 @@ export default function DaftarPegawai() {
             type="button"
             className="inline-flex h-11 items-center justify-center gap-2 rounded-xl bg-brand px-5 text-sm font-bold text-white shadow-lg shadow-brand/25 transition hover:bg-[#b5964f] focus:outline-none focus:ring-4 focus:ring-brand/25"
             onClick={() => {
-              const query = profil?.idKantor !== selectedKantor ? `?kantor=${selectedKantor}` : "";
+              // Pastikan selectedKantor ada isinya DAN berbeda dengan profil.idKantor
+              const hasDifferentKantor = selectedKantor && selectedKantor !== profil?.idKantor;
+              const query = hasDifferentKantor ? `?kantor=${selectedKantor}` : "";
+
               router.push(`${pathname}/add${query}`);
             }}
           >
