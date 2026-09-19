@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 import { FaEdit } from "react-icons/fa";
 import { IoDocumentTextOutline } from "react-icons/io5";
-import { FiEye, FiUsers, FiCheckCircle, FiClock } from "react-icons/fi";
+import { FiEye, FiUsers, FiCheckCircle, FiClock, FiCheck } from "react-icons/fi";
 
 import PageBase from "@/components/pagebase";
 import {
@@ -146,32 +146,39 @@ export default function Component() {
     };
   });
 
-  const handleConfirmBiaya = async (aksi, catatan = null) => {
-    const idPerjalananPegawai = showVerifBiayaPerjalanan?.data;
+  const handleConfirmBiaya = async (aksi, idOverride = null, catatan = null) => {
+  // Gunakan ID yang di-pass langsung jika ada, jika tidak gunakan dari modal state
+  const idPerjalananPegawai = idOverride || showVerifBiayaPerjalanan?.data;
 
-    try {
-      startLoading();
-      await updateLaporan(idPerjalananPegawai, { status: aksi, catatan });
-      await fetch();
-      await fetchNominatifAjuan();
+  try {
+    startLoading();
+    await updateLaporan(idPerjalananPegawai, { status: aksi, catatan });
+    await fetch();
+    await fetchNominatifAjuan();
 
-      setShowVerifBiayaPerjalanan({ show: false, data: null });
-      setShowSnackbar({
-        show: true,
-        message: `Biaya perjalanan berhasil ${aksi === "verifikasi" ? "diverifikasi" : "ditolak"}`,
-        type: "success",
-      });
-    } catch (err) {
-      setShowSnackbar({
-        show: true,
-        message: "Gagal memverifikasi biaya perjalanan",
-        type: "error",
-      });
-      return err;
-    } finally {
-      endLoading();
-    }
-  };
+    setShowVerifBiayaPerjalanan({ show: false, data: null });
+    setShowSnackbar({
+      show: true,
+      message: `Biaya perjalanan berhasil ${
+        aksi === "verifikasi"
+          ? "diverifikasi"
+          : aksi === "selesai"
+          ? "diselesaikan"
+          : "ditolak"
+      }`,
+      type: "success",
+    });
+  } catch (err) {
+    setShowSnackbar({
+      show: true,
+      message: "Gagal memproses biaya perjalanan",
+      type: "error",
+    });
+    return err;
+  } finally {
+    endLoading();
+  }
+};
 
   const headCells = [
     { id: "nama", label: "Nama Pegawai", numeric: false },
@@ -201,7 +208,7 @@ export default function Component() {
       status: <StatusBadge status={item.status} canVerify={canVerify} />,
       aksi: (
         <div className="flex gap-2">
-          {item?.status !== "verifikasi" ? (
+          {!["verifikasi", "selesai"].includes(item?.status) ? (
             canVerify && (
               <button
                 type="button"
@@ -226,14 +233,25 @@ export default function Component() {
                   disabled={!data?.surat?.anggaran}
                 />
               </div>
-              {profil?.role === "finance" && (
-                <button
-                  type="button"
-                  className="inline-flex items-center justify-center rounded-xl border px-3 py-2 text-sm font-semibold border-blue-200 bg-blue-50 text-blue-700 transition hover:bg-blue-100"
-                  onClick={() => setShowEdit({ show: true, data: item })}
-                >
-                  <TiEdit className="h-6 w-6" />
-                </button>
+              {profil?.role === "finance" && item?.status === "verifikasi" && (
+                <>
+                  <button
+                    type="button"
+                    className="inline-flex items-center justify-center rounded-xl border px-3 py-2 text-sm font-semibold border-blue-200 bg-blue-50 text-blue-700 transition hover:bg-blue-100"
+                    onClick={() => setShowEdit({ show: true, data: item })}
+                  >
+                    <TiEdit className="h-6 w-6" />
+                  </button>
+                  {/* Tombol Checklist (Muncul jika status verifikasi) */}
+                  <button
+                    type="button"
+                    title="Selesaikan / Tandai Selesai"
+                    onClick={() => handleConfirmBiaya("selesai", item.idPerjalananPegawai)}
+                    className="inline-flex items-center justify-center rounded-xl border px-3 py-2 border-emerald-200 bg-emerald-50 text-emerald-600 transition hover:bg-emerald-600 hover:text-white shadow-xs"
+                  >
+                    <FiCheck className="h-6 w-6" />
+                  </button>
+                </>
               )}
             </>
           )}
