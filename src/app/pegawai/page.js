@@ -61,6 +61,10 @@ export default function DaftarPegawai() {
     },
   });
 
+  console.log("profil?.idKantor", profil?.idKantor);
+  console.log("selectedKantor", selectedKantor);
+  console.log("targetKantor", targetKantor);
+
   const { deletePegawai, loading } = useDeletePegawai();
   const { editPegawai, loading: loadingEdit } = useEditPegawai();
 
@@ -184,7 +188,10 @@ export default function DaftarPegawai() {
           <button
             type="button"
             className="inline-flex h-11 items-center justify-center gap-2 rounded-xl bg-brand px-5 text-sm font-bold text-white shadow-lg shadow-brand/25 transition hover:bg-[#b5964f] focus:outline-none focus:ring-4 focus:ring-brand/25"
-            onClick={() => router.push(`${pathname}/add`)}
+            onClick={() => {
+              const query = profil?.idKantor !== selectedKantor ? `?kantor=${selectedKantor}` : "";
+              router.push(`${pathname}/add${query}`);
+            }}
           >
             <FiPlus className="h-4 w-4" />
             Tambah Pegawai

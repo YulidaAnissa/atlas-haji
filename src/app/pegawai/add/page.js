@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation"; // 1. Impor useSearchParams
 import { FaCheck } from "react-icons/fa";
 import { FiUserPlus } from "react-icons/fi";
 
@@ -25,7 +25,11 @@ export default function PegawaiPage() {
   const [profil, setProfil] = useState(null);
 
   const router = useRouter();
+  const searchParams = useSearchParams(); // 2. Inisialisasi searchParams
   
+  // 3. Ambil query parameter 'kantor'
+  const kantorParam = searchParams.get("kantor");
+
   const { data: kantor, loading: loadingKantor } = useKantor(); 
   const { fetch: fetchPegawai } = usePegawai();
   const { addPegawai, loading: loadingAdd } = useAddPegawai();
@@ -38,10 +42,13 @@ export default function PegawaiPage() {
 
   const handleSubmit = async (values, form) => {
     try {
+      // 4. Cek prioritas: pakai kantorParam dari URL jika ada, jika tidak/kosong gunakan profil?.idKantor
+      const selectedKantorId = kantorParam || profil?.idKantor || "";
+
       const payload = {
         ...values,
         status: values.isPejabat ? "eselon" : "pegawai",
-        idKantor: profil?.idKantor || ""
+        idKantor: selectedKantorId
       };
 
       await addPegawai(payload);
@@ -55,11 +62,11 @@ export default function PegawaiPage() {
       }
 
       setShowModalSuccess(true);
-    } catch (err) { // DIUBAH: Hapus ': any' di sini
+    } catch (err) {
       const errorMessage =
-      err.response?.data?.err ||
-      err.message ||
-      "Terjadi kesalahan saat menyimpan data pegawai";
+        err.response?.data?.err ||
+        err.message ||
+        "Terjadi kesalahan saat menyimpan data pegawai";
 
       setShowSnackbar({
         show: true,
