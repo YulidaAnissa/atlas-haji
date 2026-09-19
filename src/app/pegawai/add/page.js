@@ -1,7 +1,7 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { useRouter, useSearchParams } from "next/navigation"; // 1. Impor useSearchParams
+import { useState, useEffect, Suspense } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import { FaCheck } from "react-icons/fa";
 import { FiUserPlus } from "react-icons/fi";
 
@@ -14,7 +14,8 @@ import Breadcrumb from "@/components/elements/Breadcrumb";
 import { Snackbar } from "@/components/elements";
 import { profileStorage } from "@/utils/storage";
 
-export default function PegawaiPage() {
+// Komponen Konten Form yang Menggunakan Hook client-side
+function AddPegawaiContent() {
   const [showModalSuccess, setShowModalSuccess] = useState(false);
   const [showSnackbar, setShowSnackbar] = useState({
     show: false,
@@ -25,9 +26,9 @@ export default function PegawaiPage() {
   const [profil, setProfil] = useState(null);
 
   const router = useRouter();
-  const searchParams = useSearchParams(); // 2. Inisialisasi searchParams
+  const searchParams = useSearchParams();
   
-  // 3. Ambil query parameter 'kantor'
+  // Ambil query parameter 'kantor' dari URL
   const kantorParam = searchParams.get("kantor");
 
   const { data: kantor, loading: loadingKantor } = useKantor(); 
@@ -42,7 +43,7 @@ export default function PegawaiPage() {
 
   const handleSubmit = async (values, form) => {
     try {
-      // 4. Cek prioritas: pakai kantorParam dari URL jika ada, jika tidak/kosong gunakan profil?.idKantor
+      // Prioritas: pakai kantorParam dari URL jika ada, jika tidak gunakan profil?.idKantor
       const selectedKantorId = kantorParam || profil?.idKantor || "";
 
       const payload = {
@@ -53,8 +54,14 @@ export default function PegawaiPage() {
 
       await addPegawai(payload);
       
-      form.reset();
-      await fetchPegawai();
+      if (form && typeof form.reset === "function") {
+        form.reset();
+      }
+
+      if (typeof fetchPegawai === "function") {
+        await fetchPegawai();
+      }
+
       setShowModalSuccess(true);
     } catch (err) {
       const errorMessage =
@@ -143,6 +150,7 @@ export default function PegawaiPage() {
           administrasi perjalanan dinas.
         </p>
       </InfoModal>
+
       <Snackbar
         show={showSnackbar.show}
         type={showSnackbar.type}
@@ -155,5 +163,20 @@ export default function PegawaiPage() {
       {/* LOADING OVERLAY */}
       <LoadingOverlay show={isPageLoading} />
     </PageBase>
+  );
+}
+
+// Export Default Utama dengan Pembungkus Suspense
+export default function PegawaiPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="flex h-screen w-full items-center justify-center bg-slate-50">
+          <div className="h-8 w-8 animate-spin rounded-full border-4 border-brand border-t-transparent" />
+        </div>
+      }
+    >
+      <AddPegawaiContent />
+    </Suspense>
   );
 }
