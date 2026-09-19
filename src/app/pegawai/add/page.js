@@ -53,14 +53,8 @@ export default function PegawaiPage() {
 
       await addPegawai(payload);
       
-      if (form && typeof form.reset === "function") {
-        form.reset();
-      }
-
-      if (typeof fetchPegawai === "function") {
-        await fetchPegawai();
-      }
-
+      form.reset();
+      await fetchPegawai();
       setShowModalSuccess(true);
     } catch (err) {
       const errorMessage =

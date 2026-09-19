@@ -61,13 +61,17 @@ export default function Component() {
     setProfil(profileStorage.get());
   }, []);
   const { data: pejabat } = usePegawai({ params: { status: "eselon" } });
-  const { data: pegawai } = usePegawai();
+  const { data: pegawai } = usePegawai({
+    params: {
+      idKantor: profil?.idKantor,
+    },
+  });
   const { data: kabkota } = useKabKota();
   const { data: suratTugas, fetch: fetchSuratTugas } = useSuratTugas({
     urlParams: { id },
     params: {
       search,
-      ...(profil?.role !== "admin" && profil?.nip && { nip: profil.nip })
+      ...(profil?.role !== "admin" && profil?.nip && { nip: profil.nip }),
     }
   });
 

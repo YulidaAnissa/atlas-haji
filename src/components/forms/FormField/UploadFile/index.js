@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useRef, useState } from "react";
+import React, { useRef, useState, useEffect } from "react";
 import PropTypes from "prop-types";
 import clsx from "clsx";
 import { FaRegTrashAlt, FaCloudUploadAlt, FaFileAlt } from "react-icons/fa";
@@ -15,12 +15,28 @@ export default function FileField({
 }) {
   const fileInputRef = useRef(null);
   const [isDragging, setIsDragging] = useState(false);
+  const [previewUrl, setPreviewUrl] = useState(null);
 
   const file = input.value;
   const haveError = meta?.touched && meta?.error;
   const errorMessage = Array.isArray(meta?.error)
     ? meta.error[0]?.message
     : meta?.error;
+
+  // Buat Object URL untuk preview jika file berupa File Object (file baru)
+  useEffect(() => {
+    if (file instanceof File) {
+      const objectUrl = URL.createObjectURL(file);
+      setPreviewUrl(objectUrl);
+
+      // Bersihkan URL dari memori ketika file berubah/komponen unmount
+      return () => URL.revokeObjectURL(objectUrl);
+    } else if (typeof file === "string") {
+      setPreviewUrl(file);
+    } else {
+      setPreviewUrl(null);
+    }
+  }, [file]);
 
   const handleChange = (event) => {
     if (disabled) return;
@@ -146,25 +162,28 @@ export default function FileField({
               <FaFileAlt />
             </span>
 
-            {typeof file === "string" ? (
-              <a
-                href={file}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="truncate text-sm font-semibold text-blue-600 hover:underline"
-              >
-                File lama - klik untuk lihat
-              </a>
-            ) : (
-              <div className="min-w-0">
+            <div className="min-w-0">
+              {previewUrl ? (
+                <a
+                  href={previewUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="truncate text-sm font-semibold text-blue-600 hover:underline block"
+                >
+                  {typeof file === "string" ? "File lama - klik untuk lihat" : file.name}
+                </a>
+              ) : (
                 <p className="truncate text-sm font-semibold text-gray-800">
-                  {file.name}
+                  {typeof file === "string" ? file : file.name}
                 </p>
+              )}
+
+              {file instanceof File && (
                 <p className="mt-0.5 truncate text-xs text-gray-500">
-                  {file.type || "File terpilih"}
+                  {file.type || "File terpilih"} • {(file.size / 1024).toFixed(1)} KB (Klik nama file untuk melihat)
                 </p>
-              </div>
-            )}
+              )}
+            </div>
           </div>
 
           {!disabled && (
