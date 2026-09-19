@@ -15,8 +15,11 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata = {
-  title: "ATLAS",
+  title: "ATLAS hsjdkh",
   description: "Aplikasi Tata Kelola Administrasi Perjalanan Dinas",
+  icons: {
+    icon: "/logo.png",
+  },
 };
 
 export default function RootLayout({ children }) {
