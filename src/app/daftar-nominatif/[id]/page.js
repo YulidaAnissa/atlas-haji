@@ -146,13 +146,15 @@ export default function Component() {
     };
   });
 
+  console.log(showVerifBiayaPerjalanan?.data);
+
   const handleConfirmBiaya = async (aksi, idOverride = null, catatan = null) => {
   // Gunakan ID yang di-pass langsung jika ada, jika tidak gunakan dari modal state
-  const idPerjalananPegawai = idOverride || showVerifBiayaPerjalanan?.data;
-
+  const idPerjalananPegawai = showVerifBiayaPerjalanan?.data;
+  console.log("idPerjalananPegawai:", idPerjalananPegawai, "aksi:", aksi, "catatan:", catatan, "idOverride:", idOverride);
   try {
     startLoading();
-    await updateLaporan(idPerjalananPegawai, { status: aksi, catatan });
+    await updateLaporan(idPerjalananPegawai, { status: aksi, catatan: idOverride });
     await fetch();
     await fetchNominatifAjuan();
 
@@ -314,6 +316,7 @@ export default function Component() {
 
   const handleUpdateLaporan = async (values) => {
     const idPerjalananPegawai = values?.idPerjalananPegawai;
+    console.log("Updating laporan for idPerjalananPegawai:", idPerjalananPegawai, "with values:", values);
     try {
       startLoading();
 
