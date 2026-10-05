@@ -4,9 +4,10 @@ import { GiHamburgerMenu } from "react-icons/gi";
 import { FiChevronDown, FiLogOut, FiUser, FiBell, FiCompass } from "react-icons/fi";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { accessTokenStorage, profileStorage } from "@/utils/storage";
 import { formatDate, getDistance } from "@/utils/date";
+import { useOnClickOutside } from "@/hooks/useOnClickOutside";
 
 function removeStorage() {
   accessTokenStorage.remove();
@@ -19,6 +20,13 @@ export default function HeaderPage({ sidebarOpen, setSidebarOpen, data, handleIs
   const [openMenu, setOpenMenu] = useState(false);
   const [openNotif, setOpenNotif] = useState(false);
   const [profil, setProfil] = useState(null);
+
+  const notifRef = useRef(null);
+  const profileRef = useRef(null);
+
+  // 2. Jalankan handler untuk menutup state jika klik terjadi di luar area ref
+  useOnClickOutside(notifRef, () => setOpenNotif(false));
+  useOnClickOutside(profileRef, () => setOpenMenu(false));
 
   // Perhitungan unread disesuaikan dengan properti isRead dari backend
   const unreadCount = data?.filter((n) => !n.isRead).length;
@@ -123,7 +131,7 @@ export default function HeaderPage({ sidebarOpen, setSidebarOpen, data, handleIs
           </button>
 
           {openNotif && (
-            <div className="absolute right-0 mt-3 w-[calc(100vw-1.5rem)] max-w-sm overflow-hidden rounded-3xl border border-slate-200/80 bg-white shadow-2xl shadow-slate-900/10 sm:w-96">
+            <div className="absolute right-0 mt-3 w-[calc(100vw-1.5rem)] max-w-sm overflow-hidden rounded-3xl border border-slate-200/80 bg-white shadow-2xl shadow-slate-900/10 sm:w-96" ref={notifRef}>
               {/* Header */}
               <div className="flex items-center justify-between border-b border-slate-100 bg-slate-50/75 px-5 py-4 backdrop-blur-sm">
                 <div className="flex items-center gap-2.5">
@@ -197,7 +205,7 @@ export default function HeaderPage({ sidebarOpen, setSidebarOpen, data, handleIs
         </div>
 
         {/* --- DROPDOWN PROFIL --- */}
-        <div className="relative shrink-0">
+        <div className="relative shrink-0" ref={profileRef}>
           <button
             type="button"
             onClick={() => {

@@ -2,7 +2,7 @@
 
 import React from "react";
 import { Form, Field } from "react-final-form";
-import { FiSave, FiX } from "react-icons/fi";
+import { FiSave, FiX, FiUserCheck, FiBriefcase, FiAward } from "react-icons/fi";
 
 import InputField from "../FormField/InputField";
 import SelectField from "../FormField/SelectField"; 
@@ -60,6 +60,36 @@ function KantorFormProgress({ values = {} }) {
   );
 }
 
+// --- KOMPONEN UNTUK MENAMPILKAN DETAIL PEGAWAI TERPILIH ---
+function SelectedPegawaiDetail({ selectedValue, pegawaiList = [] }) {
+  if (!selectedValue) return null;
+
+  // Mendapatkan nilai NIP (baik berupa string langsung atau object { value, label })
+  const nip = typeof selectedValue === "object" ? selectedValue.value : selectedValue;
+  const detail = pegawaiList.find((p) => p.nip === nip);
+
+  if (!detail) return null;
+
+  return (
+    <div className="mt-2.5 rounded-xl border border-[#eadfbe] bg-[#fbf7ec]/60 p-3 text-xs text-slate-700 transition-all">
+      <div className="flex items-center gap-1.5 font-bold text-brand">
+        <FiUserCheck className="h-3.5 w-3.5 shrink-0" />
+        <span className="truncate">{detail.nama}</span>
+      </div>
+      <div className="mt-2 space-y-1 text-slate-600">
+        <p className="flex items-center gap-1.5">
+          <span className="font-semibold text-slate-400">NIP:</span>
+          <span>{detail.nip || "-"}</span>
+        </p>
+        <p className="flex items-start gap-1.5">
+          <FiBriefcase className="mt-0.5 h-3 w-3 shrink-0 text-slate-400" />
+          <span className="line-clamp-2">{detail.jabatan || "-"}</span>
+        </p>
+      </div>
+    </div>
+  );
+}
+
 export default function KantorForm({
   onSubmit = () => {},
   pegawai = [],
@@ -79,7 +109,6 @@ export default function KantorForm({
   }));
 
   // 2. Format options Pegawai untuk PPK, PKOH, dan DIPA
-  // Menampilkan Nama dan NIP agar mudah dibedakan
   const pegawaiOptions = (pegawai || []).map((p) => ({
     value: p.nip,
     label: `${p.nip} | ${p.nama}`,
@@ -101,7 +130,7 @@ export default function KantorForm({
   };
   
   // Render form fields yang sama untuk mode Edit dan Add
-  const renderFormFields = (form) => (
+  const renderFormFields = (form, values = {}) => (
     <div className="flex flex-col gap-4">
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
         <Field
@@ -187,32 +216,43 @@ export default function KantorForm({
         placeholder="Masukkan alamat lengkap kantor"
       />
 
-      <div className="grid gap-5 md:grid-cols-2">
-        
-      </div>
-      {/* --- SECTION PEJABAT & PENGELOLA (PPK, PKOH, DIPA) --- */}
+      {/* --- SECTION PEJABAT & PENGELOLA (PPK, PKOH, DIPA) DENGAN PREVIEW DETAIL --- */}
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
-        <Field
-          name="ppk"
-          component={SelectField}
-          label="Pejabat Pembuat Komitmen"
-          placeholder="Pilih PPK"
-          options={pegawaiOptions}
-        />
-        <Field
-          name="pkoh"
-          component={SelectField}
-          label="PKOH / Bendahara"
-          placeholder="Pilih PKOH"
-          options={pegawaiOptions}
-        />
-        <Field
-          name="dipa"
-          component={SelectField}
-          label="DIPA / Pengelola Anggaran"
-          placeholder="Pilih DIPA"
-          options={pegawaiOptions}
-        />
+        <div>
+          <Field
+            name="ppk"
+            component={SelectField}
+            label="Pejabat Pembuat Komitmen"
+            placeholder="Pilih PPK"
+            options={pegawaiOptions}
+          />
+          {/* Detail Pegawai Terpilih */}
+          <SelectedPegawaiDetail selectedValue={values.ppk} pegawaiList={pegawai} />
+        </div>
+
+        <div>
+          <Field
+            name="pkoh"
+            component={SelectField}
+            label="PKOH / Bendahara"
+            placeholder="Pilih PKOH"
+            options={pegawaiOptions}
+          />
+          {/* Detail Pegawai Terpilih */}
+          <SelectedPegawaiDetail selectedValue={values.pkoh} pegawaiList={pegawai} />
+        </div>
+
+        <div>
+          <Field
+            name="dipa"
+            component={SelectField}
+            label="DIPA / Pengelola Anggaran"
+            placeholder="Pilih DIPA"
+            options={pegawaiOptions}
+          />
+          {/* Detail Pegawai Terpilih */}
+          <SelectedPegawaiDetail selectedValue={values.dipa} pegawaiList={pegawai} />
+        </div>
       </div>
     </div>
   );
@@ -220,7 +260,7 @@ export default function KantorForm({
   if (isEdit) {
     return (
       <Form onSubmit={onSubmit} validate={validation} initialValues={formattedInitialValues}>
-        {({ handleSubmit, form, submitting }) => (
+        {({ handleSubmit, form, values, submitting }) => (
           <form
             noValidate
             onSubmit={handleSubmit}
@@ -241,7 +281,7 @@ export default function KantorForm({
 
             {/* Content Form Edit */}
             <div className="space-y-5 overflow-y-auto px-6 py-6 sm:px-8">
-              {renderFormFields(form)}
+              {renderFormFields(form, values)}
             </div>
 
             {/* Footer Modal Edit */}
@@ -309,7 +349,7 @@ export default function KantorForm({
                     </p>
                   </div>
                   
-                  {renderFormFields(form)}
+                  {renderFormFields(form, values)}
                 </section>
               </div>
             </div>

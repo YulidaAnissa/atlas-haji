@@ -79,7 +79,9 @@ export default function SuratTugas({
 
         // Hitung Biaya Representatif (150rb/hari untuk "Kepala Kantor")
         let biayaRepVal = 0;
-        const isKepalaKantor = item.jabatan?.toLowerCase().includes("kepala kantor");
+        const isKepalaKantor = 
+          item.jabatan?.toLowerCase().includes("kepala kantor") && 
+          Number(data?.surat?.idKantor) === 1;
         if (isKepalaKantor) {
           const durasiHari = calculateTripDuration(item.tglBerangkat, item.tglKembali, false, false);
           biayaRepVal = durasiHari * 150000;
@@ -158,12 +160,13 @@ export default function SuratTugas({
 
       // 💡 LOGIKA PINDAH TEMPLATE: 
       // Deteksi apakah di dalam list pegawai ada yang menjabat sebagai "Kepala Kantor"
-      const adaKepalaKantor = dataFile?.pegawai?.some((p) => 
-        p.jabatan?.toLowerCase().includes("kepala kantor")
+      const adaKepalaKantorKanwil = dataFile?.pegawai?.some((p) => 
+        p.jabatan?.toLowerCase().includes("kepala kantor") &&
+        Number(dataFile?.idKantor) === 1
       );
 
       // Jika ada Kepala Kantor, gunakan template khusus kakanwil, jika tidak gunakan template default props "format"
-      const templatePath = adaKepalaKantor 
+      const templatePath = adaKepalaKantorKanwil 
         ? "/nominatif-format-ajuan-kakanwil.docx" 
         : format;
 

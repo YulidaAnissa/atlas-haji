@@ -94,7 +94,9 @@ export default function Component() {
     const totalUangHarian = uhCount(uhValue, item.tglBerangkat, item.tglKembali);
     
     let biayaRepVal = 0;
-    const isKepalaKantor = item.jabatan?.toLowerCase().includes("kepala kantor");
+    const isKepalaKantor = 
+      item.jabatan?.toLowerCase().includes("kepala kantor") && 
+      Number(data?.surat?.idKantor) === 1;
     if (isKepalaKantor) {
       const durasiHari = calculateTripDuration(item.tglBerangkat, item.tglKembali, false, false);
       biayaRepVal = durasiHari * 150000;
