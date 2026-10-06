@@ -1,5 +1,11 @@
 "use client";
 
+import { useState, useMemo } from "react";
+import { usePathname, useRouter } from "next/navigation";
+import { FaEdit } from "react-icons/fa";
+import { FiPlus, FiSearch, FiX } from "react-icons/fi";
+import { TiEdit, TiDeleteOutline } from "react-icons/ti";
+
 import {
   DataTables,
   Breadcrumb,
@@ -9,14 +15,8 @@ import {
   InfoModal,
 } from "@/components/elements";
 import PageBase from "@/components/pagebase";
-import { usePathname, useRouter } from "next/navigation";
-import { useState } from "react";
-// Tambahkan useKabKota untuk mengambil data options dropdown
-import { useDeleteKantor, useEditKantor, useKantor, useKabKota, usePegawai } from "@/hooks/useData";
 import AddKantorForm from "@/components/forms/Kantor";
-import { FaEdit } from "react-icons/fa";
-import { FiPlus, FiSearch, FiX } from "react-icons/fi";
-import { TiEdit, TiDeleteOutline } from "react-icons/ti";
+import { useDeleteKantor, useEditKantor, useKantor, useKabKota, usePegawai } from "@/hooks/useData";
 import { extractKodeSurat } from "@/utils/string";
 import { profileStorage } from "@/utils/storage";
 
@@ -34,27 +34,30 @@ export default function DaftarKantor() {
   });
   const [profil, setProfil] = useState(null);
 
-  // Ambil data profil user dari localStorage
   useState(() => {
     const userProfile = profileStorage.get();
     setProfil(userProfile);
   }, []);
 
-
   const targetKantorId = profil?.idKantor === "1" ? undefined : profil?.idKantor;
 
-  // Ambil data daftar kantor
   const { data, isLoading, fetch } = useKantor({
     params: { search, idKantor: targetKantorId },
   });
   
-  // Ambil data referensi Kabupaten/Kota untuk dropdown di form edit
   const { data: kabKotaData } = useKabKota(); 
   const { data: pegawai } = usePegawai();
   const { deleteKantor, loading } = useDeleteKantor();
   const { editKantor, loading: loadingEdit } = useEditKantor();
 
-  // 1. Penyesuaian header tabel untuk entitas Kantor
+  // Filter list pegawai berdasarkan idKantor dari kantor yang sedang diedit
+  const pegawaiPerKantor = useMemo(() => {
+    if (!showEdit?.data?.idKantor || !Array.isArray(pegawai)) return [];
+    return pegawai.filter(
+      (p) => Number(p.idKantor) === Number(showEdit.data.idKantor)
+    );
+  }, [pegawai, showEdit?.data?.idKantor]);
+
   const headCells = [
     { id: "nama", label: "Nama Kantor", numeric: false, width: 250 },
     { id: "alamat", label: "Alamat", numeric: false, width: 350 },
@@ -73,7 +76,6 @@ export default function DaftarKantor() {
       });
       await fetch();
     } catch (err) {
-      // Mengambil pesan error dari backend (err.message)
       const errorMessage = err.message || "Gagal menghapus data kantor";
       
       setShowSnackbar({
@@ -87,7 +89,6 @@ export default function DaftarKantor() {
 
   const handleUpdateKantor = async (values) => {
     try {
-      // 2. Menyesuaikan payload edit untuk field Kantor sesuai struktur database
       const payload = {
         nama: values?.nama?.trim() || null,
         alamat: values?.alamat?.trim() || null,
@@ -121,7 +122,6 @@ export default function DaftarKantor() {
     }
   };
 
-  // 3. Mapping data untuk render tabel dan tombol aksi
   const formattedData = (data ?? []).map((item) => ({
     ...item,
     aksi: (
@@ -238,8 +238,8 @@ export default function DaftarKantor() {
           onSubmit={handleUpdateKantor}
           onClose={() => setShowEdit({ show: false, data: null })}
           type="edit"
-          pegawai={pegawai}
-          kabKotaOptions={kabKotaData} // Oper data Kabupaten/Kota ke form untuk render select options
+          pegawai={pegawaiPerKantor}
+          kabKotaOptions={kabKotaData}
         />
       </FormModal>
 

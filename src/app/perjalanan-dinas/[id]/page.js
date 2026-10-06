@@ -14,7 +14,7 @@ import {
   Snackbar,
 } from "@/components/elements";
 import LoadingOverlay from "@/components/elements/LoadingOverlay";
-import PrintButton from "@/components/elements/PrintButton";
+import PrintPegawaiButton from "./PrintPegawaiButton"; // Import Komponen Baru
 import AddPegawaiPerjalanan from "@/components/forms/AddPegawaiPerjalanan";
 import UpdatePerjalanan from "@/components/forms/Perjalanan";
 import { useLoading } from "@/hooks";
@@ -27,10 +27,10 @@ import {
   useSuratTugas,
   useUpdatePegawaiPerjalanan,
 } from "@/hooks/useData";
-import { calculateTripDuration, formatDate, formatRangeDate } from "@/utils/date";
+import { formatDate, formatRangeDate } from "@/utils/date";
 import { profileStorage } from "@/utils/storage";
 import { TiDeleteOutline, TiEdit } from "react-icons/ti";
-import { capitalize, toUpperCase } from "@/utils/string";
+import { capitalize } from "@/utils/string";
 import SearchBar from "@/components/elements/SearchBar";
 
 const EMPTY_SNACKBAR = {
@@ -57,9 +57,11 @@ export default function Component() {
   const [showUpdatePerjalanan, setShowUpdatePerjalanan] = useState(false);
   const [snackbar, setSnackbar] = useState(EMPTY_SNACKBAR);
   const [loading, startLoading, endLoading] = useLoading();
+
   useEffect(() => {
     setProfil(profileStorage.get());
   }, []);
+
   const { data: pejabat } = usePegawai({ params: { status: "eselon" } });
   const { data: pegawai } = usePegawai({
     params: {
@@ -85,8 +87,7 @@ export default function Component() {
   const { deletePegawaiPerjalanan } = useDeletePegawaiPerjalanan();
   const { updatePegawai } = useUpdatePegawaiPerjalanan();
   
-  const isAdmin =
-    String(profil?.role ?? "").trim().toLowerCase() === "admin";
+  const isAdmin = String(profil?.role ?? "").trim().toLowerCase() === "admin";
 
   const showNotification = (message, type) => {
     setSnackbar({ show: true, message, type });
@@ -111,7 +112,7 @@ export default function Component() {
       formData.append("tglSurat", formatDate(values.tglSurat, "YYYY-MM-DD"));
       formData.append("kegiatan", values.kegiatan ?? "");
       formData.append("ringKegiatan", values.ringKegiatan ?? "");
-      formData.append("type", values.type ?? ""); // Menambahkan field type ke Form Data
+      formData.append("type", values.type ?? "");
       if (values.fileSurat) {
         formData.append("fileSurat", values.fileSurat);
       }
@@ -162,7 +163,6 @@ export default function Component() {
 
   const handleUpdatePerjalananPegawai = async (values) => {
     try {
-      // 1. Ambil ID dari data pegawai yang sedang diedit
       const idPerjalananPegawai = updatePerjalananPegawai?.data?.idPerjalananPegawai;
 
       if (!idPerjalananPegawai) {
@@ -170,19 +170,16 @@ export default function Component() {
         return;
       }
 
-      // 2. Jalankan fungsi update dengan memisahkan ID dan Payload Body
       await updatePegawai(idPerjalananPegawai, {
-        idPerjalananPegawai, // Backend mendestruktur ini dari req.body
+        idPerjalananPegawai,
         tglBerangkat: formatDate(values.dateRange?.formattedStart, "YYYY-MM-DD"),
         tglKembali: formatDate(values.dateRange?.formattedEnd, "YYYY-MM-DD"),
         tujuan: values.tujuan,
         type: values.type,
-        // Tambahkan ini agar pengecekan jadwal bentrok di backend tidak error/skip
         nip: updatePerjalananPegawai?.data?.nip, 
-        idSurat: id 
+        idSurat: id
       });
 
-      // 3. Refresh data dan tutup modal/form
       await fetchSuratTugas();
       setShowAddPegawai(false);
       showNotification("Pegawai berhasil diperbarui", "success");
@@ -192,11 +189,11 @@ export default function Component() {
       showNotification("Gagal memperbarui pegawai", "error");
     }
   };
+
   const handleDelete = async () => {
     try {
       startLoading();
 
-      // Kirim idPerjalananPegawai, idSurat, dan nip untuk mengakomodasi berbagai skenario backend
       const result = await deletePegawaiPerjalanan({
         idPerjalananPegawai: deletedPegawai?.idPerjalananPegawai,
       });
@@ -216,6 +213,7 @@ export default function Component() {
       endLoading();
     }
   };
+
   const getJabatanPPT = (pegawaiJabatan, suratJabatan) => {
     const jabatan = String(pegawaiJabatan ?? "").trim().toLowerCase();
     const jabatanSurat = String(suratJabatan ?? "").trim().toLowerCase();
@@ -254,6 +252,7 @@ export default function Component() {
     
     const ppt = getJabatanPPT(item?.jabatan, suratTugas?.surat?.jabatan);
     const isDisabled = isAdmin && item.status === "perjalanan";
+
     return {
       ...item,
       nama: (
@@ -278,54 +277,32 @@ export default function Component() {
         <div className="flex w-max gap-2">
           <button
             type="button"
-            className={`inline-flex items-center justify-center rounded-xl border  px-3 py-2 text-sm font-semibold  ${!isDisabled ? "cursor-not-allowed opacity-50bg-gray-200 text-gray-400 border border-gray-300" : "border-red-200 bg-red-50 text-red-700 transition hover:bg-red-100"}`}
+            className={`inline-flex items-center justify-center rounded-xl border px-3 py-2 text-sm font-semibold ${!isDisabled ? "cursor-not-allowed opacity-50 bg-gray-200 text-gray-400 border border-gray-300" : "border-red-200 bg-red-50 text-red-700 transition hover:bg-red-100"}`}
             onClick={() => setDeletedPegawai(item)}
             disabled={!isDisabled}
           >
             <TiDeleteOutline className="h-6 w-6" />
           </button>
           <button
-              type="button"
-              className={`inline-flex items-center justify-center rounded-xl border  px-3 py-2 text-sm font-semibold  ${!isDisabled ? "cursor-not-allowed opacity-50bg-gray-200 text-gray-400 border border-gray-300" : "border-blue-200 bg-blue-50 text-blue-700 transition hover:bg-blue-100"}`}
-              onClick={() => setUpdatePerjalananPegawai({ data: item, show: true })}
-              disabled={!isDisabled}
-            >
-              <TiEdit className="h-6 w-6" />
-            </button>
-          <PrintButton
-            data={{
-              ...item,
-              jabatan: item?.jabatan || "-",
-              lama: calculateTripDuration(item.tglBerangkat, item.tglKembali),
-              tglBerangkat: formatDate(item.tglBerangkat, "DD MMMM YYYY"),
-              tglKembali: formatDate(item.tglKembali, "DD MMMM YYYY"),
-              kabkota: item.tujuan,
-              kegiatan: suratTugas?.surat?.kegiatan || "-",
-              unit: suratTugas?.surat?.unit,
-              jabatanPPT : ppt.jabatanPPT,
-              nipPPT: suratTugas?.surat?.nip,
-              namaPPT: suratTugas?.surat?.nama,
-              an: ppt.an,
-              pejabatMengetahui: ppt.pejabatMengetahui,
-              gol: item.gol || "-",
-              nip: item.jenisPegawai === "PNS" || item.jenisPegawai === "PPPK" ? item.nip : "-",
-              namaKantor: capitalize(suratTugas?.surat?.namaKantor || "-"),
-              namaKantorUpper: toUpperCase(suratTugas?.surat?.namaKantor || "-"),
-              callCenter: suratTugas?.surat?.callCenter || "-",
-              unitKantor: suratTugas?.surat?.unitKantor || " ",
-              alamat: suratTugas?.surat?.alamat || "-",
-              email: suratTugas?.surat?.email || "-",
-              website: suratTugas?.surat?.website || "-",
-              asal: item.kabkota,
-              namaPpk: suratTugas?.surat?.namaPpk,
-              nipPpk: suratTugas?.surat?.nipPpk,
-            }}
-            format="/spd-format.docx"
-            file={`spd-${item.nip}`}
-          />
+            type="button"
+            className={`inline-flex items-center justify-center rounded-xl border px-3 py-2 text-sm font-semibold ${!isDisabled ? "cursor-not-allowed opacity-50 bg-gray-200 text-gray-400 border border-gray-300" : "border-blue-200 bg-blue-50 text-blue-700 transition hover:bg-blue-100"}`}
+            onClick={() => setUpdatePerjalananPegawai({ data: item, show: true })}
+            disabled={!isDisabled}
+          >
+            <TiEdit className="h-6 w-6" />
+          </button>
+
+          {!item?.followers && (
+            <PrintPegawaiButton
+              item={item}
+              suratTugas={suratTugas}
+              ppt={ppt}
+              idSurat={id}
+            />
+          )}
         </div>
       ),
-    }
+    };
   });
 
   const breadcrumbItems = [
@@ -347,8 +324,7 @@ export default function Component() {
             Detail Perjalanan Dinas
           </h1>
           <p className="mt-3 max-w-2xl text-sm leading-6 text-gray-500">
-            Kelola data perjalanan, surat tugas, dan daftar pegawai dalam satu
-            halaman.
+            Kelola data perjalanan, surat tugas, dan daftar pegawai dalam satu halaman.
           </p>
         </div>
 
@@ -391,7 +367,6 @@ export default function Component() {
               />
             </div>
           </div>
-          
         </div>
 
         <DataTables headCells={HEAD_CELLS} data={formattedData} />

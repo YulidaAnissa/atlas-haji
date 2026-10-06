@@ -4,9 +4,6 @@ import React, { useState } from "react";
 import { DaftarNominatifAjuan } from "@/components/elements";
 import { formatRangeDate } from "@/utils/date";
 import { 
-  FileText, 
-  CheckSquare, 
-  Square, 
   Users, 
   Calendar, 
   MapPin, 
@@ -15,10 +12,10 @@ import {
   AlertCircle 
 } from "lucide-react";
 
-export default function ListNominatifAjuan({ data, surat, kabKota, dataPegawai }) {
+export default function ListNominatifAjuan({ data, surat, kabKota, dataPegawai, idKantor }) {
   const [isOpen, setIsOpen] = useState(false);
   const [selectedKeys, setSelectedKeys] = useState([]); // Menyimpan array key tim yang dicentang
-
+  console.log("ini data", data);
   // 1. Kelompokkan pegawai berdasarkan kombinasi: tglBerangkat, tglKembali, dan tujuan
   const groupedTeams = (data || []).reduce((acc, item) => {
     const key = `${item.tglBerangkat}_${item.tglKembali}_${JSON.stringify(item.tujuan)}`;
@@ -224,7 +221,7 @@ export default function ListNominatifAjuan({ data, surat, kabKota, dataPegawai }
                 <div className={`w-full sm:w-auto ${filteredData.length === 0 ? "opacity-40 pointer-events-none" : ""}`}>
                   <div className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-4 py-3 sm:py-2 text-xs font-semibold text-white bg-blue-600 hover:bg-blue-700 rounded-xl shadow-md shadow-blue-500/20 transition-all cursor-pointer">
                     <Printer className="w-3.5 h-3.5 shrink-0" />
-                    <DaftarNominatifAjuan data={filteredData} dataPegawai={dataPegawai} surat={surat} kabKota={kabKota} />
+                    <DaftarNominatifAjuan data={filteredData} dataPegawai={dataPegawai} surat={surat} kabKota={kabKota} idKantor={idKantor} />
                   </div>
                 </div>
 

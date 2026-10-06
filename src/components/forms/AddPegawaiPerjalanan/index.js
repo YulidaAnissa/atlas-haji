@@ -1,26 +1,17 @@
+// ComponentForm.jsx
 "use client";
 
 import React, { useMemo } from "react";
 import PropTypes from "prop-types";
-import { Form, Field } from "react-final-form";
-import { FieldArray } from "react-final-form-arrays";
+import { Form } from "react-final-form";
 import arrayMutators from "final-form-arrays";
-import { FaPlus } from "react-icons/fa";
-import { TiDeleteOutline } from "react-icons/ti";
-import { FiUsers } from "react-icons/fi";
 
 import { formatDate } from "@/utils/date";
-import SelectField from "../FormField/SelectField";
 import validation from "./validate";
 import PegawaiBadge from "./PegawaiBadge";
+import PegawaiSection from "./PegawaiSection";
 import { ScheduleSection, RouteSection } from "./RouteAndScheduleSections";
-
-function getOptionValue(option) {
-  if (typeof option === "object" && option !== null) {
-    return option.value;
-  }
-  return option;
-}
+import { buildFormPayload } from "@/utils/formHelpers";
 
 export default function ComponentForm({
   onSubmit = () => {},
@@ -55,10 +46,7 @@ export default function ComponentForm({
   );
 
   const defaultKabKotaOption = useMemo(() => {
-    const rawId =
-      type === "edit"
-        ? perjalananPegawai?.asal : surat?.idKabKota;
-
+    const rawId = type === "edit" ? perjalananPegawai?.asal : surat?.idKabKota;
     if (!rawId) return "";
 
     return (
@@ -72,7 +60,7 @@ export default function ComponentForm({
       dateRange: null,
       idKabKota: defaultKabKotaOption,
       tujuan: "",
-      pegawai: [],
+      pegawai: [{ utama: "", pengikut: [] }],
     }),
     [defaultKabKotaOption]
   );
@@ -106,22 +94,7 @@ export default function ComponentForm({
   );
 
   const handleFormSubmit = (values, form) => {
-    const payload = {
-      dateRange: {
-        startDate: values.dateRange?.startDate || null,
-        endDate: values.dateRange?.endDate || null,
-        formattedStart: values.dateRange?.formattedStart || null,
-        formattedEnd: values.dateRange?.formattedEnd || null,
-      },
-
-      idKabKota: getOptionValue(values.idKabKota) || "",
-      tujuan: String(values.tujuan || "").trim(),
-
-      pegawai: Array.isArray(values.pegawai)
-        ? values.pegawai.map(getOptionValue).filter(Boolean)
-        : [],
-    };
-
+    const payload = buildFormPayload(values);
     return onSubmit(payload, form);
   };
 
@@ -154,7 +127,10 @@ export default function ComponentForm({
                 </div>
 
                 <div className="inline-flex self-start rounded-full border border-[#eadfbe] bg-white px-3 py-1.5 text-xs font-bold text-brand shadow-sm">
-                  {values.pegawai?.filter(Boolean).length || 0} pegawai dipilih
+                  {Array.isArray(values.pegawai)
+                    ? values.pegawai.filter((p) => p?.utama || p?.value).length
+                    : 0}{" "}
+                  pegawai utama dipilih
                 </div>
               </div>
             </header>
@@ -168,139 +144,9 @@ export default function ComponentForm({
               {/* Rute Section */}
               <RouteSection kabkotaOptions={kabkotaOptions} values={values} />
 
-              {/* Daftar Pegawai */}
+              {/* Daftar Pegawai Section */}
               {type === "add" ? (
-                <FieldArray name="pegawai">
-                  {({ fields }) => (
-                    <section className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
-                      <div className="flex flex-col gap-4 border-b border-slate-200 bg-slate-50 px-5 py-4 sm:flex-row sm:items-center sm:justify-between">
-                        <div className="flex items-center gap-3">
-                          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-violet-50 text-violet-600">
-                            <FiUsers className="h-5 w-5" />
-                          </div>
-                          <div>
-                            <h3 className="text-sm font-bold text-slate-900">
-                              Daftar Pegawai
-                            </h3>
-                            <p className="mt-0.5 text-xs text-slate-500">
-                              Pegawai yang mengikuti perjalanan
-                            </p>
-                          </div>
-                        </div>
-
-                        <button
-                          type="button"
-                          onClick={() => fields.push("")}
-                          className="inline-flex h-10 items-center justify-center rounded-xl border border-[#eadfbe] bg-white px-4 text-sm font-bold text-brand shadow-sm transition hover:border-brand hover:bg-[#fbf7ec]"
-                        >
-                          <FaPlus className="mr-2 h-3.5 w-3.5" />
-                          Tambah Pegawai
-                        </button>
-                      </div>
-
-                      <div className="w-full overflow-x-auto">
-                        <table className="w-full min-w-160 table-fixed border-collapse">
-                          <colgroup>
-                            <col className="w-18" />
-                            <col />
-                            <col className="w-22.5" />
-                          </colgroup>
-                          <thead>
-                            <tr className="bg-[#f1f8f5]">
-                              <th className="border-b border-r border-slate-200 px-3 py-3 text-center text-xs font-bold uppercase tracking-wide text-slate-600">
-                                No
-                              </th>
-                              <th className="border-b border-r border-slate-200 px-4 py-3 text-left text-xs font-bold uppercase tracking-wide text-slate-600">
-                                Nama Pegawai
-                                <span className="ml-1 text-red-500">*</span>
-                              </th>
-                              <th className="border-b border-slate-200 px-3 py-3 text-center text-xs font-bold uppercase tracking-wide text-slate-600">
-                                Aksi
-                              </th>
-                            </tr>
-                          </thead>
-                          <tbody>
-                            {fields.map((name, index) => {
-                              const selectedNips = Array.isArray(values.pegawai)
-                                ? values.pegawai
-                                    .map(getOptionValue)
-                                    .filter(Boolean)
-                                : [];
-                              const currentNip = getOptionValue(
-                                values.pegawai?.[index]
-                              );
-                              const filteredOptions = pegawaiOptions.filter(
-                                (option) =>
-                                  !selectedNips.includes(option.value) ||
-                                  option.value === currentNip
-                              );
-
-                              return (
-                                <tr
-                                  key={name}
-                                  className="align-top transition hover:bg-slate-50/70"
-                                >
-                                  <td className="border-b border-r border-slate-200 px-3 py-5 text-center">
-                                    <span className="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-[#fbf7ec] text-xs font-black text-brand">
-                                      {index + 1}
-                                    </span>
-                                  </td>
-                                  <td className="border-b border-r border-slate-200 p-3">
-                                    <Field
-                                      name={name}
-                                      component={SelectField}
-                                      options={filteredOptions}
-                                      placeholder="Pilih pegawai"
-                                      className="w-full"
-                                    />
-                                  </td>
-                                  <td className="border-b border-slate-200 px-3 py-5 text-center">
-                                    <button
-                                      type="button"
-                                      onClick={() => fields.remove(index)}
-                                      className="inline-flex items-center justify-center rounded-full text-red-500 transition-colors duration-200 hover:bg-red-100 hover:text-red-700"
-                                      aria-label={`Hapus pegawai ${index + 1}`}
-                                      title="Hapus pegawai"
-                                    >
-                                      <TiDeleteOutline className="h-8 w-8" />
-                                    </button>
-                                  </td>
-                                </tr>
-                              );
-                            })}
-
-                            {!fields.length && (
-                              <tr>
-                                <td colSpan={3} className="px-5 py-10 text-center">
-                                  <div className="mx-auto max-w-sm">
-                                    <div className="mx-auto flex h-11 w-11 items-center justify-center rounded-2xl bg-slate-100 text-slate-400">
-                                      <FiUsers className="h-5 w-5" />
-                                    </div>
-                                    <p className="mt-3 text-sm font-bold text-slate-700">
-                                      Belum ada pegawai
-                                    </p>
-                                    <p className="mt-1 text-xs leading-5 text-slate-500">
-                                      Klik “Tambah Pegawai” untuk menambahkan peserta perjalanan.
-                                    </p>
-                                  </div>
-                                </td>
-                              </tr>
-                            )}
-                          </tbody>
-                        </table>
-                      </div>
-
-                      {fields.length > 0 && (
-                        <div className="flex items-center justify-between border-t border-slate-200 bg-slate-50 px-5 py-3">
-                          <p className="text-xs text-slate-500">Total pegawai</p>
-                          <span className="rounded-full bg-white px-3 py-1 text-xs font-bold text-slate-700 shadow-sm">
-                            {fields.length}
-                          </span>
-                        </div>
-                      )}
-                    </section>
-                  )}
-                </FieldArray>
+                <PegawaiSection values={values} pegawaiOptions={pegawaiOptions} />
               ) : (
                 <PegawaiBadge
                   nip={perjalananPegawai?.nip}
@@ -311,7 +157,7 @@ export default function ComponentForm({
             </div>
           </div>
 
-          {/* Action */}
+          {/* Action Buttons */}
           <footer className="mt-6 flex flex-col-reverse gap-3 border-t border-slate-200 pt-5 sm:flex-row sm:justify-end">
             <button
               type="button"

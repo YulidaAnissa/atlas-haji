@@ -22,18 +22,22 @@ export function usePerjalanan({ dedupingInterval, urlParams = {}, params = {} } 
   };
 }
 
-export function usePerjalananPegawai({ dedupingInterval, urlParams = {}, params = {} } = defaultOptions) {
-  const token = accessTokenStorage.get().value;
-  const { data: { data, pagination } = [], error, mutate } = useSWR(
-    createSwrKey(SERVICES.PERJALANAN_PEGAWAI, { params }), 
+export function usePerjalananPegawai({ dedupingInterval, params = {}, skip = false } = defaultOptions) {
+  const token = accessTokenStorage.get()?.value;
+
+  // Jika skip = true, set key ke null agar SWR TIDAK melakukan fetch
+  const swrKey = skip ? null : createSwrKey(SERVICES.PERJALANAN_PEGAWAI, { params });
+
+  const { data: { data, pagination } = {}, error, mutate } = useSWR(
+    swrKey, 
     fetcher({ headers: { Authorization: `Bearer ${token}` } }),
     { dedupingInterval: getDedupingInterval(dedupingInterval) }
   );
-  
+
   return {
     data: data,
     total: pagination?.totalData,
-    isLoading: !error && !data,
+    isLoading: !error && !data && !skip,
     error,
     fetch: mutate
   };

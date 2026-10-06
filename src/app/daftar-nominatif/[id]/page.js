@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import { useParams } from "next/navigation";
 import { FaEdit } from "react-icons/fa";
 import { IoDocumentTextOutline } from "react-icons/io5";
@@ -21,7 +21,14 @@ import {
 import FormModal from "@/components/elements/FormModal";
 import LoadingOverlay from "@/components/elements/LoadingOverlay";
 import ConfirmPembayaran from "@/components/forms/KonfirmPembayaran";
-import { useSuratTugas, useUpdateLaporan, useEditSuratTugas, useKabKota, useNominatifAjuan, usePegawai } from "@/hooks/useData";
+import { 
+  useSuratTugas, 
+  useUpdateLaporan, 
+  useEditSuratTugas, 
+  useKabKota, 
+  useNominatifAjuan, 
+  usePegawai 
+} from "@/hooks/useData";
 import { useLoading } from "@/hooks";
 import { calculateTripDuration, formatDate, formatRangeDate } from "@/utils/date";
 import { profileStorage } from "@/utils/storage";
@@ -62,7 +69,7 @@ export default function Component() {
     params: {
       idKantor: profil?.idKantor
     }
-  })
+  });
 
   const { updateLaporan } = useUpdateLaporan();
   const { editSuratTugas } = useEditSuratTugas();
@@ -71,6 +78,32 @@ export default function Component() {
   useEffect(() => {
     setProfil(profileStorage.get());
   }, []);
+
+  // 1. Filter pegawai yang statusnya verifikasi atau selesai (Memoized untuk mencegah infinite loop)
+  const pegawaiTerverifikasi = useMemo(() => {
+    return (data?.pegawai ?? []).filter(
+      (p) => p.status === "verifikasi" || p.status === "selesai"
+    );
+  }, [data?.pegawai]);
+
+  // 2. Buat dataSurat khusus dengan referensi objek stabil
+  const dataSuratNominatif = useMemo(() => {
+    if (!data) return null;
+    return {
+      ...data,
+      pegawai: pegawaiTerverifikasi,
+    };
+  }, [data, pegawaiTerverifikasi]);
+
+  // 3. Filter data nominatif ajuan (Memoized)
+  const nominatifAjuanTerverifikasi = useMemo(() => {
+    if (!Array.isArray(nominatifData)) return nominatifData;
+    return nominatifData.filter(
+      (item) => item.status === "verifikasi" || item.status === "selesai"
+    );
+  }, [nominatifData]);
+
+  console.log(nominatifData, "nominatifData");
 
   const formatRupiah = (angka) => {
     if (!angka) return 0;
@@ -86,104 +119,102 @@ export default function Component() {
     return (Number(uh) || 0) + (Number(biayaTrans) || 0) + (Number(biayaPeng) || 0) + (Number(biayaRep) || 0);
   };
 
-  const dataFilePegawai = data?.pegawai?.map((item, index) => {
-    const uhPerHari = calculateUangHarianPerHari(item, data?.surat, dataKabKota);
+  const dataFilePegawai = useMemo(() => {
+    return data?.pegawai?.map((item, index) => {
+      const uhPerHari = calculateUangHarianPerHari(item, data?.surat, dataKabKota);
 
-    const isKhusus = item.typePerjalanan === "khusus";
-    const uhValue = isKhusus ? 0 : uhPerHari;
-    const totalUangHarian = uhCount(uhValue, item.tglBerangkat, item.tglKembali);
-    
-    let biayaRepVal = 0;
-    const isKepalaKantor = 
-      item.jabatan?.toLowerCase().includes("kepala kantor") && 
-      Number(data?.surat?.idKantor) === 1;
-    if (isKepalaKantor) {
-      const durasiHari = calculateTripDuration(item.tglBerangkat, item.tglKembali, false, false);
-      biayaRepVal = durasiHari * 150000;
-    }
+      const isKhusus = item.typePerjalanan === "khusus";
+      const uhValue = isKhusus ? 0 : uhPerHari;
+      const totalUangHarian = uhCount(uhValue, item.tglBerangkat, item.tglKembali);
+      
+      let biayaRepVal = 0;
+      const isKepalaKantor = 
+        item.jabatan?.toLowerCase().includes("kepala kantor") && 
+        Number(data?.surat?.idKantor) === 1;
+      if (isKepalaKantor) {
+        const durasiHari = calculateTripDuration(item.tglBerangkat, item.tglKembali, false, false);
+        biayaRepVal = durasiHari * 150000;
+      }
 
-    const jumlahTotal = totalCount(
-      totalUangHarian,
-      item.biayaTrans,
-      item.biayaPeng,
-      biayaRepVal
-    );
+      const jumlahTotal = totalCount(
+        totalUangHarian,
+        item.biayaTrans,
+        item.biayaPeng,
+        biayaRepVal
+      );
 
-    return {
-      idx: index + 1,
-      nama: item.nama,
-      jabatan: item?.jabatan || "-",
-      nip: item.jenisPegawai === "PNS" || item.jenisPegawai === "PPPK" ? item.nip : "-",
-      kegiatan: data?.surat?.kegiatan,
-      tujuan: Array.isArray(item.tujuan) ? item.tujuan.join(', ') : item.tujuan,
-      tglBerangkat: formatDate(item.tglBerangkat, "DD MMMM YYYY"),
-      tglKembali: formatDate(item.tglKembali, "DD MMMM YYYY"),
-      lama: calculateTripDuration(item.tglBerangkat, item.tglKembali),
-      uh: formatRupiah(uhValue),
-      uhTotal: formatRupiah(totalUangHarian),
-      biayaTrans: formatRupiah(item.biayaTrans),
-      biayaPeng: formatRupiah(item.biayaPeng),
-      jumlahTotal: formatRupiah(jumlahTotal),
-      image: item.buktiTrans,
-      buktiPeng: item.buktiPeng,
-      nipPpk: data?.surat?.nipPpk || "",
-      namaPpk: data?.surat?.namaPpk || "",
-      trans: Number(item.biayaTrans || 0) === 0 ? "" : "- Transport",
-      peng: Number(item.biayaPeng || 0) === 0 ? "" : "- Penginapan",
-      repre: Number(biayaRepVal) === 0 ? "" : "- Representatif",
-      isRepre: isKepalaKantor ? "Rp" : "",
-      biayaRepre: isKepalaKantor ? formatRupiah(biayaRepVal) + ",-" : "",
-      terbilang: `${capitalize(terbilang(jumlahTotal))} Rupiah`,
-      namaKantor: `${capitalize(data?.surat?.namaKantor || " ")}`,
-      alamat: data?.surat?.alamat || " ",
-      asal: item.kabkota,
-      unitKantor: data?.surat?.unitKantor || " ",
-      unitKantorCapital: toUpperCase(data?.surat?.unitKantor),
-      nipBendahara: String(data?.surat?.anggaran || "").toLowerCase() === "dipa" 
-        ? data?.surat?.nipDipa 
-        : data?.surat?.nipPkoh,
+      return {
+        idx: index + 1,
+        nama: item.nama,
+        jabatan: item?.jabatan || "-",
+        nip: item.jenisPegawai === "PNS" || item.jenisPegawai === "PPPK" ? item.nip : "-",
+        kegiatan: data?.surat?.kegiatan,
+        tujuan: Array.isArray(item.tujuan) ? item.tujuan.join(', ') : item.tujuan,
+        tglBerangkat: formatDate(item.tglBerangkat, "DD MMMM YYYY"),
+        tglKembali: formatDate(item.tglKembali, "DD MMMM YYYY"),
+        lama: calculateTripDuration(item.tglBerangkat, item.tglKembali),
+        uh: formatRupiah(uhValue),
+        uhTotal: formatRupiah(totalUangHarian),
+        biayaTrans: formatRupiah(item.biayaTrans),
+        biayaPeng: formatRupiah(item.biayaPeng),
+        jumlahTotal: formatRupiah(jumlahTotal),
+        image: item.buktiTrans,
+        buktiPeng: item.buktiPeng,
+        nipPpk: data?.surat?.nipPpk || "",
+        namaPpk: data?.surat?.namaPpk || "",
+        trans: Number(item.biayaTrans || 0) === 0 ? "" : "- Transport",
+        peng: Number(item.biayaPeng || 0) === 0 ? "" : "- Penginapan",
+        repre: Number(biayaRepVal) === 0 ? "" : "- Representatif",
+        isRepre: isKepalaKantor ? "Rp" : "",
+        biayaRepre: isKepalaKantor ? formatRupiah(biayaRepVal) + ",-" : "",
+        terbilang: `${capitalize(terbilang(jumlahTotal))} Rupiah`,
+        namaKantor: `${capitalize(data?.surat?.namaKantor || " ")}`,
+        alamat: data?.surat?.alamat || " ",
+        asal: item.kabkota,
+        unitKantor: data?.surat?.unitKantor || " ",
+        unitKantorCapital: toUpperCase(data?.surat?.unitKantor),
+        nipBendahara: String(data?.surat?.anggaran || "").toLowerCase() === "dipa" 
+          ? data?.surat?.nipDipa 
+          : data?.surat?.nipPkoh,
 
-      namaBendahara: String(data?.surat?.anggaran || "").toLowerCase() === "dipa" 
-        ? data?.surat?.namaDipa 
-        : data?.surat?.namaPkoh
-    };
-  });
-
-  console.log(showVerifBiayaPerjalanan?.data);
+        namaBendahara: String(data?.surat?.anggaran || "").toLowerCase() === "dipa" 
+          ? data?.surat?.namaDipa 
+          : data?.surat?.namaPkoh
+      };
+    }) ?? [];
+  }, [data, dataKabKota]);
 
   const handleConfirmBiaya = async (aksi, idOverride = null, catatan = null) => {
-  // Gunakan ID yang di-pass langsung jika ada, jika tidak gunakan dari modal state
-  const idPerjalananPegawai = showVerifBiayaPerjalanan?.data || idOverride;
-  console.log("idPerjalananPegawai:", idPerjalananPegawai, "aksi:", aksi, "catatan:", catatan, "idOverride:", idOverride);
-  try {
-    startLoading();
-    await updateLaporan(idPerjalananPegawai, { status: aksi, catatan: idOverride });
-    await fetch();
-    await fetchNominatifAjuan();
+    const idPerjalananPegawai = showVerifBiayaPerjalanan?.data || idOverride;
+    try {
+      startLoading();
+      await updateLaporan(idPerjalananPegawai, { status: aksi, catatan: idOverride });
+      await fetch();
+      await fetchNominatifAjuan();
 
-    setShowVerifBiayaPerjalanan({ show: false, data: null });
-    setShowSnackbar({
-      show: true,
-      message: `Biaya perjalanan berhasil ${
-        aksi === "verifikasi"
-          ? "diverifikasi"
-          : aksi === "selesai"
-          ? "diselesaikan"
-          : "ditolak"
-      }`,
-      type: "success",
-    });
-  } catch (err) {
-    setShowSnackbar({
-      show: true,
-      message: "Gagal memproses biaya perjalanan",
-      type: "error",
-    });
-    return err;
-  } finally {
-    endLoading();
-  }
-};
+      setShowVerifBiayaPerjalanan({ show: false, data: null });
+      setShowSnackbar({
+        show: true,
+        message: `Biaya perjalanan berhasil ${
+          aksi === "verifikasi"
+            ? "diverifikasi"
+            : aksi === "selesai"
+            ? "diselesaikan"
+            : "ditolak"
+        }`,
+        type: "success",
+      });
+    } catch (err) {
+      setShowSnackbar({
+        show: true,
+        message: "Gagal memproses biaya perjalanan",
+        type: "error",
+      });
+      return err;
+    } finally {
+      endLoading();
+    }
+  };
 
   const headCells = [
     { id: "nama", label: "Nama Pegawai", numeric: false },
@@ -247,7 +278,6 @@ export default function Component() {
                   >
                     <TiEdit className="h-6 w-6" />
                   </button>
-                  {/* Tombol Checklist (Muncul jika status verifikasi) */}
                   <button
                     type="button"
                     title="Selesaikan / Tandai Selesai"
@@ -312,23 +342,21 @@ export default function Component() {
 
   const pegawaiVerifikasi = String(profil?.role || "").trim().toLowerCase() === "finance";
 
-  // Statistik ringkas
   const totalPegawai = data?.pegawai?.length ?? 0;
   const totalVerifikasi = data?.pegawai?.filter(p => p.status === "verifikasi" || p.status === "selesai").length ?? 0;
   const totalPengajuan = data?.pegawai?.filter(p => p.status === "pengajuan").length ?? 0;
 
   const handleUpdateLaporan = async (values) => {
     const idPerjalananPegawai = values?.idPerjalananPegawai;
-    console.log("Updating laporan for idPerjalananPegawai:", idPerjalananPegawai, "with values:", values);
     try {
       startLoading();
 
       const formData = new FormData();
       formData.append("biayaPeng", values?.biayaPeng);
       formData.append("biayaTrans", values?.biayaTrans);
-      formData.append("buktiPeng", values?.buktiPeng); // file object
-      formData.append("buktiTrans", values?.buktiTrans); // file object
-      formData.append("spd", values?.spd); // file object
+      formData.append("buktiPeng", values?.buktiPeng);
+      formData.append("buktiTrans", values?.buktiTrans);
+      formData.append("spd", values?.spd);
       formData.append("status", "pengajuan");
       formData.append("hasil", values?.hasil);
       formData.append("tfBiayaPeng", values?.tfBiayaPeng?.value || values?.nip);
@@ -344,7 +372,6 @@ export default function Component() {
         type: "success",
       });
     } catch (err) {
-      // 💡 Menangkap pesan error spesifik dari backend
       const errorMessage = err?.message || "Gagal memperbarui laporan";
 
       setShowSnackbar({
@@ -362,7 +389,7 @@ export default function Component() {
     <PageBase className="mx-auto max-w-7xl px-6 py-10 lg:px-12 bg-gray-50/50 min-h-screen">
       <Breadcrumb items={breadcrumbItem} />
 
-      {/* Header Elegan */}
+      {/* Header */}
       <header className="mb-8 mt-6 flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between border-b border-gray-200/80 pb-6">
         <div>
           <span className="inline-flex items-center gap-1.5 rounded-full bg-blue-50 px-3 py-1 text-xs font-semibold uppercase tracking-wider text-blue-600 mb-2 border border-blue-100/50">
@@ -376,19 +403,26 @@ export default function Component() {
           </p>
         </div>
 
-        {/* {totalPegawai > 0 && data?.pegawai?.every((item) => item.status === "verifikasi" || item.status === "selesai") && data?.surat?.anggaran && ( */}
-          <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
-            <div className="inline-flex items-center justify-center rounded-xl border border-gray-300 bg-white px-4 py-2.5 text-sm font-semibold text-gray-700 shadow-sm transition-all hover:bg-gray-50 hover:border-gray-400 hover:shadow">
-              <IoDocumentTextOutline className="h-4 w-4 text-blue-600 mr-2 shrink-0" />
-              {/* <DaftarNominatifAjuan data={nominatifData} surat={data?.surat} kabKota={dataKabKota} /> */}
-              <ListNominatifAjuan data={nominatifData} dataPegawai={data?.pegawai} surat={data?.surat} kabKota={dataKabKota} />
-            </div>
-            <div className="inline-flex items-center justify-center rounded-xl bg-brand px-4 py-2.5 text-sm font-semibold text-white shadow-md shadow-brand/20 transition-all hover:bg-brand/90 hover:shadow-lg">
-              <IoDocumentTextOutline className="h-4 w-4 mr-2 shrink-0 text-white" />
-              <DaftarNominatif data={data} kabKota={dataKabKota} />
-            </div>
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
+          <div className="inline-flex items-center justify-center rounded-xl border border-gray-300 bg-white px-4 py-2.5 text-sm font-semibold text-gray-700 shadow-sm transition-all hover:bg-gray-50 hover:border-gray-400 hover:shadow">
+            <IoDocumentTextOutline className="h-4 w-4 text-blue-600 mr-2 shrink-0" />
+            <ListNominatifAjuan 
+              data={nominatifAjuanTerverifikasi} 
+              dataPegawai={pegawaiTerverifikasi} 
+              surat={data?.surat} 
+              kabKota={dataKabKota} 
+              idKantor={profil?.idKantor}
+            />
           </div>
-        {/* )} */}
+          <div className="inline-flex items-center justify-center rounded-xl bg-brand px-4 py-2.5 text-sm font-semibold text-white shadow-md shadow-brand/20 transition-all hover:bg-brand/90 hover:shadow-lg">
+            <IoDocumentTextOutline className="h-4 w-4 mr-2 shrink-0 text-white" />
+            <DaftarNominatif 
+              data={dataSuratNominatif} 
+              kabKota={dataKabKota}
+              idKantor={profil?.idKantor}
+            />
+          </div>
+        </div>
       </header>
 
       {/* Statistik Ringkas */}
@@ -442,7 +476,6 @@ export default function Component() {
               />
             </div>
           </div>
-          
         </div>
 
         <DataTables
@@ -488,7 +521,6 @@ export default function Component() {
           pegawaiTf={pegawai}
         />
       </FormModal>
-
 
       <LoadingOverlay show={loading} />
     </PageBase>

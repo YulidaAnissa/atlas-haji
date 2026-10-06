@@ -10,6 +10,7 @@ import { calculateUangHarianPerHari } from "@/utils/calculatorsUh";
 
 export default function SuratTugas({ 
   data,
+  idKantor,
   format = "/nominatif-format.docx",
   file = "daftar-nominatif",
   kabKota = [] // Berisi list master daerah beserta nominal uhPNS, uhPPPK, uhNonASN
@@ -72,7 +73,7 @@ export default function SuratTugas({
         let biayaRepVal = 0;
         const isKepalaKantor = 
           item.jabatan?.toLowerCase().includes("kepala kantor") && 
-          Number(data?.surat?.idKantor) === 1;
+          Number(idKantor) === 1;
         if (isKepalaKantor) {
           const durasiHari = calculateTripDuration(item.tglBerangkat, item.tglKembali, false, false);
           biayaRepVal = durasiHari * 150000;
@@ -150,8 +151,11 @@ export default function SuratTugas({
       // Deteksi apakah di dalam list pegawai ada yang menjabat sebagai "Kepala Kantor"
       const adaKepalaKantorKanwil = dataFile?.pegawai?.some((p) => 
         p.jabatan?.toLowerCase().includes("kepala kantor") &&
-        Number(dataFile?.idKantor) === 1
+        Number(idKantor) === 1
       );
+
+      console.log("adaKepalaKantorKanwil:", adaKepalaKantorKanwil); // Debugging: Log apakah ada Kepala Kantor
+      console.log("dataFile:", dataFile); // Debugging: Log dataFile untuk melihat struktur dan nilai-nilainya
 
       // Jika ada Kepala Kantor, gunakan template khusus kakanwil, jika tidak gunakan template default props "format"
       const templatePath = adaKepalaKantorKanwil 
