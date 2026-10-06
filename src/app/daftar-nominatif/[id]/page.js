@@ -153,7 +153,7 @@ export default function Component() {
 
   const handleConfirmBiaya = async (aksi, idOverride = null, catatan = null) => {
   // Gunakan ID yang di-pass langsung jika ada, jika tidak gunakan dari modal state
-  const idPerjalananPegawai = showVerifBiayaPerjalanan?.data;
+  const idPerjalananPegawai = showVerifBiayaPerjalanan?.data || idOverride;
   console.log("idPerjalananPegawai:", idPerjalananPegawai, "aksi:", aksi, "catatan:", catatan, "idOverride:", idOverride);
   try {
     startLoading();

@@ -8,7 +8,6 @@ export default function validation(values) {
     ]),
     nip: validate(values.nip, [
       { rule: 'required' },
-      { rule: 'isNumber' },
     ]),
     nama: validate(values.nama, [
       { rule: 'required' },

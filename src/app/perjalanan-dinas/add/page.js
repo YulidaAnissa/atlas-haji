@@ -136,6 +136,7 @@ export default function AddPerjalananDinas() {
       const formData =
         buildSuratTugasFormData(values, profil);
 
+      console.log(formData, "formData"); // Debugging: Log formData to check its structure and values
       const resp = await addSuratTugas(formData);
 
       form.reset();
