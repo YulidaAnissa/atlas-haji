@@ -57,15 +57,15 @@ export default function Sidebar({ sidebarOpen, setSidebarOpen }) {
                 // Menu Kantor dimunculkan untuk semua Admin
                 { name: "Kantor", icon: <FaBuilding />, path: "/kantor" },
                 // Menu Kabupaten / Kota hanya untuk Super Admin (idKantor === "1")
-                ...(isSuperAdmin
-                  ? [
+                // ...(isSuperAdmin
+                //   ? [
                       {
                         name: "Kabupaten / Kota",
                         icon: <FiMapPin />,
                         path: "/kabupaten-kota",
                       },
-                    ]
-                  : []),
+                  //   ]
+                  // : []),
               ],
             },
           ]

@@ -1,22 +1,34 @@
-import useSWR from 'swr';
 import { useState } from 'react';
 import { SERVICES } from '@/configs';
 import { fetcher, createSwrKey, defaultOptions, getDedupingInterval } from './../utils';
 import { accessTokenStorage } from '@/utils/storage';
+import useSWR, { useSWRConfig } from "swr";
 
 export function useKabKota({ dedupingInterval, params = {} } = defaultOptions) {
   const token = accessTokenStorage.get().value;
+  const { mutate: globalMutate } = useSWRConfig();
+
   const { data: { data } = {}, error, mutate } = useSWR(
     createSwrKey(SERVICES.KABKOTA, { params }), 
     fetcher({ headers: { Authorization: `Bearer ${token}` } }),
     { dedupingInterval: getDedupingInterval(dedupingInterval) }
   );
 
+  // Helper untuk invalidate semua cache KABKOTA (termasuk yang menggunakan query params berbeda)
+  const refreshAllKabKota = () => {
+    return globalMutate(
+      (key) => typeof key === 'string' && key.startsWith(SERVICES.KABKOTA),
+      undefined,
+      { revalidate: true }
+    );
+  };
+
   return {
     data: data,
     isLoading: !error && !data,
     error,
-    fetch: mutate
+    fetch: mutate,            // Mutate lokal key saat ini
+    refreshAll: refreshAllKabKota // Mutate global semua key KABKOTA
   };
 }
 

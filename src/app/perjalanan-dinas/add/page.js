@@ -130,6 +130,7 @@ export default function AddPerjalananDinas() {
     urlParams: { id: profil?.idKantor }
   }); 
 
+  console.log(kantor, "kantor data"); 
   const handleSubmit = async (values, form) => {
     try {
       const formData =

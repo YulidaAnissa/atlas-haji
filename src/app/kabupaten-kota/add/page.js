@@ -1,7 +1,7 @@
 "use client";
 
-import { useState } from "react";
-import { useRouter } from "next/navigation";
+import { useState, useEffect } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import { FaCheck } from "react-icons/fa";
 import { FiMapPin } from "react-icons/fi";
 
@@ -11,18 +11,31 @@ import { useKabKota, useAddKabKota } from "@/hooks/useData";
 import InfoModal from "@/components/elements/InfoModal";
 import LoadingOverlay from "@/components/elements/LoadingOverlay";
 import Breadcrumb from "@/components/elements/Breadcrumb";
+import { profileStorage } from "@/utils/storage";
 
 export default function AddKabKota() {
   const [showModalSuccess, setShowModalSuccess] = useState(false);
 
-  const { fetch } = useKabKota();
+  const { refreshAll } = useKabKota();
   const { addKabKota, loading } = useAddKabKota();
   const router = useRouter();
+  const [profil, setProfil] = useState(null);
+  const searchParams = useSearchParams();
+
+  const kantorParam = searchParams.get("kantor");
+  useEffect(() => {
+    const userProfile = profileStorage.get();
+    setProfil(userProfile);
+  }, []);
+
+  console.log(kantorParam, profil?.idKantor);
 
   const handleSubmit = async (values, form) => {
     try {
+      const selectedKantorId = kantorParam || profil?.idKantor || "";
       // Memastikan konversi nominal string dari form input menjadi Number sebelum dikirim ke API
       const payload = {
+        idKantor: selectedKantorId,
         kabkota: values?.kabkota?.trim(),
         uhPNS: Number(values?.uhPNS) || 0,
         uhPPPK: Number(values?.uhPPPK) || 0,
@@ -32,7 +45,8 @@ export default function AddKabKota() {
 
       await addKabKota(payload);
       form.reset();
-      await fetch();
+      router.refresh();
+      await refreshAll();
       setShowModalSuccess(true);
     } catch (err) {
       console.error("Gagal menambahkan data kabupaten/kota:", err);

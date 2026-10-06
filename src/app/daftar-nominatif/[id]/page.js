@@ -66,7 +66,7 @@ export default function Component() {
 
   const { updateLaporan } = useUpdateLaporan();
   const { editSuratTugas } = useEditSuratTugas();
-  const { data: dataKabKota } = useKabKota();
+  const { data: dataKabKota } = useKabKota({ params: { idKantor: profil?.idKantor } });
 
   useEffect(() => {
     setProfil(profileStorage.get());
@@ -112,6 +112,7 @@ export default function Component() {
     return {
       idx: index + 1,
       nama: item.nama,
+      jabatan: item?.jabatan || "-",
       nip: item.jenisPegawai === "PNS" || item.jenisPegawai === "PPPK" ? item.nip : "-",
       kegiatan: data?.surat?.kegiatan,
       tujuan: Array.isArray(item.tujuan) ? item.tujuan.join(', ') : item.tujuan,

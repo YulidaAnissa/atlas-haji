@@ -46,6 +46,8 @@ export default function SuratTugas({
     return tujuan;
   };
 
+  console.log("data", data); // Debugging: Log data to check its structure and values
+  console.log("dataPegawai", dataPegawai); // Debugging: Log dataPegawai to check its structure and values
   useEffect(() => {
     if (data) {
       const formatOrDash = (value) => {
@@ -65,12 +67,15 @@ export default function SuratTugas({
       const pegawaiData = data.map((item, index) => {
         // Cek apakah pegawai ada di dalam dataPegawai (misalnya dicocokkan berdasarkan NIP atau Nama)
         // Sesuaikan properti kecocokan, contoh di sini menggunakan 'nip' atau 'nama'
-        const isRegistered = dataPegawai?.some(
-          (peg) => peg.nip === item.nip || peg.nama === item.nama
+        const matchedPegawai = dataPegawai?.find(
+          (peg) => (item.nip && peg.nip === item.nip) || peg.nama === item.nama
         );
 
-        // Jika tidak ada di dataPegawai, uhPerHari diset 0
-        const uhPerHari = isRegistered ? calculateUangHarianPerHari(item, surat, kabKota) : 0;
+        const isTujuanSama = String(matchedPegawai?.tujuan).toLowerCase().trim() === String(item.tujuan).toLowerCase().trim();
+
+        const uhPerHari = (matchedPegawai && isTujuanSama) 
+          ? calculateUangHarianPerHari(item, surat, kabKota) 
+          : 0;
 
         const isKhusus = item.typePerjalanan === "khusus";
         const uhType = isKhusus ? 0 : uhPerHari;
@@ -95,7 +100,7 @@ export default function SuratTugas({
           idx: index + 1,
           nama: item.nama,
           gol: item.gol || "-",
-          jabatan: item.jabatan,
+          jabatan: item.jabatan || "-",
           tujuan: tujuanTeks ? formatTujuan(tujuanTeks) : "-",
           tglBerangkat: item.tglBerangkat ? formatDate(item.tglBerangkat, "DD MMMM YYYY") : "-",
           tglKembali: item.tglKembali ? formatDate(item.tglKembali, "DD MMMM YYYY") : "-",

@@ -66,7 +66,12 @@ export default function Component() {
       idKantor: profil?.idKantor,
     },
   });
-  const { data: kabkota } = useKabKota();
+  const { data: kabkota } = useKabKota({
+    params: {
+      idKantor: profil?.idKantor
+    }
+  });
+
   const { data: suratTugas, fetch: fetchSuratTugas } = useSuratTugas({
     urlParams: { id },
     params: {
@@ -290,6 +295,7 @@ export default function Component() {
           <PrintButton
             data={{
               ...item,
+              jabatan: item?.jabatan || "-",
               lama: calculateTripDuration(item.tglBerangkat, item.tglKembali),
               tglBerangkat: formatDate(item.tglBerangkat, "DD MMMM YYYY"),
               tglKembali: formatDate(item.tglKembali, "DD MMMM YYYY"),

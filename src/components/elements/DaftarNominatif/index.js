@@ -86,7 +86,7 @@ export default function SuratTugas({
           idx: index + 1,
           nama: item.nama,
           gol: item.gol || "-",
-          jabatan: item.jabatan,
+          jabatan: item.jabatan || "-",
           tujuan: formatTujuan(tujuanTeks),
           tglBerangkat: formatDate(item.tglBerangkat, "DD MMMM YYYY"),
           tglKembali: formatDate(item.tglKembali, "DD MMMM YYYY"),

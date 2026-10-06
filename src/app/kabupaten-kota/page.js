@@ -7,22 +7,25 @@ import {
   Snackbar,
   LoadingOverlay,
   InfoModal,
+  DropdownFilter, // 💡 Import Reusable Dropdown
 } from "@/components/elements";
 import PageBase from "@/components/pagebase";
 import { usePathname, useRouter } from "next/navigation";
-import { useState } from "react";
-import { useDeleteKabKota, useEditKabKota, useKabKota } from "@/hooks/useData";
+import { useState, useEffect } from "react";
+import { useDeleteKabKota, useEditKabKota, useKabKota, useKantor } from "@/hooks/useData";
 import AddKabKotaForm from "@/components/forms/KabKota";
 import { FaEdit } from "react-icons/fa";
-import { FiEdit2, FiPlus, FiSearch, FiTrash2, FiX } from "react-icons/fi";
+import { FiBriefcase, FiPlus, FiSearch, FiTrash2, FiX } from "react-icons/fi";
 import { formatRupiah } from "@/utils/currency";
 import { TiEdit, TiDeleteOutline } from "react-icons/ti";
+import { profileStorage } from "@/utils/storage";
 
 export default function DaftarKabupatenKota() {
   const router = useRouter();
   const pathname = usePathname();
-
+  const [profil, setProfil] = useState(null);
   const [search, setSearch] = useState("");
+  const [selectedKantor, setSelectedKantor] = useState("");
   const [showEdit, setShowEdit] = useState(null);
   const [deleted, setDeleted] = useState(null);
   const [showSnackbar, setShowSnackbar] = useState({
@@ -31,9 +34,26 @@ export default function DaftarKabupatenKota() {
     type: "",
   });
 
+  // Fetch daftar kantor untuk opsi dropdown
+  const { data: dataKantor, isLoading: loadingKantor } = useKantor();
+
+  useEffect(() => {
+    const userProfile = profileStorage.get();
+    setProfil(userProfile);
+
+    setSelectedKantor(userProfile.idKantor);
+  }, []);
+
+  const targetKantor = profil?.idKantor === "1" 
+    ? selectedKantor 
+    : (selectedKantor || profil?.idKantor);
+
+  console.log(targetKantor);
+
   const { data, isLoading, fetch } = useKabKota({
-    params: { search },
+    params: { search, ...(targetKantor && { idKantor: targetKantor }) },
   });
+
   const { deleteKabKota, loading } = useDeleteKabKota();
   const { editKabKota, loading: loadingEdit } = useEditKabKota();
 
@@ -152,7 +172,13 @@ export default function DaftarKabupatenKota() {
           <button
             type="button"
             className="inline-flex h-11 items-center justify-center gap-2 rounded-xl bg-brand px-5 text-sm font-bold text-white shadow-lg shadow-brand/25 transition hover:bg-[#b5964f] focus:outline-none focus:ring-4 focus:ring-brand/25"
-            onClick={() => router.push(`${pathname}/add`)}
+            onClick={() => {
+              // Pastikan selectedKantor ada isinya DAN berbeda dengan profil.idKantor
+              const hasDifferentKantor = selectedKantor && selectedKantor !== profil?.idKantor;
+              const query = hasDifferentKantor ? `?kantor=${selectedKantor}` : "";
+
+              router.push(`${pathname}/add${query}`);
+            }}
           >
             <FiPlus className="h-4 w-4" />
             Tambah Kabupaten / Kota
@@ -161,29 +187,46 @@ export default function DaftarKabupatenKota() {
       </section>
 
       <section className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
-        <div className="mb-5 flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-          <div className="flex h-11 w-full items-center rounded-xl border border-slate-200 bg-slate-50 px-3 transition focus-within:border-brand focus-within:bg-white focus-within:ring-4 focus-within:ring-brand/15 md:max-w-sm">
-            <FiSearch className="mr-3 h-4 w-4 shrink-0 text-slate-400" />
+        {/* BARIS CONTROLS: SEARCH & FILTER KANTOR */}
+        <div className="mb-5 flex flex-col gap-3 sm:flex-row sm:items-center justify-between w-full">
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-center w-full">
+            <div className="flex h-11 w-full sm:w-72 md:w-80 shrink-0 items-center rounded-xl border border-slate-200 bg-slate-50 px-3.5 transition focus-within:border-brand focus-within:bg-white focus-within:ring-4 focus-within:ring-brand/15 md:max-w-sm">
+              <FiSearch className="mr-3 h-4 w-4 shrink-0 text-slate-400" />
 
-            <input
-              type="text"
-              id="search"
-              name="search"
-              value={search}
-              onChange={(event) => setSearch(event.target.value)}
-              placeholder="Cari kabupaten / kota..."
-              className="min-w-0 flex-1 bg-transparent text-sm font-medium text-slate-800 outline-none placeholder:text-slate-400"
-            />
+              <input
+                type="text"
+                id="search"
+                name="search"
+                value={search}
+                onChange={(event) => setSearch(event.target.value)}
+                placeholder="Cari kabupaten / kota..."
+                className="w-full min-w-0 flex-1 bg-transparent text-sm font-medium text-slate-800 outline-none placeholder:text-slate-400"
+              />
 
-            {search && (
-              <button
-                type="button"
-                aria-label="Hapus pencarian"
-                className="ml-2 grid h-7 w-7 place-items-center rounded-full text-slate-400 transition hover:bg-slate-200 hover:text-slate-700"
-                onClick={() => setSearch("")}
-              >
-                <FiX className="h-4 w-4" />
-              </button>
+              {search && (
+                <button
+                  type="button"
+                  aria-label="Hapus pencarian"
+                  className="ml-2 grid h-7 w-7 shrink-0 place-items-center rounded-full text-slate-400 transition hover:bg-slate-200 hover:text-slate-700"
+                  onClick={() => setSearch("")}
+                >
+                  <FiX className="h-4 w-4" />
+                </button>
+              )}
+            </div>
+
+            {profil?.idKantor === "1" && (
+              <DropdownFilter
+                options={dataKantor ?? []}
+                value={selectedKantor}
+                onChange={setSelectedKantor}
+                placeholder="Semua Kantor"
+                valueKey="idKantor"
+                labelKey="unitKantor"
+                icon={FiBriefcase}
+                loading={loadingKantor}
+                className="w-full sm:flex-1 sm:max-w-md"
+              />
             )}
           </div>
         </div>
