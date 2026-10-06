@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { FaCheck } from "react-icons/fa";
 import { FiMapPin } from "react-icons/fi";
@@ -13,7 +13,7 @@ import LoadingOverlay from "@/components/elements/LoadingOverlay";
 import Breadcrumb from "@/components/elements/Breadcrumb";
 import { profileStorage } from "@/utils/storage";
 
-export default function AddKabKota() {
+function AddKabKotaContent() {
   const [showModalSuccess, setShowModalSuccess] = useState(false);
 
   const { refreshAll } = useKabKota();
@@ -28,12 +28,9 @@ export default function AddKabKota() {
     setProfil(userProfile);
   }, []);
 
-  console.log(kantorParam, profil?.idKantor);
-
   const handleSubmit = async (values, form) => {
     try {
       const selectedKantorId = kantorParam || profil?.idKantor || "";
-      // Memastikan konversi nominal string dari form input menjadi Number sebelum dikirim ke API
       const payload = {
         idKantor: selectedKantorId,
         kabkota: values?.kabkota?.trim(),
@@ -115,5 +112,13 @@ export default function AddKabKota() {
 
       <LoadingOverlay show={loading} />
     </PageBase>
+  );
+}
+
+export default function AddKabKota() {
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <AddKabKotaContent />
+    </Suspense>
   );
 }
